@@ -1,0 +1,7 @@
+# super simple loop tests
+
+add(x: Integer) ->
+  x + 1
+
+main ->
+  print(add(1))

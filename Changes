@@ -1,0 +1,41 @@
+Completed
+---------
+
+- Parser recognizes single line expressions
+- Inline list/map construction
+- Parsing list comprehension
+- Parsing list ranges and indexing
+- Parsing free method call arg list
+- Parsing type names
+- Parsing require decl
+- Parsing module decl
+- Parse expressions grouped by ()
+- Parse named method calls
+- Parse function decl
+- Parse type annotations for func arguments (optional)
+
+To be done
+----------
+
+Parsing Classes
+- class declaration
+- function declaration in class
+- enumeration type
+- class constants?
+
+- Reducer
+- Compiler/Emitter
+- Type analyzer
+
+Stretch
+-------
+
+- 'where' scoping
+- Pattern matching methods
+- guards for pattern matching methods
+- Type classes (better than interfaces/traits)
+- Optimizer
+- Interactive interpreter/shell
+- Calling into Java methods
+- immutables?
+- Parsing require decl hiding (stuff)
