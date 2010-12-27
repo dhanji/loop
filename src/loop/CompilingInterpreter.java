@@ -2,7 +2,7 @@ package loop;
 
 import loop.ast.script.FunctionDecl;
 import loop.ast.script.Unit;
-import loop.compile.LoopJavassistCompiler;
+import loop.type.TypeSolver;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
@@ -35,9 +35,25 @@ public class CompilingInterpreter {
   }
 
   public static void execute(String file) {
+    Unit unit = null;
+    try {
+      unit = load(new FileReader(new File(file)));
+    } catch (FileNotFoundException e) {
+      throw new RuntimeException(e);
+    }
+
+    for (FunctionDecl fn : unit.functions()) {
+      System.out.println(Parser.stringify(fn));
+      TypeSolver.solve(fn);
+    }
+    System.out.println();
+
+  }
+
+  public static Unit load(Reader reader) {
     StringBuilder builder;
     try {
-      BufferedReader br = new BufferedReader(new FileReader(new File(file)));
+      BufferedReader br = new BufferedReader(reader);
 
       builder = new StringBuilder();
       while (br.ready()) {
@@ -51,12 +67,6 @@ public class CompilingInterpreter {
 
     Unit unit = new Parser(new Tokenizer(builder.toString()).tokenize()).script();
     unit.reduceAll();
-
-    for (FunctionDecl fn : unit.functions()) {
-      System.out.println(Parser.stringify(fn));
-    }
-    System.out.println();
-
-    new CompilingInterpreter(new LoopJavassistCompiler("Default", unit).compile()).run();
+    return unit;
   }
 }
