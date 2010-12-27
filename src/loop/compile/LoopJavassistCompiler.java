@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Jade compiler. Takes a reduced Jade AST, runs type analysis over it and then
+ * Loop compiler. Takes a reduced Loop AST, runs type analysis over it and then
  * emits it as Java source code, which is then compiled to Java classes.
  */
 public class LoopJavassistCompiler implements LoopCompiler {
@@ -138,7 +138,7 @@ public class LoopJavassistCompiler implements LoopCompiler {
       }
 
       // Don't bother inferring types for functions that are polymorphic. They will
-      // get witnessed and resolved from concrete call paths.
+      // get witnessed and resolved from concrete call paths or eliminated altogether.
       if (function.isPolymorphic())
         compilePolymorphicFunction(function);
       else
