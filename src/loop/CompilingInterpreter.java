@@ -3,6 +3,7 @@ package loop;
 import loop.ast.script.FunctionDecl;
 import loop.ast.script.Unit;
 import loop.type.TypeSolver;
+import loop.type.scope.BaseScope;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
@@ -35,7 +36,7 @@ public class CompilingInterpreter {
   }
 
   public static void execute(String file) {
-    Unit unit = null;
+    Unit unit;
     try {
       unit = load(new FileReader(new File(file)));
     } catch (FileNotFoundException e) {
@@ -44,7 +45,7 @@ public class CompilingInterpreter {
 
     for (FunctionDecl fn : unit.functions()) {
       System.out.println(Parser.stringify(fn));
-      TypeSolver.solve(fn);
+      TypeSolver.solve(fn, new BaseScope());
     }
     System.out.println();
 

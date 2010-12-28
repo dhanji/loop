@@ -1,0 +1,5 @@
+func(x, y) ->
+  1 + x + 2 - y + 4
+
+main ->
+  func(1, 2)
