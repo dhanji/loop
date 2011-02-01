@@ -65,7 +65,7 @@ public class TypeSolverTest {
 
     // Should have bound func with (int, int)
     assertEquals(1, scope.functionBindings().size());
-    FunctionBinding binding = scope.functionBindings().get("func");
+    FunctionBinding binding = scope.functionBindings().get(0);
 
     assertNotNull(binding);
     assertEquals(2, binding.argTypes.size());
@@ -73,6 +73,32 @@ public class TypeSolverTest {
 
     // Now we should be able to solve for the type of 'func' given the callsite binding.
     assertEquals(Types.INTEGER, TypeSolver.solve(unit.get("func"), scope, binding.argTypes));
+  }
+
+  @Test
+  public final void polymorphicCallsiteBinding() {
+    assertNull(solve("polymorph_callsite_bound.loop", "main"));
+
+    // Should have bound func with (int, int)
+    assertEquals(2, scope.functionBindings().size());
+    FunctionBinding binding = scope.functionBindings().get(0);
+
+    assertNotNull(binding);
+    assertEquals(2, binding.argTypes.size());
+    assertEquals(Arrays.asList(Types.INTEGER, Types.INTEGER), binding.argTypes);
+
+    // Now we should be able to solve for the type of 'add' given the callsite binding.
+    assertEquals(Types.INTEGER, TypeSolver.solve(unit.get("add"), scope, binding.argTypes));
+
+
+    // Now re-solve this with a (string, string) callsite.
+    binding = scope.functionBindings().get(1);
+    assertNotNull(binding);
+    assertEquals(2, binding.argTypes.size());
+    assertEquals(Arrays.asList(Types.STRING, Types.STRING), binding.argTypes);
+
+    // Now we should be able to solve for the type of 'func' given the callsite binding.
+    assertEquals(Types.STRING, TypeSolver.solve(unit.get("add"), scope, binding.argTypes));
   }
 
   private Type solve(String script, String funcName) {

@@ -20,7 +20,7 @@ public class BaseScope {
   // New function bindings, not the same as newly encountered symbols as a
   // function binding can only come into existence if a symbol already exists
   // for it.
-  private final Map<String, FunctionBinding> bindings = new HashMap<String, FunctionBinding>();
+  private final List<FunctionBinding> bindings = new ArrayList<FunctionBinding>();
 
   public BaseScope() {
     populateBaseTypes();
@@ -64,7 +64,7 @@ public class BaseScope {
     return unbound;
   }
 
-  public Map<String, FunctionBinding> functionBindings() {
+  public List<FunctionBinding> functionBindings() {
     return bindings;
   }
 
@@ -72,6 +72,6 @@ public class BaseScope {
    * Binds a concrete function to be emitted.
    */
   public void bindFunction(Symbol symbol, List<Type> argTypes, Type type) {
-    bindings.put(symbol.name, new FunctionBinding(symbol, argTypes, type));
+    bindings.add(new FunctionBinding(symbol, argTypes, type));
   }
 }

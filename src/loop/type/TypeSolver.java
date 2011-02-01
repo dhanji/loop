@@ -75,7 +75,7 @@ public class TypeSolver {
       // Recursive Case: Post order traversal.
       localType = walkExpr(indent + "  ", node.children(), scope);
 
-      // Base Case: Solve by performing expression egress type-propagation.
+      // Base Case: Solve by performing expression egress literal type-propagation.
       if (node.children().isEmpty() && localType == null) {
         localType = TYPE_MAP.get(node.getClass());
       }
@@ -92,13 +92,17 @@ public class TypeSolver {
       }
 
       // If you encounter a symbol, resolve it according to the current scope.
-      encounter(node, scope, type);
+      Type encounterType = encounter(node, scope, type);
+      // Also use its type as the egress type if we still don't know this expr's type.
+      if (type == null) {
+        type = encounterType;
+      }
     }
 
     return type;
   }
 
-  private static void encounter(Node node, LocalScope scope, Type type) {
+  private static Type encounter(Node node, LocalScope scope, Type type) {
     if (node instanceof Variable) {
       Variable var = (Variable) node;
 
@@ -112,6 +116,9 @@ public class TypeSolver {
         // Type mismatch.
         if (type != null && existingType != null && !existingType.equals(type)) {
           throw new RuntimeException("Type mismatch: " + existingType + " expected, but was " + type);
+        } else if (type == null && existingType != null) {
+          // We can contribute a type for this expression fragment.
+          type = existingType;
         }
       } else {
         // Otherwise push this variable to the current scope.
@@ -137,5 +144,7 @@ public class TypeSolver {
         scope.bindFunction(call, argTypes, type);
       }
     }
+
+    return type;
   }
 }

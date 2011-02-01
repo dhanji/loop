@@ -51,6 +51,6 @@ public class Symbol {
 
   @Override
   public String toString() {
-    return kind + ":" + name;
+    return kind + ":" + name + (type != null ? "::" + type : "");
   }
 }
