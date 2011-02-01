@@ -4,9 +4,9 @@ import loop.ast.script.FunctionDecl;
 import loop.ast.script.Unit;
 import loop.type.TypeSolver;
 import loop.type.scope.BaseScope;
+import org.mvel2.MVEL;
 
 import java.io.*;
-import java.lang.reflect.InvocationTargetException;
 
 /**
  * Converts parsed, type-solved, emitted code to Java classes.
@@ -19,20 +19,7 @@ public class CompilingInterpreter {
   }
 
   public void run() {
-    try {
-      Object o = main.getConstructor().newInstance();
-
-      main.getMethod("main", new Class[0]).invoke(o);
-
-    } catch (NoSuchMethodException e) {
-      throw new RuntimeException(e);
-    } catch (InvocationTargetException e) {
-      throw new RuntimeException(e);
-    } catch (InstantiationException e) {
-      throw new RuntimeException(e);
-    } catch (IllegalAccessException e) {
-      throw new RuntimeException(e);
-    }
+    MVEL.eval("main()");
   }
 
   public static void execute(String file) {

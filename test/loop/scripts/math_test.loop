@@ -1,7 +1,7 @@
 # super simple loop tests
 
 add(x: Integer) ->
-  x + 1 + 2 + "asd"
+  x + 1 + 2 + 5
 
 main ->
   print(add(1))
