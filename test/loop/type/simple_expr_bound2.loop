@@ -1,0 +1,2 @@
+func(x: Integer, y: Integer, z: Integer) ->
+  1 + x + 2 + z + 4 - y

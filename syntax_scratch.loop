@@ -1,0 +1,50 @@
+
+class Person
+  constructor(@name) ->
+    @age: 0
+    @children: [] # empty list
+
+  drive ->
+    person: Person.new(name => "dude")
+    person.send(gift)
+
+    print("gift given: " + gift)
+
+    where
+      gift ->
+        "starcraft"
+
+
+class Stack|I
+  constructor ->
+    @list: []|I
+
+  push(item) ->
+    @list.add(item)
+
+  pop ->
+    @list.remove(@list.last)
+
+  top ->
+    @list.last
+
+
+do_stuff ->
+  a + b
+  names_ages: ["Megatron" => 400, "Starscream" => 380]
+
+# Pattern matching function
+reverse(list) ->
+  []     => []
+  [x:xs] => reverse(xs) + x
+
+main ->
+  stack: Stack|Integer.new
+  stack.push 1
+  stack.pop
+
+  ls: List>String
+  map: Map>Key,Value
+  map: Collection>Object
+  table: Table>Person,Person,Number
+

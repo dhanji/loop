@@ -1,9 +1,5 @@
 package loop.ast;
 
-import loop.LoopCompiler;
-import loop.compile.Scope;
-import loop.type.Type;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,14 +27,6 @@ public abstract class Node {
   }
 
   public abstract String toSymbol();
-
-  public Type egressType(Scope scope) {
-    throw new UnsupportedOperationException("Not implemented in " + getClass().getSimpleName());
-  }
-
-  public void emit(LoopCompiler loopCompiler) {
-    throw new UnsupportedOperationException("Not implemented in " + getClass().getSimpleName());
-  }
 
   @Override
   public String toString() {

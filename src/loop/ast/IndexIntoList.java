@@ -1,10 +1,6 @@
 package loop.ast;
 
-import loop.LoopCompiler;
 import loop.Parser;
-import loop.compile.Scope;
-import loop.type.Type;
-import loop.type.Types;
 
 /**
  * An array dereference. Can also be an array slice. For example:
@@ -57,53 +53,6 @@ public class IndexIntoList extends Node {
 
   public boolean isSlice() {
     return slice;
-  }
-
-  @Override
-  public Type egressType(Scope scope) {
-    // Bit hacky but it's the type of any of the items in the list.
-    // or type list if this is a range selection
-    if (slice) {
-      return Types.LIST;
-    }
-
-    return from.egressType(scope);
-  }
-
-  @Override
-  public void emit(LoopCompiler loopCompiler) {
-    if (null == from && null == to) {
-      loopCompiler.errors().generic("Invalid list index range specified");
-      return;
-    }
-
-    if (slice) {
-      loopCompiler.write("subList(");
-      if (null == from) {
-        loopCompiler.write("0");
-      } else {
-        from.emit(loopCompiler);
-      }
-      loopCompiler.write(", ");
-      if (null == to) {
-      } else {
-        to.emit(loopCompiler);
-      }
-      loopCompiler.write(")");
-    } else {
-
-      // For wrapper types, we need to use special methods.
-      if (Types.isPrimitive(from.egressType(loopCompiler.currentScope()))) {
-        loopCompiler.writeAtMarker("Lists.get(");
-        loopCompiler.write(", ");
-        from.emit(loopCompiler);
-        loopCompiler.write(")");
-      } else {
-        loopCompiler.write("get(");
-        from.emit(loopCompiler);
-        loopCompiler.write(")");
-      }
-    }
   }
 
   @Override
