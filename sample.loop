@@ -1,0 +1,9 @@
+
+# quicksort :: haskell style
+
+quicksort(list) ->
+  []     -> []
+  [x:xs] -> filter(xs, > x) + x + filter(xs, < x)
+
+  where filter(ls: List, x: Integer) ->
+    ...
