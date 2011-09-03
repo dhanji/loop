@@ -1,12 +1,10 @@
 package loop;
 
-import loop.ast.script.FunctionDecl;
 import loop.ast.script.Unit;
-import loop.type.TypeSolver;
-import loop.type.scope.BaseScope;
 import org.mvel2.MVEL;
 
 import java.io.*;
+import java.util.HashMap;
 
 /**
  * Converts parsed, type-solved, emitted code to Java classes.
@@ -18,24 +16,30 @@ public class CompilingInterpreter {
     this.main = main;
   }
 
-  public void run() {
-    MVEL.eval("main()");
+  public static void execute(String file) {
+    String unit = loopCompile(file);
+    System.out.println(unit);
+
+    // Invoke main!
+    unit += "; main();";
+
+    MVEL.eval(unit, new HashMap<String, Object>());
   }
 
-  public static void execute(String file) {
+  public static Serializable compile(String file) {
+    String unit = loopCompile(file);
+
+    return MVEL.compileExpression(unit, new HashMap<String, Object>());
+  }
+
+  private static String loopCompile(String file) {
     Unit unit;
     try {
       unit = load(new FileReader(new File(file)));
     } catch (FileNotFoundException e) {
       throw new RuntimeException(e);
     }
-
-    for (FunctionDecl fn : unit.functions()) {
-      System.out.println(Parser.stringify(fn));
-      TypeSolver.solve(fn, new BaseScope());
-    }
-    System.out.println();
-
+    return new CodeWriter().write(unit);
   }
 
   public static Unit load(Reader reader) {
@@ -48,7 +52,6 @@ public class CompilingInterpreter {
         builder.append(br.readLine());
         builder.append('\n');
       }
-
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

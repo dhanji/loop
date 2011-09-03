@@ -9,7 +9,7 @@ import java.util.*;
  * Takes the tokenized form of a raw string and converts it
  * to a CoffeeScript parse tree (an optimized form of its AST).
  *
- * @author dhanji@google.com (Dhanji R. Prasanna)
+ * @author dhanji@gmail.com (Dhanji R. Prasanna)
  */
 public class Parser {
   private final List<Token> tokens;
@@ -97,7 +97,7 @@ public class Parser {
    */
   public Unit script() {
     chewEols();
-    
+
     ModuleDecl module = module();
     chewEols();
 
@@ -133,11 +133,14 @@ public class Parser {
   /*** Class parsing rules ***/
 
   /**
-   * functionDecl := IDENT ASSIGN argDeclList? ARROW EOL
+   * functionDecl := (PRIVATE_FIELD | IDENT) ASSIGN argDeclList? ARROW EOL
    *                 (INDENT+ line EOL)*
    */
   private FunctionDecl functionDecl() {
-    List<Token> funcName = match(Token.Kind.IDENT);
+    List<Token> funcName = match(Token.Kind.PRIVATE_FIELD);
+
+    if (null == funcName)
+      funcName = match(Token.Kind.IDENT);
 
     // Not a function
     if (null == funcName) {
@@ -672,7 +675,7 @@ public class Parser {
           if (null == match(Token.Kind.ASSIGN, Token.Kind.GREATER)) {
             throw new RuntimeException("Expected '=>' after key");
           }
-          
+
           Node value = computation();
           if (null == value) {
             throw new RuntimeException("Expected expression after '=>'");
@@ -716,6 +719,9 @@ public class Parser {
    */
   private Node call() {
     List<Token> call = match(Token.Kind.DOT, Token.Kind.IDENT);
+
+    if (null == call)
+      call = match(Token.Kind.DOT, Token.Kind.PRIVATE_FIELD);
 
     // Production failed.
     if (null == call) {

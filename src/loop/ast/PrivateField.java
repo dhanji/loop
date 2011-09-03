@@ -10,6 +10,10 @@ public class PrivateField extends Node {
     this.name = name.substring(1);
   }
 
+  public String name() {
+    return '@' + name;
+  }
+
   @Override
   public String toSymbol() {
     return "@" + name;

@@ -1,6 +1,7 @@
 package loop;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -12,7 +13,7 @@ public class Tokenizer {
   public Tokenizer(String input) {
     this.input = input;
   }
-  
+
   private static final int NON = 0; // MUST be zero
   private static final int SINGLE_TOKEN = 1;
   private static final int SEQUENCE_TOKEN = 2;
@@ -21,7 +22,6 @@ public class Tokenizer {
   private static final boolean[] STRING_TERMINATORS = new boolean[256];
 
   static {
-
     DELIMITERS['-'] = SEQUENCE_TOKEN;
     DELIMITERS['+'] = SEQUENCE_TOKEN;
     DELIMITERS['/'] = SEQUENCE_TOKEN;
@@ -122,7 +122,7 @@ public class Tokenizer {
           tokens.add(new Token(" ", Token.Kind.INDENT));
 //          start = i;
 //          continue;
-        }        
+        }
 
         // skip whitespace
         start = i + 1;
@@ -171,6 +171,25 @@ public class Tokenizer {
     if (i > start && !inComment) {
       // we don't want trailing whitespace
       bakeToken(tokens, input, i, start);
+    }
+
+    return cleanTokens(tokens);
+  }
+
+  private List<Token> cleanTokens(List<Token> tokens) {
+    // Analyze token stream and remove line breaks inside groups and such.
+    int groups = 0;
+    for (Iterator<Token> iterator = tokens.iterator(); iterator.hasNext();) {
+      Token token = iterator.next();
+      if (Token.Kind.LPAREN == token.kind) {
+        groups++;
+      } else if (Token.Kind.RPAREN == token.kind) {
+        groups--;
+      }
+
+      // Remove token.
+      if (groups > 0 && (token.kind == Token.Kind.EOL || token.kind == Token.Kind.INDENT))
+        iterator.remove();
     }
 
     return tokens;

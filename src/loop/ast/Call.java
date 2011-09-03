@@ -23,6 +23,10 @@ public class Call extends Node {
     return args;
   }
 
+  public String name() {
+    return name;
+  }
+
   @Override
   public String toString() {
     return "Call{" + name + (isFunction ? args.toString() : "") + "}";

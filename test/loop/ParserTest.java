@@ -23,6 +23,13 @@ public class ParserTest {
   }
 
   @Test
+  public final void multilineParentheticalExpr() {
+    compare("(comput (comput (. 1) (+ (. 2)) (+ (. 3))))", "(1\n + 2\n + 3)");
+    compare("(comput (comput (. 1) (+ (. 2))) (+ (comput (. 3 triple))))",
+        "(1 + \n2) + (3.triple\n)");
+  }
+
+  @Test
   public final void listIndexing() {
     compare("(comput (. my_list [(comput (. 1))]))", "my_list[1]");
     compare("(comput (. my_list [(comput (. 1))]) (+ (. your_list [(comput (. @idx))])))", "my_list[1] + your_list[@idx]");
@@ -41,7 +48,7 @@ public class ParserTest {
     compare("(= (comput (. numbers [(comput (. 3))..(comput (. 6))])) (comput (. other_list copy() [(comput (. 4))..(comput (. 7))])))",
         "numbers[3..6] = other_list.copy()[4..7]");
   }
-  
+
   @Test
   public final void listComprehensions() {
     compare("(= (comput (. output)) (comput (. x) (* (. 2)) for x in (comput (. list))))",
@@ -219,7 +226,7 @@ public class ParserTest {
 
         "map: [1=>2, 2=>3, 4=> 5.f(), f() => @g + 1]");
   }
-  
+
   @Test
   public final void functionCalls() {
     compare("(comput (. my_var func(()= (comput (. 1)) (comput (. 2)))))", "my_var.func(1, 2)");

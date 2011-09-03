@@ -15,11 +15,11 @@ public class Assignment extends Node {
     this(null);
   }
 
-  private Node lhs() {
+  public Node lhs() {
     return children.get(0);
   }
 
-  private Node rhs() {
+  public Node rhs() {
     return children.get(1);
   }
 

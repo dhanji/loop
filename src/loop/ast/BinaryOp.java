@@ -12,6 +12,10 @@ public class BinaryOp extends Node {
     this.operator = operator;
   }
 
+  public String name() {
+    return operator.value;
+  }
+
   @Override
   public String toString() {
     return "BinaryOp{" +
