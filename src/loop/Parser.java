@@ -505,8 +505,11 @@ public class Parser {
 
     // If args exist, then we should turn this simple term into a free method call.
     CallArguments args = arglist();
-    if (null != args && node instanceof Variable) {
-      node = new Call(((Variable)node).name, true, args);
+    if (null != args) {
+      String functionName = (node instanceof Variable)
+          ? ((Variable)node).name
+          : ((PrivateField)node).name();
+      node = new Call(functionName, true, args);
     }
 
     CallChain chain = new CallChain();
@@ -715,7 +718,7 @@ public class Parser {
   /**
    * A method call production rule.
    *
-   * call := DOT IDENT arglist?
+   * call := DOT (IDENT | PRIVATE_FIELD) arglist?
    */
   private Node call() {
     List<Token> call = match(Token.Kind.DOT, Token.Kind.IDENT);

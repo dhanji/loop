@@ -53,6 +53,7 @@ import java.util.Map;
     emitters.put(CallChain.class, callChainEmitter);
     emitters.put(FunctionDecl.class, functionDeclEmitter);
     emitters.put(ArgDeclList.class, argDeclEmitter);
+    emitters.put(PrivateField.class, privateFieldEmitter);
   }
 
   public String write(Unit unit) {
@@ -146,6 +147,13 @@ import java.util.Map;
       out.append(" {\n");
       emitChildren(node);
       out.append("\n}");
+    }
+  };
+
+  private final Emitter privateFieldEmitter = new Emitter() {
+    @Override public void emitCode(Node node) {
+      PrivateField privateField = (PrivateField) node;
+      out.append(normalizeMethodName(privateField.name()));
     }
   };
 

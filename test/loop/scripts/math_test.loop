@@ -9,5 +9,9 @@ hello ->
 add(x: Integer) ->
   x + 1 + 2 + 5
 
+func ->
+  closure ->
+    1
+
 main ->
   print(add(1) + @listify([30]) + hello())
