@@ -133,28 +133,45 @@ public class Parser {
   /*** Class parsing rules ***/
 
   /**
-   * functionDecl := (PRIVATE_FIELD | IDENT) ASSIGN argDeclList? ARROW EOL
-   *                 (INDENT+ line EOL)*
+   * Named function parsing rule.
    */
   private FunctionDecl functionDecl() {
-    List<Token> funcName = match(Token.Kind.PRIVATE_FIELD);
+    return internalFunctionDecl(false);
+  }
 
-    if (null == funcName)
-      funcName = match(Token.Kind.IDENT);
+  private FunctionDecl anonymousFunctionDecl() {
+    return internalFunctionDecl(true);
+  }
 
-    // Not a function
-    if (null == funcName) {
-      return null;
+  /**
+   * Dual purpose parsing rule. Functions and anonymous functions.
+   *
+   * anonymousFunctionDecl := argDeclList? ARROW EOL
+   *                 (INDENT+ line EOL)*
+   *
+   * functionDecl := (PRIVATE_FIELD | IDENT) argDeclList? ARROW EOL
+   *                 (INDENT+ line EOL)*
+   */
+  private FunctionDecl internalFunctionDecl(boolean anonymous) {
+    List<Token> funcName = null;
+    if (!anonymous) {
+      funcName = match(Token.Kind.PRIVATE_FIELD);
+
+      if (null == funcName)
+        funcName = match(Token.Kind.IDENT);
+
+      // Not a function
+      if (null == funcName) {
+        return null;
+      }
     }
-
     ArgDeclList arguments = argDeclList();
-
     // If it doesn't have an arrow, then it's not a function either.
     if (match(Token.Kind.ARROW, Token.Kind.EOL) == null) {
       return null;
     }
 
-    String name = funcName.get(0).value;
+    String name = anonymous ? null : funcName.get(0).value;
 
     // Slurp lines into an imperative block. This will form the function body.
     FunctionDecl functionDecl = new FunctionDecl(name, arguments);
@@ -440,10 +457,14 @@ public class Parser {
   }
 
   /**
-   * computation := (group | chain) (comprehension | (rightOp (group | chain)) )*
+   * computation := (anonymousFunctionDecl | group | chain) (comprehension | (rightOp (group | chain)) )*
    */
   public Node computation() {
-    Node node = group();
+    Node node = anonymousFunctionDecl();
+
+    if (node == null)
+      node = group();
+
     if (node == null) {
       node = chain();
     }
@@ -481,7 +502,7 @@ public class Parser {
   }
 
   /**
-   * chain := listOrMapDef | ternaryIf | (term  arglist? (call | indexIntoList)*)
+   * chain := listOrMapDef | ternaryIf | anonymousFunctionDecl | (term  arglist? (call | indexIntoList)*)
    */
   private Node chain() {
     Node node = listOrMapDef();
@@ -491,10 +512,15 @@ public class Parser {
       node = ternaryIf();
     }
 
-    // If not a ternary if, maybe a term?
     if (null != node) {
       return node;
-    }  else {
+    }
+
+    // If not a ternary if, maybe an inline function?
+    node = anonymousFunctionDecl();
+
+    // If not an inline function, maybe a term?
+    if (null == node) {
       node = term();
     }
 

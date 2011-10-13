@@ -54,6 +54,11 @@ public class FreeFunctionsParsingTest {
         "func (x: Integer, y: String, z) ->\n  x + 1\n");
   }
 
+  @Test
+  public final void functionWithAnonymousFunctionInside() {
+    compareFunction("func", "--", "func (x, y, z) ->\n  () ->\n    2\n");
+  }
+
   static void compareFunction(String functionName, String expected, String input) {
     Parser parser = new Parser(new Tokenizer(input).tokenize());
     Unit unit = parser.script();
