@@ -10,7 +10,7 @@ add(x: Integer) ->
   x + 1 + 2 + 5
 
 func ->
-  () ->
+  @() ->
     1
 
 main ->

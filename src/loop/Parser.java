@@ -1,9 +1,33 @@
 package loop;
 
-import loop.ast.*;
-import loop.ast.script.*;
+import loop.ast.Assignment;
+import loop.ast.BinaryOp;
+import loop.ast.Call;
+import loop.ast.CallArguments;
+import loop.ast.CallChain;
+import loop.ast.Comprehension;
+import loop.ast.Computation;
+import loop.ast.IndexIntoList;
+import loop.ast.InlineListDef;
+import loop.ast.InlineMapDef;
+import loop.ast.IntLiteral;
+import loop.ast.ListRange;
+import loop.ast.Node;
+import loop.ast.PrivateField;
+import loop.ast.StringLiteral;
+import loop.ast.TernaryExpression;
+import loop.ast.TypeLiteral;
+import loop.ast.Variable;
+import loop.ast.script.ArgDeclList;
+import loop.ast.script.FunctionDecl;
+import loop.ast.script.ModuleDecl;
+import loop.ast.script.RequireDecl;
+import loop.ast.script.Unit;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Takes the tokenized form of a raw string and converts it
@@ -164,8 +188,12 @@ public class Parser {
       if (null == funcName) {
         return null;
       }
+    } else {
+      if (match(Token.Kind.PRIVATE_FIELD) == null)
+        return null;
     }
     ArgDeclList arguments = argDeclList();
+
     // If it doesn't have an arrow, then it's not a function either.
     if (match(Token.Kind.ARROW, Token.Kind.EOL) == null) {
       return null;
@@ -196,7 +224,7 @@ public class Parser {
         break;
       }
 
-      if (match(Token.Kind.EOL) == null) {
+      if (!endOfInput() && match(Token.Kind.EOL) == null) {
         throw new RuntimeException("Expected newline after statement");
       }
 
@@ -457,13 +485,10 @@ public class Parser {
   }
 
   /**
-   * computation := (anonymousFunctionDecl | group | chain) (comprehension | (rightOp (group | chain)) )*
+   * computation := (group | chain | anonymousFunctionDecl) (comprehension | (rightOp (group | chain)) )*
    */
   public Node computation() {
-    Node node = anonymousFunctionDecl();
-
-    if (node == null)
-      node = group();
+    Node node = group();
 
     if (node == null) {
       node = chain();
@@ -502,10 +527,15 @@ public class Parser {
   }
 
   /**
-   * chain := listOrMapDef | ternaryIf | anonymousFunctionDecl | (term  arglist? (call | indexIntoList)*)
+   * chain := listOrMapDef | ternaryIf | (term  arglist? (call | indexIntoList)*)
    */
   private Node chain() {
-    Node node = listOrMapDef();
+    Node node = anonymousFunctionDecl();
+
+    if (null != node)
+      return node;
+
+    node = listOrMapDef();
 
     // If not a list, maybe a ternary if?
     if (null == node) {
@@ -516,13 +546,8 @@ public class Parser {
       return node;
     }
 
-    // If not a ternary if, maybe an inline function?
-    node = anonymousFunctionDecl();
-
-    // If not an inline function, maybe a term?
-    if (null == node) {
-      node = term();
-    }
+    // If not an ternary IF, maybe a term?
+    node = term();
 
     // Production failed.
     if (null == node) {
@@ -868,6 +893,13 @@ public class Parser {
     int start = i;
     i = cursor;
     return tokens.subList(start, i);
+  }
+
+  /**
+   * Returns true if this is the end of the text sequence.
+   */
+  private boolean endOfInput() {
+    return i == tokens.size();
   }
 
   /**
