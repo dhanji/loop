@@ -6,7 +6,6 @@
   <artifactId>loop</artifactId>
   <packaging>jar</packaging>
   <version>1.0</version>
-  <value>loop</value>
   <url>http://looplang.org</url>
 
   <dependencies>
