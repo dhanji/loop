@@ -225,8 +225,10 @@ public class Parser {
         break;
       }
 
-      if (!endOfInput() && match(Token.Kind.EOL) == null) {
-        throw new RuntimeException("Expected newline after statement");
+      chewEols();
+
+      if (!endOfInput() && match(Token.Kind.RBRACE) == null) {
+        throw new RuntimeException("Expected end of function, additional statements found");
       }
 
       // TODO: Do something useful with the indent level...

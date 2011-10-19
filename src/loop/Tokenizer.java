@@ -1,9 +1,10 @@
 package loop;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Stack;
+import org.apache.commons.io.IOUtils;
+
+import java.io.IOException;
+import java.io.StringReader;
+import java.util.*;
 
 /**
  * @author Dhanji R. Prasanna
@@ -12,7 +13,30 @@ public class Tokenizer {
   private final String input;
 
   public Tokenizer(String input) {
-    this.input = input;
+    try {
+      // Clean input of leading whitespace on empty lines.
+      StringBuilder cleaned = new StringBuilder();
+      @SuppressWarnings("unchecked")
+      List<String> lines = IOUtils.readLines(new StringReader(input));
+      for (int i = 0, linesSize = lines.size(); i < linesSize; i++) {
+        String line = lines.get(i);
+        if (!line.trim().isEmpty())
+          cleaned.append(line);
+
+        // Append newlines for all but the last line, because we don't want to introduce an
+        // unnecessary newline at the eof.
+        if (i < linesSize - 1)
+          cleaned.append('\n');
+      }
+
+      // Unless it explicitly has one.
+      if (input.endsWith("\n") || input.endsWith("\r"))
+        cleaned.append('\n');
+
+      this.input = cleaned.toString();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   private static final int NON = 0; // MUST be zero
@@ -182,11 +206,10 @@ public class Tokenizer {
     int groups = 0;
     for (ListIterator<Token> iterator = tokens.listIterator(); iterator.hasNext();) {
       Token token = iterator.next();
-      if (Token.Kind.LPAREN == token.kind) {
+      if (Token.Kind.LPAREN == token.kind)
         groups++;
-      } else if (Token.Kind.RPAREN == token.kind) {
+      else if (Token.Kind.RPAREN == token.kind)
         groups--;
-      }
 
       // Remove token.
       if (groups > 0
@@ -208,9 +231,12 @@ public class Tokenizer {
       if (iterator.previousIndex() - 1 >= 0)
         previous = tokens.get(iterator.previousIndex() - 1);
 
-      if ( (token.kind == Token.Kind.EOL && (previous != null && previous.kind == Token.Kind.ARROW))
+      if ( (token.kind == Token.Kind.EOL
+          && (previous != null
+          && (previous.kind == Token.Kind.ARROW || previous.kind == Token.Kind.EOL)))
           || ((token.kind == Token.Kind.RPAREN && groups > 0))) {
-        if (groupStack.peek() == Token.Kind.LBRACE) {
+
+        if (!groupStack.isEmpty() && groupStack.peek() == Token.Kind.LBRACE) {
           iterator.add(new Token("}", Token.Kind.RBRACE));
           groupStack.pop();
         }
@@ -231,7 +257,7 @@ public class Tokenizer {
       }
     }
     // Close dangling functions
-    while (!groupStack.empty())
+    while (!groupStack.isEmpty())
       if (groupStack.pop() == Token.Kind.LBRACE)
         tokens.add(new Token("}", Token.Kind.RBRACE));
 
