@@ -3,6 +3,7 @@ package loop;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Stack;
 
 /**
  * @author Dhanji R. Prasanna
@@ -187,20 +188,52 @@ public class Tokenizer {
         groups--;
       }
 
-      // Do not remove newlines that are immediately after ->
+      // Remove token.
+      if (groups > 0
+          && (token.kind == Token.Kind.EOL || token.kind == Token.Kind.INDENT))
+        iterator.remove();
+    }
+
+    // Iterate again and dress function bodies with { }
+    Stack<Token.Kind> groupStack = new Stack<Token.Kind>();
+    for (ListIterator<Token> iterator = tokens.listIterator(); iterator.hasNext();) {
+      Token token = iterator.next();
+      // Insert new function start token if necessary.
+      if (token.kind == Token.Kind.ARROW) {
+        iterator.add(new Token("{", Token.Kind.LBRACE));
+        groupStack.push(Token.Kind.LBRACE);
+      }
+
       Token previous = null;
       if (iterator.previousIndex() - 1 >= 0)
         previous = tokens.get(iterator.previousIndex() - 1);
 
-      // Remove token.
-      if (groups > 0
-          && (token.kind == Token.Kind.EOL || token.kind == Token.Kind.INDENT)
-          && (previous != null
-          && !(Token.Kind.ARROW.equals(previous.kind)
-                  || Token.Kind.EOL.equals(previous.kind)
-                  || Token.Kind.INDENT.equals(previous.kind))))
-        iterator.remove();
+      if ( (token.kind == Token.Kind.EOL && (previous != null && previous.kind == Token.Kind.ARROW))
+          || ((token.kind == Token.Kind.RPAREN && groups > 0))) {
+        if (groupStack.peek() == Token.Kind.LBRACE) {
+          iterator.add(new Token("}", Token.Kind.RBRACE));
+          groupStack.pop();
+        }
+      }
+
+
+      if (Token.Kind.LPAREN == token.kind) {
+        groupStack.push(Token.Kind.LPAREN);
+      } else if (Token.Kind.RPAREN == token.kind) {
+        while (groupStack.pop() != Token.Kind.LPAREN) {
+          // Add before cursor.
+          iterator.previous();
+          iterator.add(new Token("}", Token.Kind.RBRACE));
+          iterator.next();
+        }
+
+        // Pop the lparen.
+      }
     }
+    // Close dangling functions
+    while (!groupStack.empty())
+      if (groupStack.pop() == Token.Kind.LBRACE)
+        tokens.add(new Token("}", Token.Kind.RBRACE));
 
     return tokens;
   }

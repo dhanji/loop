@@ -62,6 +62,9 @@ public class FreeFunctionsParsingTest {
     compareFunction("func",
         "(func: () -> (comput (<anonymous>: () -> (comput (<anonymous>: () -> (comput (. 1)))))))",
         "func() ->\n  @() ->\n    @() ->\n      1");
+    compareFunction("func",
+        "(func: () -> (comput (<anonymous>: () -> (comput (<anonymous>: () -> (comput (. 1)))))))",
+        "func() ->\n  @() ->\n    @() ->\n      func(@() ->\n    4\n)");
   }
 
   static void compareFunction(String functionName, String expected, String input) {

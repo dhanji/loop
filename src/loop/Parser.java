@@ -197,7 +197,7 @@ public class Parser {
       return null;
 
     // If it doesn't have an arrow, then it's not a function either.
-    if (match(Token.Kind.ARROW, Token.Kind.EOL) == null) {
+    if (match(Token.Kind.ARROW, Token.Kind.LBRACE, Token.Kind.EOL) == null) {
       return null;
     }
 

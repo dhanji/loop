@@ -19,7 +19,7 @@ public class TokenizerTest {
     compare("x . y + 1 --", "x.y + 1--");
     compare("1 + 2 . double - 2 . 23", "1 +    2.double -2.23");
     compare("1 + 2 . double - 2 . 23 / x ++", "1 +    2.double -2.23 / x++");
-    compare("func : ( x , y , z ) -> 'hi'", "func: (x, y, z) -> 'hi'");
+    compare("func : ( x , y , z ) -> { 'hi' }", "func: (x, y, z) -> 'hi'");
     compare("a : ++ 1", "a: ++1");
   }
 
@@ -34,9 +34,9 @@ public class TokenizerTest {
     compare("\" hi there! \" . to_s - 1", "\" hi there! \".to_s - 1 # yoyoy");
     compare("1 + 2", "1 +    2 # + 2");
     compare("x . y + 1 --", "x.y + 1--");
-    compare("func : ( x , y , z ) -> \"hi #d\"", "func: (x, y, z) -> \"hi #d\"");
+    compare("func : ( x , y , z ) -> { \"hi #d\" }", "func: (x, y, z) -> \"hi #d\"");
     compare("a : ++ 1", "a: ++1 # pound");
-    compare("func : ( x , y , z ) -> 'hi #d'", "func: (x, y, z) -> 'hi #d'");
+    compare("func : ( x , y , z ) -> { 'hi #d' }", "func: (x, y, z) -> 'hi #d'");
     compare("", "# + 2");
     compare("~ ~", " # soikdokdpoaksd### 3aoskdoaksd\n ###");
   }
@@ -57,29 +57,33 @@ public class TokenizerTest {
 
   @Test
   public final void simpleMultilineStatements() {
-    compare("func : ( ) -> \n ~ 'hi'", "func: () -> \n 'hi'");
-    compare("func : ( ) -> \n ~ 'hi'", "func: () ->\n 'hi'");
-    compare("func : ( x , y ) -> \n ~ 'hi' \n ~ 2", "func: (x,y) ->\n 'hi'\n 2");
-    compare("func : -> \n ~ 'hi'", "func: -> \n 'hi'");
+    compare("func : ( ) -> { \n ~ 'hi' }", "func: () -> \n 'hi'");
+    compare("func : ( ) -> { \n ~ 'hi' }", "func: () ->\n 'hi'");
+    compare("func : ( x , y ) -> { \n ~ 'hi' \n ~ 2 }", "func: (x,y) ->\n 'hi'\n 2");
+    compare("func : -> { \n ~ 'hi' }", "func: -> \n 'hi'");
   }
 
   @Test
   public final void multilineWithGroupNewlineElision() {
-    compare("func : ( ) -> \n ~ ( 1 + 2 )", "func: () -> \n (1 \n + 2)");
-    compare("func : ( ) -> \n ~ ( 1 + 2 )", "func: () -> \n (\n1 \n +\n 2\n\n)");
+    compare("func : ( ) -> { \n ~ ( 1 + 2 ) }", "func: () -> \n (1 \n + 2)");
+    compare("func : ( ) -> { \n ~ ( 1 + 2 ) }", "func: () -> \n (\n1 \n +\n 2\n\n)");
 
     // Do not elide newlines that occur in groups that symbolize anonymous functions.
-    compare("func : ( ) -> \n ~ ( @ ( ) -> \n ~ ~ 2 )", "func: () -> \n (@() ->\n  2)");
+    compare("func : ( ) -> { \n ~ ( @ ( ) -> { 2 } ) }", "func: () -> \n (@() ->\n  2)");
+    compare("func ( x , y , z ) -> { \n" +
+        " ~ ~ @ ( ) -> { \n" +
+        " ~ ~ ~ ~ 1 + 2 . toString ( ) \n" +
+        " } }", "func (x, y, z) ->\n  @() ->\n    1 + 2.toString()\n");
   }
 
   @Test
   public final void compoundMultilineStatements() {
-    compare("class Me \n ~ ~ talk : -> \n ~ ~ 'hi'", "class Me \n  talk: ->\n  'hi'");
-    compare("class Me \n ~ ~ constructor : -> \n ~ ~ @my : your \n ~ ~ talk : -> \n ~ 'hi'",
+    compare("class Me \n ~ ~ talk : -> { \n ~ ~ 'hi' }", "class Me \n  talk: ->\n  'hi'");
+    compare("class Me \n ~ ~ constructor : -> { \n ~ ~ @my : your \n ~ ~ talk : -> { \n ~ 'hi' } }",
             "class Me\n  constructor: ->\n  @my: your\n  talk : -> \n 'hi'");
-    compare("class Me \n ~ ~ talk : -> \n ~ ~ 'hi' . to_i 15 , true",
+    compare("class Me \n ~ ~ talk : -> { \n ~ ~ 'hi' . to_i 15 , true }",
             "class Me \n  talk: ->\n  'hi'.to_i 15, true");
-    compare("class Me extends You , Him \n ~ ~ talk : -> \n ~ ~ 'hi' . to_i ( 15 , true )",
+    compare("class Me extends You , Him \n ~ ~ talk : -> { \n ~ ~ 'hi' . to_i ( 15 , true ) }",
             "class Me extends You, Him \n  talk: ->\n  'hi'.to_i(15,true)");
   }
 
