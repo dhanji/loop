@@ -193,8 +193,6 @@ public class Parser {
         return null;
     }
     ArgDeclList arguments = argDeclList();
-    if (null == arguments)
-      return null;
 
     // If it doesn't have an arrow, then it's not a function either.
     if (match(Token.Kind.ARROW, Token.Kind.LBRACE, Token.Kind.EOL) == null) {
