@@ -1,8 +1,8 @@
 package loop;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 
 /**
  * @author Dhanji R. Prasanna
@@ -179,7 +179,7 @@ public class Tokenizer {
   private List<Token> cleanTokens(List<Token> tokens) {
     // Analyze token stream and remove line breaks inside groups and such.
     int groups = 0;
-    for (Iterator<Token> iterator = tokens.iterator(); iterator.hasNext();) {
+    for (ListIterator<Token> iterator = tokens.listIterator(); iterator.hasNext();) {
       Token token = iterator.next();
       if (Token.Kind.LPAREN == token.kind) {
         groups++;
@@ -187,8 +187,18 @@ public class Tokenizer {
         groups--;
       }
 
+      // Do not remove newlines that are immediately after ->
+      Token previous = null;
+      if (iterator.previousIndex() - 1 >= 0)
+        previous = tokens.get(iterator.previousIndex() - 1);
+
       // Remove token.
-      if (groups > 0 && (token.kind == Token.Kind.EOL || token.kind == Token.Kind.INDENT))
+      if (groups > 0
+          && (token.kind == Token.Kind.EOL || token.kind == Token.Kind.INDENT)
+          && (previous != null
+          && !(Token.Kind.ARROW.equals(previous.kind)
+                  || Token.Kind.EOL.equals(previous.kind)
+                  || Token.Kind.INDENT.equals(previous.kind))))
         iterator.remove();
     }
 
