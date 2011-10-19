@@ -189,10 +189,12 @@ public class Parser {
         return null;
       }
     } else {
-      if (match(Token.Kind.PRIVATE_FIELD) == null)
+      if (match(Token.Kind.ANONYMOUS_TOKEN) == null)
         return null;
     }
     ArgDeclList arguments = argDeclList();
+    if (null == arguments)
+      return null;
 
     // If it doesn't have an arrow, then it's not a function either.
     if (match(Token.Kind.ARROW, Token.Kind.EOL) == null) {
@@ -208,7 +210,6 @@ public class Parser {
     // Absorb indentation level.
     boolean shouldContinue = true;
     do {
-
       int indent = withIndent();
 
       boolean eol = match(Token.Kind.EOL) != null;
@@ -530,12 +531,7 @@ public class Parser {
    * chain := listOrMapDef | ternaryIf | (term  arglist? (call | indexIntoList)*)
    */
   private Node chain() {
-    Node node = anonymousFunctionDecl();
-
-    if (null != node)
-      return node;
-
-    node = listOrMapDef();
+    Node node = listOrMapDef();
 
     // If not a list, maybe a ternary if?
     if (null == node) {
@@ -545,6 +541,10 @@ public class Parser {
     if (null != node) {
       return node;
     }
+
+    node = anonymousFunctionDecl();
+    if (null != node)
+      return node;
 
     // If not an ternary IF, maybe a term?
     node = term();

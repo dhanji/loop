@@ -55,8 +55,13 @@ public class FreeFunctionsParsingTest {
   }
 
   @Test
-  public final void functionWithAnonymousFunctionInside() {
-    compareFunction("func", "--", "func (x, y, z) ->\n  @() ->\n    2\n");
+  public final void functionWithAnonymousFunctionsInside() {
+    compareFunction("func",
+        "(func: (()= x y z) -> (comput (<anonymous>: () -> (comput (. 1) (+ (. 2 toString()))))))",
+        "func (x, y, z) ->\n  @() ->\n    1 + 2.toString()\n");
+    compareFunction("func",
+        "(func: () -> (comput (<anonymous>: () -> (comput (<anonymous>: () -> (comput (. 1)))))))",
+        "func() ->\n  @() ->\n    @() ->\n      1");
   }
 
   static void compareFunction(String functionName, String expected, String input) {

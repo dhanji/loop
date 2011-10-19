@@ -17,6 +17,7 @@ public class Token {
 
   public static enum Kind {
     PRIVATE_FIELD,
+    ANONYMOUS_TOKEN,
     IDENT,
     TYPE_IDENT,
     INTEGER,
@@ -132,8 +133,10 @@ public class Token {
      */
     public static Kind determine(String value) {
       char first = value.charAt(0);
-      if (first == '@')
-        return PRIVATE_FIELD;
+
+      if (first == '@') {
+        return value.length() > 1 ? PRIVATE_FIELD : ANONYMOUS_TOKEN;
+      }
 
       if (first == '"' || first == '\'')
         return STRING;

@@ -25,6 +25,6 @@ public class FunctionDecl extends Node {
 
   @Override
   public String toSymbol() {
-    return name + ": " + Parser.stringify(arguments) + " ->";
+    return (name == null ? "<anonymous>" : name) + ": " + Parser.stringify(arguments) + " ->";
   }
 }

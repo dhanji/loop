@@ -33,8 +33,8 @@ public class ParserTest {
   public final void listIndexing() {
     compare("(comput (. my_list [(comput (. 1))]))", "my_list[1]");
     compare("(comput (. my_list [(comput (. 1))]) (+ (. your_list [(comput (. @idx))])))", "my_list[1] + your_list[@idx]");
-    compare("(comput (. my_lt [(comput (. stuff))]) (- (. your_list [(comput (. @idx))])) (* (. his [(comput (. 32))])))",
-        "my_lt[stuff] - your_list[@idx] * his[32]");
+    compare("(comput (. my_lt [(comput (. stuff))]) (- (. your_list [(comput (. @idx()))])) (* (. his [(comput (. 32))])))",
+        "my_lt[stuff] - your_list[@idx()] * his[32]");
 
     compare("(comput (. my_list [(comput (. 1))..(comput (. 2))]) (+ (. your_list [(comput (. @idx))..(comput (. y))])))",
         "my_list[1..2] + your_list[@idx..y]");
@@ -85,11 +85,11 @@ public class ParserTest {
   public final void groupExpr() {
     compare("(comput (comput (. a b c)) (+ (. d e)))", "(a.b.c) + d.e");
     compare("(comput (. 1) (+ (comput (. 2) (+ (. 3)))) (+ (. 4)))", "1 + (2 + 3) + 4");
-    compare("(comput (. func(()= (comput (comput (. @hi)" +
+    compare("(comput (. func(()= (comput (comput (. @hi())" +
         " (+ (list (comput (comput (. 1) (- (. x [(comput (. 1))]))))))))))" +
         " (+ (comput (. a()) (+ (map (comput (. 1)) (comput (comput (. my()) (- (. expr e))))))))" +
         " (+ (comput (. 4) (- (comput (. 2))))))",
-        "func((@hi + [(1 - x[1])] )) + (a() + [1 => (my() - expr.e)]) + (4 - (2))");
+        "func((@hi() + [(1 - x[1])] )) + (a() + [1 => (my() - expr.e)]) + (4 - (2))");
   }
 
   @Test
