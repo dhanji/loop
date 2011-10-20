@@ -1,7 +1,7 @@
 package loop.ast;
 
 /**
- * @author dhanji@google.com (Dhanji R. Prasanna)
+ * @author dhanji@gmail.com (Dhanji R. Prasanna)
  */
 public class IntLiteral extends Node {
   public final int value;

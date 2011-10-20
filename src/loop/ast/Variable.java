@@ -4,7 +4,7 @@ import loop.type.Type;
 import loop.type.Types;
 
 /**
- * @author dhanji@google.com (Dhanji R. Prasanna)
+ * @author dhanji@gmail.com (Dhanji R. Prasanna)
  */
 public class Variable extends Node {
   public final String name;

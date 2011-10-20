@@ -6,7 +6,7 @@ import java.util.List;
 /**
  * An abstract node in the parse tree.
  *
- * @author dhanji@google.com (Dhanji R. Prasanna)
+ * @author dhanji@gmail.com (Dhanji R. Prasanna)
  */
 public abstract class Node {
   // the rest of the tree under this node

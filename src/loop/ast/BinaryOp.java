@@ -3,7 +3,7 @@ package loop.ast;
 import loop.Token;
 
 /**
- * @author dhanji@google.com (Dhanji R. Prasanna)
+ * @author dhanji@gmail.com (Dhanji R. Prasanna)
  */
 public class BinaryOp extends Node {
   public final Token operator;
