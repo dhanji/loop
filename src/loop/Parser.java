@@ -486,7 +486,7 @@ public class Parser {
   }
 
   /**
-   * computation := (group | chain | anonymousFunctionDecl) (comprehension | (rightOp (group | chain)) )*
+   * computation := (group | chain) (comprehension | (rightOp (group | chain)) )*
    */
   public Node computation() {
     Node node = group();
@@ -528,7 +528,7 @@ public class Parser {
   }
 
   /**
-   * chain := listOrMapDef | ternaryIf | (term  arglist? (call | indexIntoList)*)
+   * chain := listOrMapDef | ternaryIf | anonymousFunctionDecl | (term  arglist? (call | indexIntoList)*)
    */
   private Node chain() {
     Node node = listOrMapDef();
@@ -633,7 +633,7 @@ public class Parser {
 
     // Ensure the method invocation is properly closed.
     if (isParenthetical && match(Token.Kind.RPAREN) == null) {
-      throw new RuntimeException("Expected ')' at end of argument list");
+      throw new RuntimeException("Expected ')' at end of function call argument list");
     }
 
     return callArguments;

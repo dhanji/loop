@@ -62,7 +62,7 @@ public class FreeFunctionsParsingTest {
     compareFunction("func",
         "(func: () -> (comput (<anonymous>: () -> (comput (<anonymous>: () -> (comput (. 1)))))))",
         "func() ->\n  @() ->\n    @() ->\n      1");
-    System.out.println(Tokenizer.detokenize(new Tokenizer("func (x, y, z) ->\n  @() ->\n    1 + 2.toString()\n").tokenize()));
+    System.out.println(Tokenizer.detokenize(new Tokenizer("func() ->\n  @() ->\n    @() ->\n      func(@() ->\n    4\n)").tokenize()));
     compareFunction("func",
         "(func: () -> (comput (<anonymous>: () -> (comput (<anonymous>: () -> (comput (. 1)))))))",
         "func() ->\n  @() ->\n    @() ->\n      func(@() ->\n    4\n)");
