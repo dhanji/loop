@@ -195,9 +195,12 @@ public class Parser {
     ArgDeclList arguments = argDeclList();
 
     // If it doesn't have an arrow, then it's not a function either.
-    if (match(Token.Kind.ARROW, Token.Kind.LBRACE, Token.Kind.EOL) == null) {
+    if (match(Token.Kind.ARROW, Token.Kind.LBRACE) == null) {
       return null;
     }
+
+    // Optionally match eols here.
+    chewEols();
 
     String name = anonymous ? null : funcName.get(0).value;
 
@@ -210,14 +213,15 @@ public class Parser {
     do {
       int indent = withIndent();
 
-      boolean eol = match(Token.Kind.EOL) != null;
-      if (indent == 0 && !eol) {
-        break;
-      } else if (eol) {
+//      boolean eol = match(Token.Kind.EOL) != null;
+//      if (indent == 0 && !eol) {
+//        break;
+//      } else if (eol) {
         // Chew up any blank lines, even those than have indents.
-        continue;
-      }
+//        continue;
+//      }
 
+      // Only one expression is allowed in a function.
       line = line();
       if (line == null) {
         break;
@@ -225,11 +229,12 @@ public class Parser {
 
       chewEols();
 
+      // A function body must be terminated by } (this is ensured by the token-stream rewriter)
       if (!endOfInput() && match(Token.Kind.RBRACE) == null) {
         throw new RuntimeException("Expected end of function, additional statements found");
-      }
+      } else
+        shouldContinue = false;
 
-      // TODO: Do something useful with the indent level...
       functionDecl.add(line);
     } while (shouldContinue);
 

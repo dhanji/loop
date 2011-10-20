@@ -246,7 +246,8 @@ public class Tokenizer {
       if (Token.Kind.LPAREN == token.kind) {
         groupStack.push(Token.Kind.LPAREN);
       } else if (Token.Kind.RPAREN == token.kind) {
-        while (groupStack.pop() != Token.Kind.LPAREN) {
+        while (groupStack.peek() != Token.Kind.LPAREN) {
+          groupStack.pop();
           // Add before cursor.
           iterator.previous();
           iterator.add(new Token("}", Token.Kind.RBRACE));
