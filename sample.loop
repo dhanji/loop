@@ -1,9 +1,14 @@
 
 # quicksort :: haskell style
 
-quicksort(list) ->
-  []     -> []
-  [x:xs] -> filter(xs, > x) + x + filter(xs, < x)
+quicksort(list) =>
+  []     : []
+  [x:xs] : filter(xs, > x) + x + filter(xs, < x)
 
   where filter(ls: List, x: Integer) ->
     ...
+
+
+reverse(list) =>
+  []          : []
+  [x:xs]      : reverse(xs) + x

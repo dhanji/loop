@@ -89,7 +89,7 @@ public class ParserTest {
         " (+ (list (comput (comput (. 1) (- (. x [(comput (. 1))]))))))))))" +
         " (+ (comput (. a()) (+ (map (comput (. 1)) (comput (comput (. my()) (- (. expr e))))))))" +
         " (+ (comput (. 4) (- (comput (. 2))))))",
-        "func((@hi() + [(1 - x[1])] )) + (a() + [1 => (my() - expr.e)]) + (4 - (2))");
+        "func((@hi() + [(1 - x[1])] )) + (a() + [1 :: (my() - expr.e)]) + (4 - (2))");
   }
 
   @Test
@@ -116,7 +116,7 @@ public class ParserTest {
     compare("(comput (. func(()= (comput (. 1)) (comput (if-then-else (comput (. x)) (comput (. y)) (comput (. z)))))))",
         "func(1, if x then y else z)");
     compare("(comput (map (comput (. 1)) (comput (if-then-else (comput (. x)) (comput (. y)) (comput (. z)))) (comput (. 2)) (comput (. 12) (+ (. 1)))))",
-        "[1 => if x then y else z, 2 => 12 + 1]");
+        "[1 :: if x then y else z, 2 :: 12 + 1]");
   }
 
   @Test
@@ -175,28 +175,28 @@ public class ParserTest {
 
   @Test
   public final void trees() {
-    // An empty hashmap just contains a hashrocket between two brackets.
-    compare("(comput tree)", "{=>}");
-    compare("(comput tree)", "{   =>}");
-    compare("(comput tree)", "{   =>  }");
+    // An empty treemap just contains a colonset between two brackets.
+    compare("(comput tree)", "{::}");
+    compare("(comput tree)", "{   ::}");
+    compare("(comput tree)", "{   ::  }");
 
-    compare("(comput (tree (comput (. 1)) (comput (. 2))))", "{1 => 2}");
-    compare("(comput (tree (comput (. 1)) (comput (. 2))))", "{1=>2}");
-    compare("(comput (tree (comput (. x y)) (comput (. '22'))))", "{x.y => '22'}");
-    compare("(comput (tree (comput (. x y)) (comput (. '22'))))", "{x.y=> '22'}");
+    compare("(comput (tree (comput (. 1)) (comput (. 2))))", "{1 :: 2}");
+    compare("(comput (tree (comput (. 1)) (comput (. 2))))", "{1::2}");
+    compare("(comput (tree (comput (. x y)) (comput (. '22'))))", "{x.y :: '22'}");
+    compare("(comput (tree (comput (. x y)) (comput (. '22'))))", "{x.y:: '22'}");
   }
 
   @Test
   public final void maps() {
     // An empty hashmap just contains a hashrocket between two brackets.
-    compare("(comput map)", "[=>]");
-    compare("(comput map)", "[   =>]");
-    compare("(comput map)", "[   =>  ]");
+    compare("(comput map)", "[::]");
+    compare("(comput map)", "[   ::]");
+    compare("(comput map)", "[   ::  ]");
 
-    compare("(comput (map (comput (. 1)) (comput (. 2))))", "[1 => 2]");
-    compare("(comput (map (comput (. 1)) (comput (. 2))))", "[1=>2]");
-    compare("(comput (map (comput (. x y)) (comput (. '22'))))", "[x.y => '22']");
-    compare("(comput (map (comput (. x y)) (comput (. '22'))))", "[x.y=> '22']");
+    compare("(comput (map (comput (. 1)) (comput (. 2))))", "[1 :: 2]");
+    compare("(comput (map (comput (. 1)) (comput (. 2))))", "[1::2]");
+    compare("(comput (map (comput (. x y)) (comput (. '22'))))", "[x.y :: '22']");
+    compare("(comput (map (comput (. x y)) (comput (. '22'))))", "[x.y:: '22']");
   }
 
   @Test
@@ -211,7 +211,7 @@ public class ParserTest {
         "(comput (. f())) (comput (. @g) (+ (. 1)))" +
         "))",
 
-        "[1=>2, 2=>3, 4=> 5.f(), f() => @g + 1]");
+        "[1::2, 2::3, 4:: 5.f(), f() :: @g + 1]");
 
     // Assign this map to a variable.
     compare("(= (comput (. map)) (comput " +
@@ -224,7 +224,7 @@ public class ParserTest {
         "(comput (. f())) (comput (. @g) (+ (. 1))))" +
         "))",
 
-        "map: [1=>2, 2=>3, 4=> 5.f(), f() => @g + 1]");
+        "map: [1::2, 2::3, 4:: 5.f(), f() :: @g + 1]");
   }
 
   @Test
@@ -245,17 +245,17 @@ public class ParserTest {
 
   @Test(expected = RuntimeException.class)
   public final void mapError1() {
-    compare("(comput (. map))", "[1=>]");
+    compare("(comput (. map))", "[1::]");
   }
 
   @Test(expected = RuntimeException.class)
   public final void mapError2() {
-    compare("(comput (. map))", "[=>1]");
+    compare("(comput (. map))", "[::1]");
   }
 
   @Test(expected = RuntimeException.class)
   public final void mapError3() {
-    compare("(comput (. map))", "[1=>1, 2]");
+    compare("(comput (. map))", "[1::1, 2]");
   }
 
   @Test

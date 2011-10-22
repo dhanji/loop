@@ -1,23 +1,6 @@
 package loop;
 
-import loop.ast.Assignment;
-import loop.ast.BinaryOp;
-import loop.ast.Call;
-import loop.ast.CallArguments;
-import loop.ast.CallChain;
-import loop.ast.Comprehension;
-import loop.ast.Computation;
-import loop.ast.IndexIntoList;
-import loop.ast.InlineListDef;
-import loop.ast.InlineMapDef;
-import loop.ast.IntLiteral;
-import loop.ast.ListRange;
-import loop.ast.Node;
-import loop.ast.PrivateField;
-import loop.ast.StringLiteral;
-import loop.ast.TernaryExpression;
-import loop.ast.TypeLiteral;
-import loop.ast.Variable;
+import loop.ast.*;
 import loop.ast.script.ArgDeclList;
 import loop.ast.script.FunctionDecl;
 import loop.ast.script.ModuleDecl;
@@ -170,10 +153,13 @@ public class Parser {
   /**
    * Dual purpose parsing rule. Functions and anonymous functions.
    *
-   * anonymousFunctionDecl := argDeclList? ARROW EOL
-   *                 (INDENT+ line EOL)*
+   * anonymousFunctionDecl := ANONYMOUS_TOKEN argDeclList? ARROW EOL
+   *                 (INDENT+ line EOL)
    *
    * functionDecl := (PRIVATE_FIELD | IDENT) argDeclList? ARROW EOL
+   *                 (INDENT+ line EOL)
+   *
+   * patternFunctionDecl := (PRIVATE_FIELD | IDENT) argDeclList? HASHROCKET EOL
    *                 (INDENT+ line EOL)*
    */
   private FunctionDecl internalFunctionDecl(boolean anonymous) {
@@ -193,33 +179,27 @@ public class Parser {
         return null;
     }
     ArgDeclList arguments = argDeclList();
+    String name = anonymous ? null : funcName.get(0).value;
+    FunctionDecl functionDecl = new FunctionDecl(name, arguments);
 
-    // If it doesn't have an arrow, then it's not a function either.
+    // If it doesn't have a thin or fat arrow, then it's not a function either.
     if (match(Token.Kind.ARROW, Token.Kind.LBRACE) == null) {
-      return null;
+      // Fat arrow, pattern matcher.
+      if (match(Token.Kind.HASHROCKET, Token.Kind.LBRACE) == null) {
+        return null;
+      } else
+        return patternMatchingFunctionDecl(functionDecl, anonymous);
     }
 
     // Optionally match eols here.
     chewEols();
 
-    String name = anonymous ? null : funcName.get(0).value;
-
-    // Slurp lines into an imperative block. This will form the function body.
-    FunctionDecl functionDecl = new FunctionDecl(name, arguments);
     Node line;
 
     // Absorb indentation level.
-    boolean shouldContinue = true;
+    boolean shouldContinue;
     do {
-      int indent = withIndent();
-
-//      boolean eol = match(Token.Kind.EOL) != null;
-//      if (indent == 0 && !eol) {
-//        break;
-//      } else if (eol) {
-        // Chew up any blank lines, even those than have indents.
-//        continue;
-//      }
+      withIndent();
 
       // Only one expression is allowed in a function.
       line = line();
@@ -237,6 +217,45 @@ public class Parser {
 
       functionDecl.add(line);
     } while (shouldContinue);
+
+    return functionDecl;
+  }
+
+  private FunctionDecl patternMatchingFunctionDecl(FunctionDecl functionDecl, boolean anonymous) {
+    chewEols();
+    do {
+      withIndent();
+
+      // Detect pattern first.
+      // Appears to be a list pattern.
+
+      // listPattern := LBRACKET term? (ASSIGN term)* RBRACKET
+      Node pattern = null;
+      if (match(Token.Kind.LBRACKET) != null) {
+        if (match(Token.Kind.RBRACKET) != null) {
+          pattern = new ListPattern();
+        }
+      }
+
+      if (pattern == null) {
+        throw new RuntimeException("Pattern syntax error. Expected a pattern rule.");
+      }
+      PatternRule rule = new PatternRule();
+      rule.pattern = pattern;
+
+      if (match(Token.Kind.ASSIGN) == null)
+        throw new RuntimeException("Expected ':' after pattern.");
+
+      rule.rhs = line();
+
+      // stringPattern := LPAREN term (ASSIGN term)* RPAREN
+
+      chewEols();
+
+      functionDecl.add(rule);
+      if (endOfInput() || match(Token.Kind.RBRACE) != null)
+        break;
+    } while (true);
 
     return functionDecl;
   }
@@ -705,7 +724,7 @@ public class Parser {
 
     Node list = new InlineListDef(isBraced);
     if (null != index) {
-      boolean isMap = match(Token.Kind.ASSIGN, Token.Kind.GREATER) != null;
+      boolean isMap = match(Token.Kind.ASSIGN, Token.Kind.ASSIGN) != null;
       if (isMap) {
         list = new InlineMapDef(isBraced);
 
@@ -731,7 +750,7 @@ public class Parser {
 
         // If the first index contained a hashrocket, then this is a map.
         if (isMap) {
-          if (null == match(Token.Kind.ASSIGN, Token.Kind.GREATER)) {
+          if (null == match(Token.Kind.ASSIGN, Token.Kind.ASSIGN)) {
             throw new RuntimeException("Expected '=>' after key");
           }
 
@@ -760,8 +779,8 @@ public class Parser {
     }
 
     // Is there a hashrocket?
-    if (match(Token.Kind.ASSIGN, Token.Kind.GREATER) != null) {
-      // Otherwise this is an empty hashmap.
+    if (match(Token.Kind.ASSIGN, Token.Kind.ASSIGN) != null) {
+      // This is an empty hashmap.
       list = new InlineMapDef(isBraced);
     }
     if (anyOf(Token.Kind.RBRACKET, Token.Kind.RBRACE) == null) {

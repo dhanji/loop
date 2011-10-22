@@ -48,6 +48,7 @@ public class Tokenizer {
 
   static {
     DELIMITERS['-'] = SEQUENCE_TOKEN;
+    DELIMITERS['='] = SEQUENCE_TOKEN;
     DELIMITERS['+'] = SEQUENCE_TOKEN;
     DELIMITERS['/'] = SEQUENCE_TOKEN;
     DELIMITERS['*'] = SEQUENCE_TOKEN;
@@ -67,7 +68,7 @@ public class Tokenizer {
     DELIMITERS[']'] = SINGLE_TOKEN;
     DELIMITERS['{'] = SINGLE_TOKEN;
     DELIMITERS['}'] = SINGLE_TOKEN;
-    DELIMITERS['='] = SINGLE_TOKEN;
+//    DELIMITERS['='] = SINGLE_TOKEN;
 
     STRING_TERMINATORS['"'] = true;
     STRING_TERMINATORS['\''] = true;
@@ -221,8 +222,11 @@ public class Tokenizer {
     Stack<Token.Kind> groupStack = new Stack<Token.Kind>();
     for (ListIterator<Token> iterator = tokens.listIterator(); iterator.hasNext();) {
       Token token = iterator.next();
+
+      Token next = iterator.hasNext() ? tokens.get(iterator.nextIndex()) : null;
+
       // Insert new function start token if necessary.
-      if (token.kind == Token.Kind.ARROW) {
+      if (isThinOrFatArrow(token, next)) {
         iterator.add(new Token("{", Token.Kind.LBRACE));
         groupStack.push(Token.Kind.LBRACE);
       }
@@ -233,7 +237,7 @@ public class Tokenizer {
 
       if ( (token.kind == Token.Kind.EOL
           && (previous != null
-          && (previous.kind == Token.Kind.ARROW || previous.kind == Token.Kind.EOL)))
+          && (isThinOrFatArrow(previous, token) || previous.kind == Token.Kind.EOL)))
           || ((token.kind == Token.Kind.RPAREN && groups > 0))) {
 
         if (!groupStack.isEmpty() && groupStack.peek() == Token.Kind.LBRACE) {
@@ -263,6 +267,10 @@ public class Tokenizer {
         tokens.add(new Token("}", Token.Kind.RBRACE));
 
     return tokens;
+  }
+
+  private static boolean isThinOrFatArrow(Token token, Token next) {
+    return token.kind == Token.Kind.ARROW || (token.kind == Token.Kind.HASHROCKET);
   }
 
   private static boolean isWhitespace(char c) {

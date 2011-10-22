@@ -2,7 +2,8 @@ package loop;
 
 import org.junit.Test;
 
-import static loop.ParserTest.compare;
+import static loop.FreeFunctionsParsingTest.compareFunction;
+
 
 /**
  * NOTE: Pattern matching functions all start with => rather than ->
@@ -13,6 +14,16 @@ public class PatternMatchingFunctionsParsingTest {
 
   @Test
   public final void reverseListInPatternMatchingForm() {
-    compare("(comput (. a b c))", "reverse(list) =>\n");
+    System.out.println(Tokenizer.detokenize(new Tokenizer(        "reverse(list) =>\n" +
+            "  []          : []\n" +
+            "  [x:xs]      : reverse(xs) + x").tokenize()));
+    compareFunction("reverse",
+        "(reverse: (()= list) -> \n" +
+        "  => [] : (comput list))",
+        "reverse(list) =>\n" +
+            "  []          : []\n"
+//            + "  [x:xs]      : reverse(xs) + x"
+    );
+
   }
 }

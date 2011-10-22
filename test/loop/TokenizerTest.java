@@ -77,6 +77,11 @@ public class TokenizerTest {
   }
 
   @Test
+  public final void multilineWithGroupNewlineElisionPatternFunction() {
+    compare("func : ( ) => { \n ~ ( 1 + 2 ) }", "func: () => \n (1 \n + 2)");
+  }
+
+  @Test
   public final void compoundMultilineStatements() {
     compare("class Me \n ~ ~ talk : -> { \n ~ ~ 'hi' }", "class Me \n  talk: ->\n  'hi'");
     compare("class Me \n ~ ~ constructor : -> { \n ~ ~ @my : your \n ~ ~ talk : -> { \n ~ 'hi' } }",
