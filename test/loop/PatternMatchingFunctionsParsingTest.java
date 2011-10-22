@@ -19,11 +19,10 @@ public class PatternMatchingFunctionsParsingTest {
             "  [x:xs]      : reverse(xs) + x").tokenize()));
     compareFunction("reverse",
         "(reverse: (()= list) -> \n" +
-        "  => [] : (comput list))",
+        "  => [] : (comput list) \n" +
+        "  => ([] x xs) : (comput (. reverse(()= (comput (. xs)))) (+ (. x))))",
         "reverse(list) =>\n" +
-            "  []          : []\n"
-//            + "  [x:xs]      : reverse(xs) + x"
-    );
-
+            "  []          : []\n" +
+            "  [x:xs]      : reverse(xs) + x");
   }
 }

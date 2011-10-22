@@ -230,12 +230,7 @@ public class Parser {
       // Appears to be a list pattern.
 
       // listPattern := LBRACKET term? (ASSIGN term)* RBRACKET
-      Node pattern = null;
-      if (match(Token.Kind.LBRACKET) != null) {
-        if (match(Token.Kind.RBRACKET) != null) {
-          pattern = new ListPattern();
-        }
-      }
+      Node pattern = listPattern();
 
       if (pattern == null) {
         throw new RuntimeException("Pattern syntax error. Expected a pattern rule.");
@@ -258,6 +253,32 @@ public class Parser {
     } while (true);
 
     return functionDecl;
+  }
+
+  /**
+   * listPattern := LBRACKET term? (ASSIGN term)* RBRACKET
+   */
+  private Node listPattern() {
+    Node pattern = null;
+    if (match(Token.Kind.LBRACKET) != null) {
+      pattern = new ListPattern();
+
+      Node term = term();
+      if (term != null) {
+        pattern.add(term);
+        while (match(Token.Kind.ASSIGN) != null) {
+          term = term();
+          if (null == term)
+            throw new RuntimeException("Expected term after ':' in pattern");
+          pattern.add(term);
+        }
+      }
+
+      if (match(Token.Kind.RBRACKET) == null) {
+        throw new RuntimeException("Expected ']' at end of pattern");
+      }
+    }
+    return pattern;
   }
 
   /**
