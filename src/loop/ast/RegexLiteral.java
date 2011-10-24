@@ -3,10 +3,10 @@ package loop.ast;
 /**
  * @author dhanji@gmail.com (Dhanji R. Prasanna)
  */
-public class StringLiteral extends Node {
+public class RegexLiteral extends Node {
   public final String value;
 
-  public StringLiteral(String value) {
+  public RegexLiteral(String value) {
     this.value = value;
   }
 
@@ -17,7 +17,7 @@ public class StringLiteral extends Node {
 
   @Override
   public String toString() {
-    return "String{" +
+    return "Regex{" +
         "'" + value + '\'' +
         '}';
   }

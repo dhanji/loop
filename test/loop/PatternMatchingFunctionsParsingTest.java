@@ -74,4 +74,22 @@ public class PatternMatchingFunctionsParsingTest {
             "  [name <- first]      : 2\n" +
             "  otherwise            : -1");
   }
+
+  @Test
+  public final void mapPatternMatchingManyDestructures() {
+    compareFunction("reverse",
+        "(reverse: (()= list) -> \n" +
+        "  => [] : (comput (. 0)) \n" +
+        "  => [::] : (comput (. 1)) \n" +
+        "  => ([::] name <- first) : (comput (. 3)) \n" +
+        "  => ([::] name <- first age <- second) : (comput (. 2)) \n" +
+        "  => otherwise : (comput (. -1)))",
+        "reverse(list) =>\n" +
+            "  []                     : 0\n" +
+            "  [::]                   : 1\n" +
+            "  [name <- first]        : 3\n" +
+            "  [name <- first," +
+            "   age  <- second]       : 2\n" +
+            "  otherwise              : -1");
+  }
 }

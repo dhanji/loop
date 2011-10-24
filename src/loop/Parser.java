@@ -312,10 +312,18 @@ public class Parser {
     pattern.add(new DestructuringPair(term, rhs));
 
     while (match(Token.Kind.COMMA) != null) {
-      term = term();
+      term = variable();
       if (null == term)
         throw new RuntimeException("Expected term after ',' in object pattern rule");
-//        pattern.add(term);
+
+      if (match(Token.Kind.UNARROW) == null)
+        throw new RuntimeException("Expected '<-' in object pattern rule");
+
+      rhs = term();
+      if (rhs == null)
+        throw new RuntimeException("Expected term after '<-' in object pattern rule");
+
+      pattern.add(new DestructuringPair(term, rhs));
     }
 
     if (match(Token.Kind.RBRACKET) == null) {
@@ -896,7 +904,7 @@ public class Parser {
 
   /**
    * (lexer super rule)
-   * literal := string | regex | integer | decimal
+   * literal := string | regex | MINUS? integer | decimal | TYPE_IDENT
    */
   private Node literal() {
     Token token =
@@ -916,7 +924,7 @@ public class Parser {
       case TYPE_IDENT:
         return new TypeLiteral(token.value);
       case REGEX:
-        return null; // TODO fix.
+        return new RegexLiteral(token.value);
     }
     return null;
   }
