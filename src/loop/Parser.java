@@ -48,39 +48,37 @@ public class Parser {
   }
 
   /**
-   *
    * if := IF computation
-   *
+   * <p/>
    * assign := computation ASSIGN computation
-   *
+   * <p/>
    * computation := chain (op chain)+
    * chain := term call*
-   *
+   * <p/>
    * call := DOT IDENT (LPAREN RPAREN)?
-   *
+   * <p/>
    * term := (literal | variable)
    * literal := (regex | string | number)
    * variable := IDENT
-   *
-   *
+   * <p/>
+   * <p/>
    * Examples
    * --------
-   *
+   * <p/>
    * (assign)
-   *
+   * <p/>
    * x = "hi".tos().tos()
    * x = 1
-   *
+   * <p/>
    * (computation)
-   *
+   * <p/>
    * 1 + 2
    * 1 + 2 - 3 * 4
    * 1.int + 2.y() - 3.a.b * 4
-   *
+   * <p/>
    * --------------------
-   *
+   * <p/>
    * parse := module | require | line
-   *
    */
   public Node parse() {
     Node parsed = require();
@@ -97,10 +95,10 @@ public class Parser {
   /**
    * The top level parsing rule. Do not use parse() to parse entire programs,
    * it is more for one-line expressions.
-   *
+   * <p/>
    * script := module?
-   *           require*
-   *           (functionDecl | classDecl)*
+   * require*
+   * (functionDecl | classDecl)*
    */
   public Unit script() {
     chewEols();
@@ -134,7 +132,7 @@ public class Parser {
 
   private void chewEols() {
     // Chew up end-of-lines.
-    while (match(Token.Kind.EOL) != null);
+    while (match(Token.Kind.EOL) != null) ;
   }
 
   /*** Class parsing rules ***/
@@ -152,15 +150,15 @@ public class Parser {
 
   /**
    * Dual purpose parsing rule. Functions and anonymous functions.
-   *
+   * <p/>
    * anonymousFunctionDecl := ANONYMOUS_TOKEN argDeclList? ARROW EOL
-   *                 (INDENT+ line EOL)
-   *
+   * (INDENT+ line EOL)
+   * <p/>
    * functionDecl := (PRIVATE_FIELD | IDENT) argDeclList? ARROW EOL
-   *                 (INDENT+ line EOL)
-   *
+   * (INDENT+ line EOL)
+   * <p/>
    * patternFunctionDecl := (PRIVATE_FIELD | IDENT) argDeclList? HASHROCKET EOL
-   *                 (INDENT+ line EOL)*
+   * (INDENT+ line EOL)*
    */
   private FunctionDecl internalFunctionDecl(boolean anonymous) {
     List<Token> funcName = null;
@@ -226,11 +224,18 @@ public class Parser {
     do {
       withIndent();
 
-      // Detect pattern first.
-      // Appears to be a list pattern.
+      // Detect pattern first. Maps supercede lists.
+      Node pattern = emptyMapPattern();
+      if (null == pattern)
+        pattern = emptyListPattern();
 
-      // listPattern := LBRACKET term? (ASSIGN term)* RBRACKET
-      Node pattern = listPattern();
+      if (null == pattern)
+        pattern = listOrMapPattern();
+
+      // Try "otherwise" default fall thru.
+      if (pattern == null)
+        if (match(Token.Kind.OTHERWISE) != null)
+          pattern = new OtherwisePattern();
 
       if (pattern == null) {
         throw new RuntimeException("Pattern syntax error. Expected a pattern rule.");
@@ -255,37 +260,76 @@ public class Parser {
     return functionDecl;
   }
 
+  private Node emptyMapPattern() {
+    return match(Token.Kind.LBRACKET, Token.Kind.ASSIGN, Token.Kind.ASSIGN, Token.Kind.RBRACKET) !=
+        null ? new MapPattern() : null;
+  }
+
+  private Node emptyListPattern() {
+    return match(Token.Kind.LBRACKET, Token.Kind.RBRACKET) != null ? new ListPattern() : null;
+  }
+
   /**
-   * listPattern := LBRACKET term? (ASSIGN term)* RBRACKET
+   * listOrMapPattern := (LBRACKET term ((ASSIGN term)* | UNARROW term (COMMA term UNARROW term)*) RBRACKET)
    */
-  private Node listPattern() {
-    Node pattern = null;
-    if (match(Token.Kind.LBRACKET) != null) {
+  private Node listOrMapPattern() {
+    Node pattern;
+    if (match(Token.Kind.LBRACKET) == null)
+      return null;
+
+    Node term = term();
+    if (term == null)
+      throw new RuntimeException("Expected term after '[' in pattern rule");
+
+    // This is a list rule.
+    if (match(Token.Kind.ASSIGN) != null) {
       pattern = new ListPattern();
+      pattern.add(term);
+      term = term();
+      if (term == null)
+        throw new RuntimeException("Expected term after ':' in list pattern rule");
+      pattern.add(term);
 
-      Node term = term();
-      if (term != null) {
-        pattern.add(term);
-        while (match(Token.Kind.ASSIGN) != null) {
-          term = term();
-          if (null == term)
-            throw new RuntimeException("Expected term after ':' in pattern");
-          pattern.add(term);
-        }
-      }
+      while (match(Token.Kind.ASSIGN) != null)
+        pattern.add(term());
 
-      if (match(Token.Kind.RBRACKET) == null) {
-        throw new RuntimeException("Expected ']' at end of pattern");
-      }
+      if (match(Token.Kind.RBRACKET) == null)
+        throw new RuntimeException("Expected ']' at end of list pattern rule");
+
+      return pattern;
     }
+
+    // This is a map pattern.
+    pattern = new MapPattern();
+
+    if (match(Token.Kind.UNARROW) == null)
+      throw new RuntimeException("Expected '<-' in object pattern rule");
+
+    Node rhs = term();
+    if (rhs == null)
+      throw new RuntimeException("Expected term after '<-' in object pattern rule");
+
+    pattern.add(new DestructuringPair(term, rhs));
+
+    while (match(Token.Kind.COMMA) != null) {
+      term = term();
+      if (null == term)
+        throw new RuntimeException("Expected term after ',' in object pattern rule");
+//        pattern.add(term);
+    }
+
+    if (match(Token.Kind.RBRACKET) == null) {
+      throw new RuntimeException("Expected ']' at end of object pattern");
+    }
+
     return pattern;
   }
 
   /**
    * argDeclList := LPAREN
-   *                  IDENT (ASSIGN TYPE_IDENT)?
-   *                     (COMMA IDENT (ASSIGN TYPE_IDENT)? )*
-   *                RPAREN
+   * IDENT (ASSIGN TYPE_IDENT)?
+   * (COMMA IDENT (ASSIGN TYPE_IDENT)? )*
+   * RPAREN
    */
   private ArgDeclList argDeclList() {
     if (match(Token.Kind.LPAREN) == null) {
@@ -403,12 +447,12 @@ public class Parser {
 
   /**
    * This is really both "free standing expression" and "assignment".
-   *
+   * <p/>
    * assign := computation
-   *      (ASSIGN
-   *          (computation (IF computation | comprehension)?)
-   *          | (IF computation THEN computation ELSE computation)
-   *          )?
+   * (ASSIGN
+   * (computation (IF computation | comprehension)?)
+   * | (IF computation THEN computation ELSE computation)
+   * )?
    */
   private Node assign() {
     Node left = computation();
@@ -438,7 +482,7 @@ public class Parser {
     if (match(Token.Kind.IF) != null) {
       condition = computation();
     } else {
-       // Is this a list comprehension?
+      // Is this a list comprehension?
       Node comprehension = comprehension();
       if (null != comprehension) {
         return new Assignment().add(left).add(right);
@@ -450,8 +494,8 @@ public class Parser {
 
   /**
    * Ternary operator, like Java's ?:
-   *
-   *  ternaryIf := IF computation then computation else computation
+   * <p/>
+   * ternaryIf := IF computation then computation else computation
    */
   private Node ternaryIf() {
     if (match(Token.Kind.IF) != null) {
@@ -603,8 +647,8 @@ public class Parser {
     CallArguments args = arglist();
     if (null != args) {
       String functionName = (node instanceof Variable)
-          ? ((Variable)node).name
-          : ((PrivateField)node).name();
+          ? ((Variable) node).name
+          : ((PrivateField) node).name();
       node = new Call(functionName, true, args);
     }
 
@@ -612,7 +656,7 @@ public class Parser {
     chain.add(node);
 
     Node call, indexIntoList = null;
-    while ( (call = call()) != null || (indexIntoList = indexIntoList()) != null ) {
+    while ((call = call()) != null || (indexIntoList = indexIntoList()) != null) {
       chain.add(call != null ? call : indexIntoList);
     }
 
@@ -686,7 +730,7 @@ public class Parser {
 
   /**
    * An array deref.
-   *
+   * <p/>
    * indexIntoList := LBRACKET (computation | computation? DOT DOT computation?)? RBRACKET
    */
   private Node indexIntoList() {
@@ -719,17 +763,17 @@ public class Parser {
 
   /**
    * Inline list/map definition.
-   *
+   * <p/>
    * listOrMapDef :=
-   *      LBRACKET
-   *          (computation
-   *              ((COMMA computation)* | computation? DOT DOT computation?))
-   *          |
-   *          (computation HASHROCKET computation
-   *              (COMMA computation HASHROCKET computation)*)
-   *          |
-   *          HASHROCKET
-   *      RBRACKET
+   * LBRACKET
+   * (computation
+   * ((COMMA computation)* | computation? DOT DOT computation?))
+   * |
+   * (computation HASHROCKET computation
+   * (COMMA computation HASHROCKET computation)*)
+   * |
+   * HASHROCKET
+   * RBRACKET
    */
   private Node listOrMapDef() {
     boolean isBraced = false;
@@ -813,7 +857,7 @@ public class Parser {
 
   /**
    * A method call production rule.
-   *
+   * <p/>
    * call := DOT (IDENT | PRIVATE_FIELD) arglist?
    */
   private Node call() {
@@ -855,7 +899,8 @@ public class Parser {
    * literal := string | regex | integer | decimal
    */
   private Node literal() {
-    Token token = anyOf(Token.Kind.STRING, Token.Kind.INTEGER, Token.Kind.REGEX, Token.Kind.TYPE_IDENT);
+    Token token =
+        anyOf(Token.Kind.STRING, Token.Kind.INTEGER, Token.Kind.REGEX, Token.Kind.TYPE_IDENT);
     if (null == token) {
       return null;
     }

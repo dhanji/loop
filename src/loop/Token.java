@@ -35,6 +35,7 @@ public class Token {
 
     ASSIGN,
     ARROW,
+    UNARROW,
     HASHROCKET,
 
     // Comparison operators
@@ -69,7 +70,7 @@ public class Token {
     WHERE,
 
     WHEN,
-    SWITCH,
+    OTHERWISE,
 
     // specials
     EOL,
@@ -89,6 +90,7 @@ public class Token {
       TOKEN_MAP.put(":", ASSIGN);
       TOKEN_MAP.put(",", COMMA);
       TOKEN_MAP.put("->", ARROW);
+      TOKEN_MAP.put("<-", UNARROW);
 
       TOKEN_MAP.put("==", EQUALS);
       TOKEN_MAP.put("<=", LEQ);
@@ -115,6 +117,8 @@ public class Token {
       TOKEN_MAP.put("in", IN);
       TOKEN_MAP.put("constructor", CONSTRUCTOR);
       TOKEN_MAP.put("class", CLASS);
+
+      TOKEN_MAP.put("otherwise", OTHERWISE);
 
       TOKEN_MAP.put("require", REQUIRE);
       TOKEN_MAP.put("module", MODULE);

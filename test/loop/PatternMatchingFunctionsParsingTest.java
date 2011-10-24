@@ -14,9 +14,6 @@ public class PatternMatchingFunctionsParsingTest {
 
   @Test
   public final void reverseListInPatternMatchingForm() {
-    System.out.println(Tokenizer.detokenize(new Tokenizer(        "reverse(list) =>\n" +
-            "  []          : []\n" +
-            "  [x:xs]      : reverse(xs) + x").tokenize()));
     compareFunction("reverse",
         "(reverse: (()= list) -> \n" +
         "  => [] : (comput list) \n" +
@@ -24,5 +21,57 @@ public class PatternMatchingFunctionsParsingTest {
         "reverse(list) =>\n" +
             "  []          : []\n" +
             "  [x:xs]      : reverse(xs) + x");
+  }
+
+  @Test
+  public final void listPatternMatchingMultipleSegments() {
+    compareFunction("reverse",
+        "(reverse: (()= list) -> \n" +
+        "  => [] : (comput list) \n" +
+        "  => ([] x xs) : (comput (. reverse(()= (comput (. xs)))) (+ (. x))) \n" +
+        "  => ([] x y xs ys) : (comput (. reverse(()= (comput (. xs)))) (+ (. x))))",
+        "reverse(list) =>\n" +
+            "  []          : []\n" +
+            "  [x:xs]      : reverse(xs) + x\n" +
+            "  [x:y:xs:ys]      : reverse(xs) + x");
+  }
+
+  @Test
+  public final void listPatternMatchingMixedSegments() {
+    compareFunction("reverse",
+        "(reverse: (()= list) -> \n" +
+        "  => [] : (comput list) \n" +
+        "  => ([] 'hello x' xs) : (comput (. reverse(()= (comput (. xs)))) (+ (. x))) \n" +
+        "  => ([] 0 x 1 xs ys) : (comput (. reverse(()= (comput (. xs)))) (+ (. x))))",
+        "reverse(list) =>\n" +
+            "  []          : []\n" +
+            "  ['hello x':xs]      : reverse(xs) + x\n" +
+            "  [0:x:1:xs:ys]       : reverse(xs) + x");
+  }
+
+  @Test
+  public final void listPatternMatchingOtherwise() {
+    compareFunction("reverse",
+        "(reverse: (()= list) -> \n" +
+        "  => [] : (comput list) \n" +
+        "  => ([] 'hello x' xs) : (comput (. reverse(()= (comput (. xs)))) (+ (. x))) \n" +
+        "  => otherwise : (comput (. reverse(()= (comput (. xs)))) (+ (. x))))",
+        "reverse(list) =>\n" +
+            "  []          : []\n" +
+            "  ['hello x':xs]      : reverse(xs) + x\n" +
+            "  otherwise           : reverse(xs) + x");
+  }
+
+  @Test
+  public final void mapPatternMatchingSimple() {
+    compareFunction("reverse",
+        "(reverse: (()= list) -> \n" +
+        "  => [::] : (comput (. 1)) \n" +
+        "  => ([::] name <- first) : (comput (. 2)) \n" +
+        "  => otherwise : (comput (. 3)))",
+        "reverse(list) =>\n" +
+            "  [::]          : 1\n" +
+            "  [name <- first]      : 2\n" +
+            "  otherwise            : 3");
   }
 }
