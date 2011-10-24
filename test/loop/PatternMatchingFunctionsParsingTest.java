@@ -68,10 +68,10 @@ public class PatternMatchingFunctionsParsingTest {
         "(reverse: (()= list) -> \n" +
         "  => [::] : (comput (. 1)) \n" +
         "  => ([::] name <- first) : (comput (. 2)) \n" +
-        "  => otherwise : (comput (. 3)))",
+        "  => otherwise : (comput (. -1)))",
         "reverse(list) =>\n" +
             "  [::]          : 1\n" +
             "  [name <- first]      : 2\n" +
-            "  otherwise            : 3");
+            "  otherwise            : -1");
   }
 }

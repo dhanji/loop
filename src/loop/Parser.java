@@ -902,7 +902,11 @@ public class Parser {
     Token token =
         anyOf(Token.Kind.STRING, Token.Kind.INTEGER, Token.Kind.REGEX, Token.Kind.TYPE_IDENT);
     if (null == token) {
-      return null;
+      List<Token> match = match(Token.Kind.MINUS, Token.Kind.INTEGER);
+      if (null != match)
+        return new IntLiteral('-' + match.get(1).value);
+      else
+        return null;
     }
     switch (token.kind) {
       case INTEGER:
