@@ -232,6 +232,9 @@ public class Parser {
       if (null == pattern)
         pattern = listOrMapPattern();
 
+      if (pattern == null)
+        pattern = term();
+
       // Try "otherwise" default fall thru.
       if (pattern == null)
         if (match(Token.Kind.OTHERWISE) != null)

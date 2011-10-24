@@ -97,6 +97,7 @@ public class Tokenizer {
             start = i + 1;
 
             inStringSequence = 0; // reset to normal language
+            leading = false;
             continue;
           }
           // it's a string terminator but it's ok, it's part of the string, ignore...

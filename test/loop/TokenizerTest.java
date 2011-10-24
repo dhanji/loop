@@ -82,6 +82,11 @@ public class TokenizerTest {
   }
 
   @Test
+  public final void stringWithTrailineWhitespRegression() {
+    compare("func : ( ) => { \n ~ 'hello' + 1 }", "func: () => \n 'hello'     + 1");
+  }
+
+  @Test
   public final void compoundMultilineStatements() {
     compare("class Me \n ~ ~ talk : -> { \n ~ ~ 'hi' }", "class Me \n  talk: ->\n  'hi'");
     compare("class Me \n ~ ~ constructor : -> { \n ~ ~ @my : your \n ~ ~ talk : -> { \n ~ 'hi' } }",

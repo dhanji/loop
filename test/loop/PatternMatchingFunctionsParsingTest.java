@@ -92,4 +92,18 @@ public class PatternMatchingFunctionsParsingTest {
             "   age  <- second]       : 2\n" +
             "  otherwise              : -1");
   }
+
+  @Test
+  public final void literalPatternMatching() {
+    compareFunction("reverse",
+        "(reverse: (()= list) -> \n" +
+        "  => 0 : (comput (. 1)) \n" +
+        "  => 'hello' : (comput (. 2)) \n" +
+        "  => otherwise : (comput (. -1)))",
+        "reverse(list) =>\n" +
+            "  0            : 1\n" +
+            "  'hello'      : 2\n" +
+            "  otherwise    : -1");
+  }
+
 }
