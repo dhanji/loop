@@ -305,6 +305,9 @@ public class Parser {
     if (match(Token.Kind.UNARROW) == null)
       throw new RuntimeException("Expected '<-' in object pattern rule");
 
+    if (!(term instanceof Variable))
+      throw new RuntimeException("Only variables are allowed to be pattern matched");
+
     Node rhs = term();
     if (rhs == null)
       throw new RuntimeException("Expected term after '<-' in object pattern rule");
@@ -314,7 +317,7 @@ public class Parser {
     while (match(Token.Kind.COMMA) != null) {
       term = variable();
       if (null == term)
-        throw new RuntimeException("Expected term after ',' in object pattern rule");
+        throw new RuntimeException("Expected variable after ',' in object pattern rule");
 
       if (match(Token.Kind.UNARROW) == null)
         throw new RuntimeException("Expected '<-' in object pattern rule");
