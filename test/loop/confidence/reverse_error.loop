@@ -1,0 +1,8 @@
+# Pattern Matching reverse list with string
+
+reverse(ls) =>
+  []      : []
+  [x:xs]  : reverse(xs) + x
+
+main ->
+  reverse("hello")

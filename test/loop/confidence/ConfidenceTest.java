@@ -15,7 +15,17 @@ import static org.junit.Assert.assertEquals;
  */
 public class ConfidenceTest {
   @Test
-  public final void confidence() {
+  public final void reverseListPatternMatching() {
     assertEquals(Arrays.asList(3, 2, 1), Loop.run("test/loop/confidence/reverse.loop"));
+  }
+
+  @Test
+  public final void reverseStringPatternMatching() {
+    assertEquals("olleh", Loop.run("test/loop/confidence/reverse_string.loop", true));
+  }
+
+  @Test(expected = RuntimeException.class)
+  public final void reverseLoopPatternMissingError() {
+    assertEquals(Arrays.asList(3, 2, 1), Loop.run("test/loop/confidence/reverse_error.loop"));
   }
 }

@@ -232,6 +232,9 @@ public class Parser {
       if (null == pattern)
         pattern = listOrMapPattern();
 
+      if (null == pattern)
+        pattern = stringGroupPattern();
+
       if (pattern == null)
         pattern = term();
 
@@ -260,7 +263,26 @@ public class Parser {
         break;
     } while (true);
 
+    functionDecl.patternMatching = true;
     return functionDecl;
+  }
+
+  private Node stringGroupPattern() {
+    if (match(Token.Kind.LPAREN) == null)
+      return null;
+    StringPattern pattern = new StringPattern();
+
+    Node term;
+    while ((term = term()) != null) {
+      pattern.add(term);
+      if (match(Token.Kind.ASSIGN) == null)
+        break;
+    }
+
+    if (match(Token.Kind.RPAREN) == null)
+      throw new RuntimeException("Expected ')' at end of string group pattern rule.");
+
+    return pattern;
   }
 
   private Node emptyMapPattern() {

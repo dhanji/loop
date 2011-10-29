@@ -164,6 +164,12 @@ import java.util.concurrent.atomic.AtomicInteger;
       emit(functionDecl.arguments());
       out.append(" {\n");
       emitChildren(node);
+      if (functionDecl.patternMatching) {
+        // If we got this far, then none of the patterns were sufficient.
+        out.append("loop.Loop.error(\"No pattern rules matched arguments: ");
+        out.append(context.arguments);
+        out.append("\");\n");
+      }
       out.append("\n}");
 
       functionStack.pop();
@@ -268,53 +274,94 @@ import java.util.concurrent.atomic.AtomicInteger;
         throw new RuntimeException("Incorrect number of arguments for pattern matching");
 
       if (rule.pattern instanceof ListPattern) {
-        ListPattern listPattern = (ListPattern) rule.pattern;
+        emitListPatternRule(rule, context);
+      } else if (rule.pattern instanceof StringLiteral) {
         String arg0 = context.arguments.get(0);
-        out.append("if (");
-        out.append(arg0);
-        out.append(" is java.util.List) {\n");
-
-        int size = listPattern.children().size();
-        if (size == 0) {
-          out.append("if (");
-          out.append(arg0);
-          out.append(" == empty) {\n return ");
-          emit(rule.rhs);
-          out.append(";\n}\n");
-        } else if (size == 1) {
-          out.append("if (");
-          out.append(arg0);
-          out.append(".size() == 1) {\n return ");
-          emit(rule.rhs);
-          out.append(";\n}\n");
-        } else {
-          // Slice the list by terminals in the pattern list.
-          int i = 0;
-          List<Node> children = listPattern.children();
-          for (int j = 0, childrenSize = children.size(); j < childrenSize; j++) {
-            Node child = children.get(j);
-            if (child instanceof Variable) {
-              emit(child);
-              out.append(" = ");
-              out.append(arg0);
-
-              if (j < childrenSize - 1)
-                out.append('[').append(i).append("];\n");
-              else {
-                out.append(".size() == 1 ? [] : ").append(arg0);
-                out.append(".subList(").append(i).append(',').append(arg0).append(".size());\n");
-              }
-            }
-            i++;
-          }
-
-          out.append("return ");
-          emit(rule.rhs);
-          out.append(';');
-        }
-        out.append("}\n");
+        out.append("if (").append(arg0).append(" == ");
+        emit(rule.pattern);
+        out.append(") {\n return ");
+        emit(rule.rhs);
+        out.append(";\n}\n");
+      } else if (rule.pattern instanceof StringPattern) {
+        emitStringPatternRule(rule, context);
       }
     }
   };
+
+  private void emitStringPatternRule(PatternRule rule, Context context) {
+    String arg0 = context.arguments.get(0);
+    out.append("if (").append(arg0).append(" is String) {\n");
+    int i = 0;
+    List<Node> children = rule.pattern.children();
+    for (int j = 0, childrenSize = children.size(); j < childrenSize; j++) {
+      Node child = children.get(j);
+      if (child instanceof Variable) {
+        emit(child);
+        out.append(" = ");
+        out.append(arg0);
+
+        if (j < childrenSize - 1) {
+          out.append(".charAt(");
+          out.append(i).append(");\n");
+        } else {
+          out.append(" == empty ? '' : ").append(arg0);
+          out.append(".substring(").append(i).append(");\n");
+        }
+        i++;
+      }
+    }
+
+    out.append("return ");
+    emit(rule.rhs);
+    out.append("}\n");
+  }
+
+  private void emitListPatternRule(PatternRule rule, Context context) {
+    ListPattern listPattern = (ListPattern) rule.pattern;
+    String arg0 = context.arguments.get(0);
+    out.append("if (");
+    out.append(arg0);
+    out.append(" is java.util.List) {\n");
+
+    int size = listPattern.children().size();
+    if (size == 0) {
+      out.append("if (");
+      out.append(arg0);
+      out.append(" == empty) {\n return ");
+      emit(rule.rhs);
+      out.append(";\n}\n");
+    } else if (size == 1) {
+      out.append("if (");
+      out.append(arg0);
+      out.append(".size() == 1) {\n return ");
+      emit(rule.rhs);
+      out.append(";\n}\n");
+    } else {
+      // Slice the list by terminals in the pattern list.
+      int i = 0;
+      List<Node> children = listPattern.children();
+      for (int j = 0, childrenSize = children.size(); j < childrenSize; j++) {
+        Node child = children.get(j);
+        if (child instanceof Variable) {
+          emit(child);
+          out.append(" = ");
+          out.append(arg0);
+
+          if (j < childrenSize - 1)
+            out.append('[').append(i).append("];\n");
+          else {
+            out.append(".size() == 1 ? [] : ").append(arg0);
+            out.append(".subList(").append(i).append(',').append(arg0).append(".size());\n");
+          }
+        }
+        i++;
+      }
+
+      out.append("return ");
+      emit(rule.rhs);
+      out.append(';');
+    }
+    out.append("}\n");
+  }
 
 }

@@ -59,4 +59,8 @@ public class Loop {
     unit.reduceAll();
     return unit;
   }
+
+  public static void error(String error) {
+    throw new LoopExecutionException(error);
+  }
 }

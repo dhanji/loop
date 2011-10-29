@@ -9,6 +9,7 @@ import loop.ast.Node;
 public class FunctionDecl extends Node {
   private final String name;
   private final ArgDeclList arguments;
+  public boolean patternMatching;
 
   public FunctionDecl(String name, ArgDeclList arguments) {
     this.name = name;
