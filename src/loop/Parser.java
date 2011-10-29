@@ -1,5 +1,6 @@
 package loop;
 
+import loop.Token.Kind;
 import loop.ast.*;
 import loop.ast.script.ArgDeclList;
 import loop.ast.script.FunctionDecl;
@@ -206,6 +207,22 @@ public class Parser {
       }
 
       chewEols();
+
+      // Look for a where block attached to this function.
+      withIndent();
+      if (match(Kind.WHERE) != null) {
+        FunctionDecl helperFunction;
+        do {
+          chewEols();
+          withIndent();
+          helperFunction = functionDecl();
+          chewEols();
+
+          if (null != helperFunction) {
+            functionDecl.whereBlock.add(helperFunction);
+          }
+        } while (helperFunction != null);
+      }
 
       // A function body must be terminated by } (this is ensured by the token-stream rewriter)
       if (!endOfInput() && match(Token.Kind.RBRACE) == null) {

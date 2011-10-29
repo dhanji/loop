@@ -165,6 +165,12 @@ import java.util.concurrent.atomic.AtomicInteger;
         // Function is anonymous, generate a globally unique name for it.
         name = "$" + functionNameSequence.incrementAndGet();
       }
+
+      // Emit locally-scoped helper functions.
+      for (FunctionDecl helper : functionDecl.whereBlock) {
+        emit(helper);
+      }
+
       Context context = new Context(name);
       for (Node arg : functionDecl.arguments().children()) {
         context.arguments.add(((ArgDeclList.Argument)arg).name());

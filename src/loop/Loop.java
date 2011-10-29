@@ -55,6 +55,8 @@ public class Loop {
       throw new RuntimeException(e);
     }
 
+//    System.out.println(Tokenizer.detokenize(new Tokenizer(builder.toString()).tokenize()));
+
     Unit unit = new Parser(new Tokenizer(builder.toString()).tokenize()).script();
     unit.reduceAll();
     return unit;

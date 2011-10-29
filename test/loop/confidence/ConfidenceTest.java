@@ -20,6 +20,11 @@ public class ConfidenceTest {
   }
 
   @Test
+  public final void reverseListPatternMatchingUsingWhereBlock() {
+    assertEquals(Arrays.asList(3, 2, 1), Loop.run("test/loop/confidence/whereblock_1.loop"));
+  }
+
+  @Test
   public final void reverseStringPatternMatching() {
     assertEquals("olleh", Loop.run("test/loop/confidence/reverse_string.loop"));
   }

@@ -220,10 +220,9 @@ public class Tokenizer {
     Stack<Token.Kind> groupStack = new Stack<Token.Kind>();
     for (ListIterator<Token> iterator = tokens.listIterator(); iterator.hasNext();) {
       Token token = iterator.next();
-      Token next = iterator.hasNext() ? tokens.get(iterator.nextIndex()) : null;
 
       // Insert new function start token if necessary.
-      if (isThinOrFatArrow(token, next)) {
+      if (isThinOrFatArrow(token)) {
         iterator.add(new Token("{", Token.Kind.LBRACE));
         groupStack.push(Token.Kind.LBRACE);
       }
@@ -234,7 +233,7 @@ public class Tokenizer {
 
       if ( (token.kind == Token.Kind.EOL
           && (previous != null
-          && (isThinOrFatArrow(previous, token) || previous.kind == Token.Kind.EOL)))
+          && (isThinOrFatArrow(previous) || previous.kind == Token.Kind.EOL)))
           || ((token.kind == Token.Kind.RPAREN && groups > 0))) {
 
         while (!groupStack.isEmpty() && groupStack.peek() == Token.Kind.LBRACE) {
@@ -274,7 +273,7 @@ public class Tokenizer {
     return tokens;
   }
 
-  private static boolean isThinOrFatArrow(Token token, Token next) {
+  private static boolean isThinOrFatArrow(Token token) {
     return token.kind == Token.Kind.ARROW || (token.kind == Token.Kind.HASHROCKET);
   }
 

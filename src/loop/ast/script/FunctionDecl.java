@@ -3,6 +3,9 @@ package loop.ast.script;
 import loop.Parser;
 import loop.ast.Node;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * A declaration of a function. May be free or a member of a class.
  */
@@ -10,6 +13,7 @@ public class FunctionDecl extends Node {
   private final String name;
   private final ArgDeclList arguments;
   public boolean patternMatching;
+  public final List<FunctionDecl> whereBlock = new ArrayList<FunctionDecl>();
 
   public FunctionDecl(String name, ArgDeclList arguments) {
     this.name = name;

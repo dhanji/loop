@@ -1,4 +1,4 @@
-# super simple loop tests
+# Where block attached to a function
 
 spout ->
   reverse([1,2,3])
@@ -8,4 +8,4 @@ spout ->
       [x:xs]  : reverse(xs) + x
 
 main ->
-  print(spout())
+  spout()
