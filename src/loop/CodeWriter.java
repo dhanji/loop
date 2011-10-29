@@ -321,13 +321,18 @@ import java.util.concurrent.atomic.AtomicInteger;
 
           Node next = children.get(j + 1);
           if (next instanceof StringLiteral) {
-            splittable = true;
             // If the next node is a string literal, then we must split this
             // string across occurrences of the given literal.
             String thisIndex = newLocalVariable();
             out.append(thisIndex).append(" = ");
             out.append(arg0).append(".indexOf(");
             emit(next);
+
+            // If this is the second or greater pattern matcher, seek from the last location.
+            if (splittable) {
+              out.append(", ").append(lastIndex);
+            }
+
             out.append(");\n");
             out.append("if (").append(thisIndex).append(" > -1) {\n");
             emit(child);
@@ -338,6 +343,7 @@ import java.util.concurrent.atomic.AtomicInteger;
             emit(next);
             out.append(".length();\n}\n");
 
+            splittable = true;
           } else {
             emit(child);
             out.append(" = ").append(arg0).append(".charAt(").append(i).append(");\n");
@@ -351,12 +357,14 @@ import java.util.concurrent.atomic.AtomicInteger;
         i++;
       }
     }
+
+    // Only process the return rule if patterns matched.
     if (splittable) {
       out.append("if (").append(lastIndex).append(" > -1) {\n");
     }
     out.append("return ");
     emit(rule.rhs);
-    out.append(':');
+    out.append(';');
     if (splittable) {
       out.append("\n}\n");
     }

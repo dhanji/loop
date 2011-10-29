@@ -29,6 +29,11 @@ public class ConfidenceTest {
     assertEquals("hellotheredude", Loop.run("test/loop/confidence/split_lines_string.loop", true));
   }
 
+  @Test
+  public final void splitVariousStringsPatternMatching() {
+    assertEquals("1234", Loop.run("test/loop/confidence/split_various_string.loop", true));
+  }
+
   @Test(expected = RuntimeException.class)
   public final void reverseLoopPatternMissingError() {
     assertEquals(Arrays.asList(3, 2, 1), Loop.run("test/loop/confidence/reverse_error.loop"));

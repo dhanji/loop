@@ -1,7 +1,6 @@
 # Pattern Matching split lines in a string
 
 unline(input) =>
-  ''                    : ''
   (first: '\n' : rest)  : first + unline(rest)
   otherwise             : input
 
