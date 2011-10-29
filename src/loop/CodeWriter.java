@@ -297,14 +297,12 @@ import java.util.concurrent.atomic.AtomicInteger;
       Node child = children.get(j);
       if (child instanceof Variable) {
         emit(child);
-        out.append(" = ");
-        out.append(arg0);
+        out.append(" = ").append(arg0);
 
         if (j < childrenSize - 1) {
-          out.append(".charAt(");
-          out.append(i).append(");\n");
+          out.append(".charAt(").append(i).append(");\n");
         } else {
-          out.append(" == empty ? '' : ").append(arg0);
+          out.append(".length() == 1 ? '' : ").append(arg0);
           out.append(".substring(").append(i).append(");\n");
         }
         i++;
@@ -313,7 +311,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
     out.append("return ");
     emit(rule.rhs);
-    out.append("}\n");
+    out.append(";\n}\n");
   }
 
   private void emitListPatternRule(PatternRule rule, Context context) {
@@ -353,8 +351,8 @@ import java.util.concurrent.atomic.AtomicInteger;
             out.append(".size() == 1 ? [] : ").append(arg0);
             out.append(".subList(").append(i).append(',').append(arg0).append(".size());\n");
           }
+          i++;
         }
-        i++;
       }
 
       out.append("return ");

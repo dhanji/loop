@@ -21,7 +21,7 @@ public class ConfidenceTest {
 
   @Test
   public final void reverseStringPatternMatching() {
-    assertEquals("olleh", Loop.run("test/loop/confidence/reverse_string.loop", true));
+    assertEquals("olleh", Loop.run("test/loop/confidence/reverse_string.loop"));
   }
 
   @Test(expected = RuntimeException.class)
