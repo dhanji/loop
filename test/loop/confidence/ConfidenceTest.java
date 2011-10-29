@@ -26,7 +26,7 @@ public class ConfidenceTest {
 
   @Test
   public final void splitLinesStringPatternMatching() {
-    assertEquals("hellothere", Loop.run("test/loop/confidence/split_lines_string.loop", true));
+    assertEquals("hellotheredude", Loop.run("test/loop/confidence/split_lines_string.loop", true));
   }
 
   @Test(expected = RuntimeException.class)

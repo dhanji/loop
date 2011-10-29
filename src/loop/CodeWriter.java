@@ -11,6 +11,7 @@ import loop.ast.InlineMapDef;
 import loop.ast.IntLiteral;
 import loop.ast.ListPattern;
 import loop.ast.Node;
+import loop.ast.OtherwisePattern;
 import loop.ast.PatternRule;
 import loop.ast.PrivateField;
 import loop.ast.StringLiteral;
@@ -294,6 +295,10 @@ import java.util.concurrent.atomic.AtomicInteger;
         out.append(";\n}\n");
       } else if (rule.pattern instanceof StringPattern) {
         emitStringPatternRule(rule, context);
+      } else if (rule.pattern instanceof OtherwisePattern) {
+        out.append("return ");
+        emit(rule.rhs);
+        out.append(";\n");
       }
     }
   };
@@ -304,7 +309,10 @@ import java.util.concurrent.atomic.AtomicInteger;
     List<Node> children = rule.pattern.children();
     int i = 0, childrenSize = children.size();
 
-    String lastIndex = null;      // The last index of split (i.e. pattern delimiter).
+    boolean splittable = false;
+    String lastIndex = newLocalVariable();      // The last index of split (i.e. pattern delimiter).
+    out.append(lastIndex).append(" = -1;\n");
+
     for (int j = 0; j < childrenSize; j++) {
       Node child = children.get(j);
 
@@ -313,18 +321,20 @@ import java.util.concurrent.atomic.AtomicInteger;
 
           Node next = children.get(j + 1);
           if (next instanceof StringLiteral) {
+            splittable = true;
             // If the next node is a string literal, then we must split this
             // string across occurrences of the given literal.
-            lastIndex = "$__" + functionNameSequence.incrementAndGet();
-            out.append(lastIndex).append(" = ");
+            String thisIndex = newLocalVariable();
+            out.append(thisIndex).append(" = ");
             out.append(arg0).append(".indexOf(");
             emit(next);
             out.append(");\n");
-            out.append("if (").append(lastIndex).append(" > -1) {\n");
+            out.append("if (").append(thisIndex).append(" > -1) {\n");
             emit(child);
-            out.append(" = ").append(arg0).append(".substring(0, ").append(lastIndex).append(");\n");
+            out.append(" = ").append(arg0).append(".substring(").append(lastIndex).append(" == -1 ? 0 : ").append(lastIndex)
+                .append(", ").append(thisIndex).append(");\n");
             // Advance the index by the length of this match.
-            out.append(lastIndex).append(" += ");
+            out.append(lastIndex).append(" = ").append(thisIndex).append(" + ");
             emit(next);
             out.append(".length();\n}\n");
 
@@ -335,15 +345,26 @@ import java.util.concurrent.atomic.AtomicInteger;
         } else {
           emit(child);
           out.append(" = ").append(arg0).append(".length() == 1 ? '' : ").append(arg0);
-          out.append(".substring(").append(lastIndex == null ? i : lastIndex).append(");\n");
+          out.append(".substring(").append(lastIndex).append(" > -1 ? ")
+              .append(lastIndex).append(": ").append(i).append(");\n");
         }
         i++;
       }
     }
-
+    if (splittable) {
+      out.append("if (").append(lastIndex).append(" > -1) {\n");
+    }
     out.append("return ");
     emit(rule.rhs);
-    out.append(";\n}\n");
+    out.append(':');
+    if (splittable) {
+      out.append("\n}\n");
+    }
+    out.append("\n}\n");
+  }
+
+  private String newLocalVariable() {
+    return "$__" + functionNameSequence.incrementAndGet();
   }
 
   private void emitListPatternRule(PatternRule rule, Context context) {

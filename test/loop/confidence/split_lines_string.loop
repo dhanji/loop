@@ -1,7 +1,9 @@
 # Pattern Matching split lines in a string
 
-reverse(input) =>
-  (first: '\n' : rest)  : first + rest
+unline(input) =>
+  ''                    : ''
+  (first: '\n' : rest)  : first + unline(rest)
+  otherwise             : input
 
 main ->
-  reverse("hello\nthere")
+  unline("hello\nthere\ndude")
