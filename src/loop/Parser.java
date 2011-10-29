@@ -309,11 +309,14 @@ public class Parser {
       throw new RuntimeException("Expected '<-' in object pattern rule");
 
     if (!(term instanceof Variable))
-      throw new RuntimeException("Only variables are allowed to be pattern matched");
+      throw new RuntimeException("Must select into a valid variable name in object pattern rule: " + term.toSymbol());
 
     Node rhs = term();
     if (rhs == null)
       throw new RuntimeException("Expected term after '<-' in object pattern rule");
+    if (rhs instanceof Variable) {
+      
+    }
 
     pattern.add(new DestructuringPair(term, rhs));
 

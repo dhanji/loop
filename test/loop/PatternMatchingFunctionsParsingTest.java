@@ -94,6 +94,21 @@ public class PatternMatchingFunctionsParsingTest {
   }
 
   @Test
+  public final void mapPatternMatchingNestedDestructures() {
+    compareFunction("reverse",
+        "(reverse: (()= list) -> \n" +
+        "  => [] : (comput (. 0)) \n" +
+        "  => [::] : (comput (. 1)) \n" +
+        "  => ([::] name <- first) : (comput (. 3)) \n" +
+        "  => otherwise : (comput (. -1)))",
+        "reverse(list) =>\n" +
+            "  []                     : 0\n" +
+            "  [::]                   : 1\n" +
+            "  [ dad <- parent.name ]        : dad\n" +
+            "  otherwise              : -1");
+  }
+
+  @Test
   public final void literalPatternMatching() {
     compareFunction("reverse",
         "(reverse: (()= list) -> \n" +
@@ -105,5 +120,4 @@ public class PatternMatchingFunctionsParsingTest {
             "  'hello'      : 2\n" +
             "  otherwise    : -1");
   }
-
 }
