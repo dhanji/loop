@@ -9,21 +9,20 @@ import java.util.HashMap;
 /**
  * Converts parsed, type-solved, emitted code to Java classes.
  */
-public class CompilingInterpreter {
-  private final Class<?> main;
-
-  public CompilingInterpreter(Class<?> main) {
-    this.main = main;
+public class Loop {
+  public static Object run(String file) {
+    return run(file, false);
   }
 
-  public static void execute(String file) {
+  public static Object run(String file, boolean print) {
     String unit = loopCompile(file);
-    System.out.println(unit);
+    if (print)
+      System.out.println(unit);
 
     // Invoke main!
     unit += "; main();";
 
-    MVEL.eval(unit, new HashMap<String, Object>());
+    return MVEL.eval(unit, new HashMap<String, Object>());
   }
 
   public static Serializable compile(String file) {
