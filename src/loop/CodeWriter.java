@@ -1,11 +1,24 @@
 package loop;
 
-import loop.ast.*;
+import loop.ast.Assignment;
+import loop.ast.BinaryOp;
+import loop.ast.Call;
+import loop.ast.CallChain;
+import loop.ast.Computation;
+import loop.ast.IndexIntoList;
+import loop.ast.InlineListDef;
+import loop.ast.InlineMapDef;
+import loop.ast.IntLiteral;
+import loop.ast.ListPattern;
+import loop.ast.Node;
+import loop.ast.PatternRule;
+import loop.ast.PrivateField;
+import loop.ast.StringLiteral;
+import loop.ast.StringPattern;
+import loop.ast.Variable;
 import loop.ast.script.ArgDeclList;
 import loop.ast.script.FunctionDecl;
 import loop.ast.script.Unit;
-import org.mvel2.templates.CompiledTemplate;
-import org.mvel2.templates.TemplateCompiler;
 
 import java.util.HashMap;
 import java.util.List;
@@ -17,9 +30,6 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author dhanji@gmail.com (Dhanji R. Prasanna)
  */
 @SuppressWarnings({"FieldCanBeLocal"}) class CodeWriter {
-  private static final CompiledTemplate TEMPLATE = TemplateCompiler.compileTemplate(
-      CodeWriter.class.getResourceAsStream("func.template"));
-
   private static final AtomicInteger functionNameSequence = new AtomicInteger();
 
   private final StringBuilder out = new StringBuilder();
@@ -291,19 +301,41 @@ import java.util.concurrent.atomic.AtomicInteger;
   private void emitStringPatternRule(PatternRule rule, Context context) {
     String arg0 = context.arguments.get(0);
     out.append("if (").append(arg0).append(" is String) {\n");
-    int i = 0;
     List<Node> children = rule.pattern.children();
-    for (int j = 0, childrenSize = children.size(); j < childrenSize; j++) {
-      Node child = children.get(j);
-      if (child instanceof Variable) {
-        emit(child);
-        out.append(" = ").append(arg0);
+    int i = 0, childrenSize = children.size();
 
+    String lastIndex = null;      // The last index of split (i.e. pattern delimiter).
+    for (int j = 0; j < childrenSize; j++) {
+      Node child = children.get(j);
+
+      if (child instanceof Variable) {
         if (j < childrenSize - 1) {
-          out.append(".charAt(").append(i).append(");\n");
+
+          Node next = children.get(j + 1);
+          if (next instanceof StringLiteral) {
+            // If the next node is a string literal, then we must split this
+            // string across occurrences of the given literal.
+            lastIndex = "$__" + functionNameSequence.incrementAndGet();
+            out.append(lastIndex).append(" = ");
+            out.append(arg0).append(".indexOf(");
+            emit(next);
+            out.append(");\n");
+            out.append("if (").append(lastIndex).append(" > -1) {\n");
+            emit(child);
+            out.append(" = ").append(arg0).append(".substring(0, ").append(lastIndex).append(");\n");
+            // Advance the index by the length of this match.
+            out.append(lastIndex).append(" += ");
+            emit(next);
+            out.append(".length();\n}\n");
+
+          } else {
+            emit(child);
+            out.append(" = ").append(arg0).append(".charAt(").append(i).append(");\n");
+          }
         } else {
-          out.append(".length() == 1 ? '' : ").append(arg0);
-          out.append(".substring(").append(i).append(");\n");
+          emit(child);
+          out.append(" = ").append(arg0).append(".length() == 1 ? '' : ").append(arg0);
+          out.append(".substring(").append(lastIndex == null ? i : lastIndex).append(");\n");
         }
         i++;
       }
