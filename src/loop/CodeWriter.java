@@ -313,6 +313,7 @@ import java.util.concurrent.atomic.AtomicInteger;
     String lastIndex = newLocalVariable();      // The last index of split (i.e. pattern delimiter).
     out.append(lastIndex).append(" = -1;\n");
 
+    int ifCount = 0;
     for (int j = 0; j < childrenSize; j++) {
       Node child = children.get(j);
 
@@ -341,8 +342,9 @@ import java.util.concurrent.atomic.AtomicInteger;
             // Advance the index by the length of this match.
             out.append(lastIndex).append(" = ").append(thisIndex).append(" + ");
             emit(next);
-            out.append(".length();\n}\n");
+            out.append(".length();\n");
 
+            ifCount++;
             splittable = true;
           } else {
             emit(child);
@@ -356,6 +358,11 @@ import java.util.concurrent.atomic.AtomicInteger;
         }
         i++;
       }
+    }
+
+    // Close If statements in reverse order.
+    for (int j = 0; j < ifCount; j++) {
+      out.append("} else { ").append(lastIndex).append(" = -1\n }\n");
     }
 
     // Only process the return rule if patterns matched.

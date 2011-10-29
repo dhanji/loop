@@ -1,0 +1,7 @@
+# Pattern Matching split across various pattern literals in a string. Should error out.
+
+split(input) =>
+  (a : 'AA' : b : 'BB' : c : 'AA' : d : 'DD')  : a + b + c + d
+
+main ->
+  split('1AA2BB3CC4DD')
