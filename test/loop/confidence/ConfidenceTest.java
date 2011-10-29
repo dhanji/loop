@@ -26,17 +26,22 @@ public class ConfidenceTest {
 
   @Test
   public final void splitLinesStringPatternMatching() {
-    assertEquals("hellotheredude", Loop.run("test/loop/confidence/split_lines_string.loop", true));
+    assertEquals("hellotheredude", Loop.run("test/loop/confidence/split_lines_string.loop"));
   }
 
   @Test
   public final void splitVariousStringsPatternMatching() {
-    assertEquals("1234", Loop.run("test/loop/confidence/split_various_string.loop", true));
+    assertEquals("1234", Loop.run("test/loop/confidence/split_various_string.loop"));
+  }
+
+  @Test
+  public final void splitVariousStringsPatternMatchingWithWildcards() {
+    assertEquals("3", Loop.run("test/loop/confidence/split_various_selective.loop"));
   }
 
   @Test(expected = RuntimeException.class)
   public final void splitVariousStringsPatternMatchingNotAllMatches() {
-    assertEquals("1234", Loop.run("test/loop/confidence/split_various_string_error.loop", true));
+    assertEquals("1234", Loop.run("test/loop/confidence/split_various_string_error.loop"));
   }
 
   @Test(expected = RuntimeException.class)

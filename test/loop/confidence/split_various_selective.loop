@@ -1,0 +1,7 @@
+# Pattern Matching split across various pattern literals in a string
+
+split(input) =>
+  (_ : 'AA' : _ : 'BB' : select : 'AA' : _ : 'DD')  : select
+
+main ->
+  split('1AA2BB3AA4DD')
