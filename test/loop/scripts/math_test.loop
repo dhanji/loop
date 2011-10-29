@@ -1,17 +1,8 @@
 # super simple loop tests
 
-hello ->
-  ["a" :: 1, "b" :: 2]
-
-@listify(list) ->
-  [10, 20] + list[0]
-
-add(x: Integer) ->
-  x + 1 + 2 + 5
-
-func ->
-  @() ->
-    1
+reverse(ls) =>
+  []      : []
+  [x:xs]  : reverse(xs) + x
 
 main ->
-  print(add(1) + @listify([30]) + hello())
+  print(reverse([1,2,3]))

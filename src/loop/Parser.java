@@ -49,35 +49,35 @@ public class Parser {
 
   /**
    * if := IF computation
-   * <p/>
+   *
    * assign := computation ASSIGN computation
-   * <p/>
+   *
    * computation := chain (op chain)+
    * chain := term call*
-   * <p/>
+   *
    * call := DOT IDENT (LPAREN RPAREN)?
-   * <p/>
+   *
    * term := (literal | variable)
    * literal := (regex | string | number)
    * variable := IDENT
-   * <p/>
-   * <p/>
+   *
+   *
    * Examples
    * --------
-   * <p/>
+   *
    * (assign)
-   * <p/>
+   *
    * x = "hi".tos().tos()
    * x = 1
-   * <p/>
+   *
    * (computation)
-   * <p/>
+   *
    * 1 + 2
    * 1 + 2 - 3 * 4
    * 1.int + 2.y() - 3.a.b * 4
-   * <p/>
+   *
    * --------------------
-   * <p/>
+   *
    * parse := module | require | line
    */
   public Node parse() {
@@ -95,7 +95,7 @@ public class Parser {
   /**
    * The top level parsing rule. Do not use parse() to parse entire programs,
    * it is more for one-line expressions.
-   * <p/>
+   *
    * script := module?
    * require*
    * (functionDecl | classDecl)*
@@ -150,13 +150,13 @@ public class Parser {
 
   /**
    * Dual purpose parsing rule. Functions and anonymous functions.
-   * <p/>
+   *
    * anonymousFunctionDecl := ANONYMOUS_TOKEN argDeclList? ARROW EOL
    * (INDENT+ line EOL)
-   * <p/>
+   *
    * functionDecl := (PRIVATE_FIELD | IDENT) argDeclList? ARROW EOL
    * (INDENT+ line EOL)
-   * <p/>
+   *
    * patternFunctionDecl := (PRIVATE_FIELD | IDENT) argDeclList? HASHROCKET EOL
    * (INDENT+ line EOL)*
    */
@@ -487,7 +487,7 @@ public class Parser {
 
   /**
    * This is really both "free standing expression" and "assignment".
-   * <p/>
+   *
    * assign := computation
    * (ASSIGN
    * (computation (IF computation | comprehension)?)
@@ -534,7 +534,7 @@ public class Parser {
 
   /**
    * Ternary operator, like Java's ?:
-   * <p/>
+   *
    * ternaryIf := IF computation then computation else computation
    */
   private Node ternaryIf() {
@@ -770,7 +770,7 @@ public class Parser {
 
   /**
    * An array deref.
-   * <p/>
+   *
    * indexIntoList := LBRACKET (computation | computation? DOT DOT computation?)? RBRACKET
    */
   private Node indexIntoList() {
@@ -803,7 +803,7 @@ public class Parser {
 
   /**
    * Inline list/map definition.
-   * <p/>
+   *
    * listOrMapDef :=
    * LBRACKET
    * (computation
@@ -897,7 +897,7 @@ public class Parser {
 
   /**
    * A method call production rule.
-   * <p/>
+   *
    * call := DOT (IDENT | PRIVATE_FIELD) arglist?
    */
   private Node call() {

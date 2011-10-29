@@ -10,6 +10,8 @@ import org.mvel2.templates.TemplateCompiler;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Stack;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author dhanji@gmail.com (Dhanji R. Prasanna)
@@ -18,7 +20,10 @@ import java.util.Map;
   private static final CompiledTemplate TEMPLATE = TemplateCompiler.compileTemplate(
       CodeWriter.class.getResourceAsStream("func.template"));
 
+  private static final AtomicInteger functionNameSequence = new AtomicInteger();
+
   private final StringBuilder out = new StringBuilder();
+  private final Stack<Context> functionStack = new Stack<Context>();
 
   private static interface Emitter {
     void emitCode(Node node);
@@ -36,24 +41,26 @@ import java.util.Map;
    * InlineListDef : 'emitList',
    * IndexIntoList : 'emitIndexInto',
    * CallChain : 'emitCallChain',
+   * PatternRule : 'emitPatternRule',
    */
-  private final Map<Class<?>, Emitter> emitters = new HashMap<Class<?>, Emitter>();
+  private static final Map<Class<?>, Emitter> EMITTERS = new HashMap<Class<?>, Emitter>();
 
   CodeWriter() {
-    emitters.put(Call.class, callEmitter);
-    emitters.put(Computation.class, computationEmitter);
-    emitters.put(IntLiteral.class, intEmitter);
-    emitters.put(Variable.class, variableEmitter);
-    emitters.put(BinaryOp.class, binaryOpEmitter);
-    emitters.put(StringLiteral.class, stringLiteralEmitter);
-    emitters.put(Assignment.class, callEmitter);
-    emitters.put(InlineMapDef.class, inlineMapEmitter);
-    emitters.put(InlineListDef.class, inlineListEmitter);
-    emitters.put(IndexIntoList.class, indexIntoListEmitter);
-    emitters.put(CallChain.class, callChainEmitter);
-    emitters.put(FunctionDecl.class, functionDeclEmitter);
-    emitters.put(ArgDeclList.class, argDeclEmitter);
-    emitters.put(PrivateField.class, privateFieldEmitter);
+    EMITTERS.put(Call.class, callEmitter);
+    EMITTERS.put(Computation.class, computationEmitter);
+    EMITTERS.put(IntLiteral.class, intEmitter);
+    EMITTERS.put(Variable.class, variableEmitter);
+    EMITTERS.put(BinaryOp.class, binaryOpEmitter);
+    EMITTERS.put(StringLiteral.class, stringLiteralEmitter);
+    EMITTERS.put(Assignment.class, callEmitter);
+    EMITTERS.put(InlineMapDef.class, inlineMapEmitter);
+    EMITTERS.put(InlineListDef.class, inlineListEmitter);
+    EMITTERS.put(IndexIntoList.class, indexIntoListEmitter);
+    EMITTERS.put(CallChain.class, callChainEmitter);
+    EMITTERS.put(FunctionDecl.class, functionDeclEmitter);
+    EMITTERS.put(ArgDeclList.class, argDeclEmitter);
+    EMITTERS.put(PrivateField.class, privateFieldEmitter);
+    EMITTERS.put(PatternRule.class, patternRuleEmitter);
   }
 
   public String write(Unit unit) {
@@ -76,9 +83,9 @@ import java.util.Map;
   }
 
   public void emit(Node node) {
-    if (!emitters.containsKey(node.getClass()))
-      throw new RuntimeException("missing emitter for: " + node.getClass().getSimpleName());
-    emitters.get(node.getClass()).emitCode(node);
+    if (!EMITTERS.containsKey(node.getClass()))
+      throw new RuntimeException("Missing emitter for " + node.getClass().getSimpleName());
+    EMITTERS.get(node.getClass()).emitCode(node);
   }
 
 
@@ -142,11 +149,24 @@ import java.util.Map;
   private final Emitter functionDeclEmitter = new Emitter() {
     @Override public void emitCode(Node node) {
       FunctionDecl functionDecl = (FunctionDecl) node;
-      out.append("def ").append(normalizeMethodName(functionDecl.name()));
+      String name = functionDecl.name();
+      if (name == null) {
+        // Function is anonymous, generate a globally unique name for it.
+        name = "$" + functionNameSequence.incrementAndGet();
+      }
+      Context context = new Context(name);
+      for (Node arg : functionDecl.arguments().children()) {
+        context.arguments.add(((ArgDeclList.Argument)arg).name());
+      }
+      functionStack.push(context);
+
+      out.append("def ").append(normalizeMethodName(name));
       emit(functionDecl.arguments());
       out.append(" {\n");
       emitChildren(node);
       out.append("\n}");
+
+      functionStack.pop();
     }
   };
 
@@ -235,6 +255,65 @@ import java.util.Map;
       out.append('[');
       emit(indexIntoList.from());
       out.append(']');
+    }
+  };
+
+  private final Emitter patternRuleEmitter = new Emitter() {
+    @Override public void emitCode(Node node) {
+      // TODO for now we only handle one argument.
+      PatternRule rule = (PatternRule) node;
+      Context context = functionStack.peek();
+
+      if (context.arguments.isEmpty())
+        throw new RuntimeException("Incorrect number of arguments for pattern matching");
+
+      if (rule.pattern instanceof ListPattern) {
+        ListPattern listPattern = (ListPattern) rule.pattern;
+        String arg0 = context.arguments.get(0);
+        out.append("if (");
+        out.append(arg0);
+        out.append(" is java.util.List) {\n");
+
+        int size = listPattern.children().size();
+        if (size == 0) {
+          out.append("if (");
+          out.append(arg0);
+          out.append(" == empty) {\n return ");
+          emit(rule.rhs);
+          out.append(";\n}\n");
+        } else if (size == 1) {
+          out.append("if (");
+          out.append(arg0);
+          out.append(".size() == 1) {\n return ");
+          emit(rule.rhs);
+          out.append(";\n}\n");
+        } else {
+          // Slice the list by terminals in the pattern list.
+          int i = 0;
+          List<Node> children = listPattern.children();
+          for (int j = 0, childrenSize = children.size(); j < childrenSize; j++) {
+            Node child = children.get(j);
+            if (child instanceof Variable) {
+              emit(child);
+              out.append(" = ");
+              out.append(arg0);
+
+              if (j < childrenSize - 1)
+                out.append('[').append(i).append("];\n");
+              else {
+                out.append(".size() == 1 ? [] : ").append(arg0);
+                out.append(".subList(").append(i).append(',').append(arg0).append(".size());\n");
+              }
+            }
+            i++;
+          }
+
+          out.append("return ");
+          emit(rule.rhs);
+          out.append(';');
+        }
+        out.append("}\n");
+      }
     }
   };
 
