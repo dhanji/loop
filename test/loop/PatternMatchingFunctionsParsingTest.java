@@ -67,7 +67,7 @@ public class PatternMatchingFunctionsParsingTest {
     compareFunction("reverse",
         "(reverse: (()= list) -> \n" +
         "  => [::] : (comput (. 1)) \n" +
-        "  => ([::] name <- first) : (comput (. 2)) \n" +
+        "  => ([::] name <- (. first)) : (comput (. 2)) \n" +
         "  => otherwise : (comput (. -1)))",
         "reverse(list) =>\n" +
             "  [::]          : 1\n" +
@@ -81,8 +81,8 @@ public class PatternMatchingFunctionsParsingTest {
         "(reverse: (()= list) -> \n" +
         "  => [] : (comput (. 0)) \n" +
         "  => [::] : (comput (. 1)) \n" +
-        "  => ([::] name <- first) : (comput (. 3)) \n" +
-        "  => ([::] name <- first age <- second) : (comput (. 2)) \n" +
+        "  => ([::] name <- (. first)) : (comput (. 3)) \n" +
+        "  => ([::] name <- (. first) age <- (. second)) : (comput (. 2)) \n" +
         "  => otherwise : (comput (. -1)))",
         "reverse(list) =>\n" +
             "  []                     : 0\n" +
@@ -99,7 +99,7 @@ public class PatternMatchingFunctionsParsingTest {
         "(reverse: (()= list) -> \n" +
         "  => [] : (comput (. 0)) \n" +
         "  => [::] : (comput (. 1)) \n" +
-        "  => ([::] name <- first) : (comput (. 3)) \n" +
+        "  => ([::] dad <- (. parent name)) : (comput (. dad)) \n" +
         "  => otherwise : (comput (. -1)))",
         "reverse(list) =>\n" +
             "  []                     : 0\n" +

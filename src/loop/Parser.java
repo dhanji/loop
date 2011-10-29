@@ -315,7 +315,17 @@ public class Parser {
     if (rhs == null)
       throw new RuntimeException("Expected term after '<-' in object pattern rule");
     if (rhs instanceof Variable) {
-      
+      // See if we can keep slurping a dot-chain.
+      CallChain callChain = new CallChain();
+      callChain.add(rhs);
+      while (match(Token.Kind.DOT) != null) {
+        Node variable = variable();
+        if (null == variable)
+          throw new RuntimeException("Expected term after '.' in object pattern rule");
+        callChain.add(variable);
+      }
+
+      rhs = callChain;
     }
 
     pattern.add(new DestructuringPair(term, rhs));
@@ -331,6 +341,19 @@ public class Parser {
       rhs = term();
       if (rhs == null)
         throw new RuntimeException("Expected term after '<-' in object pattern rule");
+      if (rhs instanceof Variable) {
+        // See if we can keep slurping a dot-chain.
+        CallChain callChain = new CallChain();
+        callChain.add(rhs);
+        while (match(Token.Kind.DOT) != null) {
+          Node variable = variable();
+          if (null == variable)
+            throw new RuntimeException("Expected term after '.' in object pattern rule");
+          callChain.add(variable);
+        }
+
+        rhs = callChain;
+      }
 
       pattern.add(new DestructuringPair(term, rhs));
     }
