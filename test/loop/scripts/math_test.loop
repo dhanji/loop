@@ -1,7 +1,7 @@
 # super simple loop tests
 
 hello ->
-  ["a" => 1, "b" => 2]
+  ["a" :: 1, "b" :: 2]
 
 @listify(list) ->
   [10, 20] + list[0]

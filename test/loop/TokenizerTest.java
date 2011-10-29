@@ -77,6 +77,16 @@ public class TokenizerTest {
   }
 
   @Test
+  public final void multilineNestedFunctions() {
+    compare("func ( x , y , z ) -> { \n" +
+        " ~ ~ @ ( ) -> { \n" +
+        " ~ ~ ~ ~ 1 + 2 . toString ( ) \n" +
+        " } } \n" +
+        " func2 -> { \n" +
+        " ~ ~ answer }", "func (x, y, z) ->\n  @() ->\n    1 + 2.toString()\n\nfunc2 ->\n  answer");
+  }
+
+  @Test
   public final void multilineWithGroupNewlineElisionPatternFunction() {
     compare("func : ( ) => { \n ~ ( 1 + 2 ) }", "func: () => \n (1 \n + 2)");
   }

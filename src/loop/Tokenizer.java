@@ -68,7 +68,6 @@ public class Tokenizer {
     DELIMITERS[']'] = SINGLE_TOKEN;
     DELIMITERS['{'] = SINGLE_TOKEN;
     DELIMITERS['}'] = SINGLE_TOKEN;
-//    DELIMITERS['='] = SINGLE_TOKEN;
 
     STRING_TERMINATORS['"'] = true;
     STRING_TERMINATORS['\''] = true;
@@ -147,8 +146,6 @@ public class Tokenizer {
         // leading whitespace is a special token...
         if (leading) {
           tokens.add(new Token(" ", Token.Kind.INDENT));
-//          start = i;
-//          continue;
         }
 
         // skip whitespace
@@ -223,7 +220,6 @@ public class Tokenizer {
     Stack<Token.Kind> groupStack = new Stack<Token.Kind>();
     for (ListIterator<Token> iterator = tokens.listIterator(); iterator.hasNext();) {
       Token token = iterator.next();
-
       Token next = iterator.hasNext() ? tokens.get(iterator.nextIndex()) : null;
 
       // Insert new function start token if necessary.
@@ -241,8 +237,12 @@ public class Tokenizer {
           && (isThinOrFatArrow(previous, token) || previous.kind == Token.Kind.EOL)))
           || ((token.kind == Token.Kind.RPAREN && groups > 0))) {
 
-        if (!groupStack.isEmpty() && groupStack.peek() == Token.Kind.LBRACE) {
+        while (!groupStack.isEmpty() && groupStack.peek() == Token.Kind.LBRACE) {
+          // Add before cursor.
+          iterator.previous();
           iterator.add(new Token("}", Token.Kind.RBRACE));
+          iterator.next();
+
           groupStack.pop();
         }
       }
@@ -252,20 +252,24 @@ public class Tokenizer {
         groupStack.push(Token.Kind.LPAREN);
       } else if (Token.Kind.RPAREN == token.kind) {
         while (groupStack.peek() != Token.Kind.LPAREN) {
-          groupStack.pop();
           // Add before cursor.
           iterator.previous();
           iterator.add(new Token("}", Token.Kind.RBRACE));
           iterator.next();
+
+          groupStack.pop();
         }
 
-        // Pop the lparen.
+        // Pop the matching lparen.
+        groupStack.pop();
       }
     }
+
     // Close dangling functions
     while (!groupStack.isEmpty())
-      if (groupStack.pop() == Token.Kind.LBRACE)
+      if (groupStack.pop() == Token.Kind.LBRACE) {
         tokens.add(new Token("}", Token.Kind.RBRACE));
+      }
 
     return tokens;
   }
