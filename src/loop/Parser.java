@@ -350,9 +350,17 @@ public class Parser {
    * listOrMapPattern := (LBRACKET term ((ASSIGN term)* | UNARROW term (COMMA term UNARROW term)*) RBRACKET)
    */
   private Node listOrMapPattern() {
-    Node pattern;
+    Node pattern = null;
+
+    // We should allow the possibility of matching a type identifier.
+    List<Token> type = match(Token.Kind.TYPE_IDENT);
+    TypeLiteral typeLiteral = null;
+    if (null != type) {
+      typeLiteral = new TypeLiteral(type.get(0).value);
+    }
+
     if (match(Token.Kind.LBRACKET) == null)
-      return null;
+      return typeLiteral;
 
     Node term = term();
     if (term == null)
@@ -378,6 +386,8 @@ public class Parser {
 
     // This is a map pattern.
     pattern = new MapPattern();
+    if (typeLiteral != null)
+      pattern.add(typeLiteral);
 
     if (match(Token.Kind.UNARROW) == null)
       throw new RuntimeException("Expected '<-' in object pattern rule");

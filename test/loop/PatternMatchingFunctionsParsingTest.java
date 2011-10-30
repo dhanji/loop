@@ -120,4 +120,28 @@ public class PatternMatchingFunctionsParsingTest {
             "  'hello'      : 2\n" +
             "  otherwise    : -1");
   }
+
+  @Test
+  public final void basicTypePatternMatching() {
+    compareFunction("handle",
+        "(handle: (()= req) -> \n" +
+        "  => HttpRequest : (comput (. req param(()= (comput (. 'stuff'))))) \n" +
+        "  => FtpRequest : (comput (. req param(()= (comput (. 'buff'))))))",
+        "handle(req) =>\n" +
+            "  HttpRequest    : req.param('stuff')\n" +
+            "  FtpRequest     : req.param('buff')\n");
+  }
+
+  @Test
+  public final void objectTypePatternMatching() {
+    compareFunction("handle",
+        "(handle: (()= req) -> \n" +
+            "  => ([::] HttpRequest ip <- (. ip)) : (comput (. ip)) \n" +
+            "  => ([::] HttpRequest name <- (. params name)) : (comput (. name)) \n" +
+            "  => FtpRequest : (comput (. req param(()= (comput (. 'buff'))))))",
+        "handle(req) =>\n" +
+            "  HttpRequest[ip <- ip]              : ip\n" +
+            "  HttpRequest[name <- params.name]   : name\n" +
+            "  FtpRequest              : req.param('buff')\n");
+  }
 }
