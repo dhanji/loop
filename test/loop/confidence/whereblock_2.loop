@@ -1,0 +1,14 @@
+# Where block attached to a function
+
+spout ->
+  reverse([1,2,3,4])
+  where
+    reverse(ls) =>
+      []      : emptyList()
+      [x:xs]  : reverse(xs) + x
+    where
+      emptyList ->
+        []
+
+main ->
+  spout()

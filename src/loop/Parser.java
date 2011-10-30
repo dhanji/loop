@@ -1,7 +1,30 @@
 package loop;
 
-import loop.Token.Kind;
-import loop.ast.*;
+import loop.ast.Assignment;
+import loop.ast.BinaryOp;
+import loop.ast.Call;
+import loop.ast.CallArguments;
+import loop.ast.CallChain;
+import loop.ast.Comprehension;
+import loop.ast.Computation;
+import loop.ast.DestructuringPair;
+import loop.ast.IndexIntoList;
+import loop.ast.InlineListDef;
+import loop.ast.InlineMapDef;
+import loop.ast.IntLiteral;
+import loop.ast.ListPattern;
+import loop.ast.ListRange;
+import loop.ast.MapPattern;
+import loop.ast.Node;
+import loop.ast.OtherwisePattern;
+import loop.ast.PatternRule;
+import loop.ast.PrivateField;
+import loop.ast.RegexLiteral;
+import loop.ast.StringLiteral;
+import loop.ast.StringPattern;
+import loop.ast.TernaryExpression;
+import loop.ast.TypeLiteral;
+import loop.ast.Variable;
 import loop.ast.script.ArgDeclList;
 import loop.ast.script.FunctionDecl;
 import loop.ast.script.ModuleDecl;
@@ -195,9 +218,9 @@ public class Parser {
 
     Node line;
 
-    // Absorb indentation level.
     boolean shouldContinue;
     do {
+      // Absorb indentation level.
       withIndent();
 
       // Only one expression is allowed in a function.
@@ -209,20 +232,7 @@ public class Parser {
       chewEols();
 
       // Look for a where block attached to this function.
-      withIndent();
-      if (match(Kind.WHERE) != null) {
-        FunctionDecl helperFunction;
-        do {
-          chewEols();
-          withIndent();
-          helperFunction = functionDecl();
-          chewEols();
-
-          if (null != helperFunction) {
-            functionDecl.whereBlock.add(helperFunction);
-          }
-        } while (helperFunction != null);
-      }
+      whereBlock(functionDecl);
 
       // A function body must be terminated by } (this is ensured by the token-stream rewriter)
       if (!endOfInput() && match(Token.Kind.RBRACE) == null) {
@@ -260,6 +270,13 @@ public class Parser {
         if (match(Token.Kind.OTHERWISE) != null)
           pattern = new OtherwisePattern();
 
+      // Look for a where block at the end of this pattern matching decl.
+      if (pattern == null)
+        if (whereBlock(functionDecl)) {
+          if (endOfInput() || match(Token.Kind.RBRACE) != null)
+            break;
+        }
+
       if (pattern == null) {
         throw new RuntimeException("Pattern syntax error. Expected a pattern rule.");
       }
@@ -270,9 +287,6 @@ public class Parser {
         throw new RuntimeException("Expected ':' after pattern.");
 
       rule.rhs = line();
-
-      // stringPattern := LPAREN term (ASSIGN term)* RPAREN
-
       chewEols();
 
       functionDecl.add(rule);
@@ -282,6 +296,27 @@ public class Parser {
 
     functionDecl.patternMatching = true;
     return functionDecl;
+  }
+
+  private boolean whereBlock(FunctionDecl functionDecl) {
+    withIndent();
+    boolean hasWhere = false;
+    if (match(Token.Kind.WHERE) != null) {
+      FunctionDecl helperFunction;
+      do {
+        chewEols();
+        withIndent();
+        helperFunction = functionDecl();
+        chewEols();
+
+        if (null != helperFunction) {
+          hasWhere = true;
+          functionDecl.whereBlock.add(helperFunction);
+        }
+      } while (helperFunction != null);
+    }
+
+    return hasWhere;
   }
 
   private Node stringGroupPattern() {
