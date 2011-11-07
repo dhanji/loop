@@ -338,7 +338,7 @@ public class Parser {
   }
 
   private Node emptyMapPattern() {
-    return match(Token.Kind.LBRACKET, Token.Kind.ASSIGN, Token.Kind.ASSIGN, Token.Kind.RBRACKET) !=
+    return match(Token.Kind.LBRACKET, Token.Kind.ASSIGN, Token.Kind.RBRACKET) !=
         null ? new MapPattern() : null;
   }
 
@@ -913,7 +913,7 @@ public class Parser {
 
     Node list = new InlineListDef(isBraced);
     if (null != index) {
-      boolean isMap = match(Token.Kind.ASSIGN, Token.Kind.ASSIGN) != null;
+      boolean isMap = match(Token.Kind.ASSIGN) != null;
       if (isMap) {
         list = new InlineMapDef(isBraced);
 
@@ -939,8 +939,8 @@ public class Parser {
 
         // If the first index contained a hashrocket, then this is a map.
         if (isMap) {
-          if (null == match(Token.Kind.ASSIGN, Token.Kind.ASSIGN)) {
-            throw new RuntimeException("Expected '=>' after key");
+          if (null == match(Token.Kind.ASSIGN)) {
+            throw new RuntimeException("Expected ':' after key");
           }
 
           Node value = computation();
@@ -968,7 +968,7 @@ public class Parser {
     }
 
     // Is there a hashrocket?
-    if (match(Token.Kind.ASSIGN, Token.Kind.ASSIGN) != null) {
+    if (match(Token.Kind.ASSIGN) != null) {
       // This is an empty hashmap.
       list = new InlineMapDef(isBraced);
     }

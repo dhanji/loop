@@ -70,7 +70,7 @@ public class PatternMatchingFunctionsParsingTest {
         "  => ([::] name <- (. first)) : (comput (. 2)) \n" +
         "  => otherwise : (comput (. -1)))",
         "reverse(list) =>\n" +
-            "  [::]          : 1\n" +
+            "  [:]                  : 1\n" +
             "  [name <- first]      : 2\n" +
             "  otherwise            : -1");
   }
@@ -86,7 +86,7 @@ public class PatternMatchingFunctionsParsingTest {
         "  => otherwise : (comput (. -1)))",
         "reverse(list) =>\n" +
             "  []                     : 0\n" +
-            "  [::]                   : 1\n" +
+            "  [:]                    : 1\n" +
             "  [name <- first]        : 3\n" +
             "  [name <- first," +
             "   age  <- second]       : 2\n" +
@@ -103,7 +103,7 @@ public class PatternMatchingFunctionsParsingTest {
         "  => otherwise : (comput (. -1)))",
         "reverse(list) =>\n" +
             "  []                     : 0\n" +
-            "  [::]                   : 1\n" +
+            "  [:]                    : 1\n" +
             "  [ dad <- parent.name ]        : dad\n" +
             "  otherwise              : -1");
   }
@@ -143,5 +143,18 @@ public class PatternMatchingFunctionsParsingTest {
             "  HttpRequest[ip <- ip]              : ip\n" +
             "  HttpRequest[name <- params.name]   : name\n" +
             "  FtpRequest              : req.param('buff')\n");
+  }
+
+  @Test
+  public final void guardedObjectTypePatternMatching() {
+    compareFunction("handle",
+        "(handle: (()= req) -> \n" +
+            "  => ([::] HttpRequest ip <- (. ip)) : (comput (. ip)) \n" +
+            "  => ([::] HttpRequest name <- (. params name)) : (comput (. name)) \n" +
+            "  => FtpRequest : (comput (. req param(()= (comput (. 'buff'))))))",
+        "handle(req) =>\n" +
+            "  HttpRequest[name <- params.name]   | name == 'Dhanji'  : 'Hi'\n" +
+            "                                     | name == 'Dude'    : 'Bye'\n" +
+            "  otherwise                                              : Nothing\n");
   }
 }
