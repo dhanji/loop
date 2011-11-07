@@ -148,10 +148,11 @@ public class PatternMatchingFunctionsParsingTest {
   @Test
   public final void guardedObjectTypePatternMatching() {
     compareFunction("handle",
-        "(handle: (()= req) -> \n" +
-            "  => ([::] HttpRequest ip <- (. ip)) : (comput (. ip)) \n" +
-            "  => ([::] HttpRequest name <- (. params name)) : (comput (. name)) \n" +
-            "  => FtpRequest : (comput (. req param(()= (comput (. 'buff'))))))",
+        "(handle: (()= req) -> (\n" +
+            "  => ([::] HttpRequest name <- (. params name)) \n" +
+            "    | (comput (. name) (== (. 'Dhanji'))) : (comput (. 'Hi')) \n" +
+            "    | (comput (. name) (== (. 'Dude'))) : (comput (. 'Bye'))) \n" +
+            "  => otherwise : (comput (. Nothing)))",
         "handle(req) =>\n" +
             "  HttpRequest[name <- params.name]   | name == 'Dhanji'  : 'Hi'\n" +
             "                                     | name == 'Dude'    : 'Bye'\n" +

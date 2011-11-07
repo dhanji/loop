@@ -32,6 +32,7 @@ public class Token {
     MODULUS,
 
     COMMA,
+    PIPE,
 
     ASSIGN,
     ARROW,
@@ -87,6 +88,7 @@ public class Token {
       TOKEN_MAP.put("*", STAR);
       TOKEN_MAP.put("%", MODULUS);
       TOKEN_MAP.put(":", ASSIGN);
+      TOKEN_MAP.put("|", PIPE);
       TOKEN_MAP.put(",", COMMA);
       TOKEN_MAP.put("->", ARROW);
       TOKEN_MAP.put("<-", UNARROW);

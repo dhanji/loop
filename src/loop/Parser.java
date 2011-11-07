@@ -1,30 +1,6 @@
 package loop;
 
-import loop.ast.Assignment;
-import loop.ast.BinaryOp;
-import loop.ast.Call;
-import loop.ast.CallArguments;
-import loop.ast.CallChain;
-import loop.ast.Comprehension;
-import loop.ast.Computation;
-import loop.ast.DestructuringPair;
-import loop.ast.IndexIntoList;
-import loop.ast.InlineListDef;
-import loop.ast.InlineMapDef;
-import loop.ast.IntLiteral;
-import loop.ast.ListPattern;
-import loop.ast.ListRange;
-import loop.ast.MapPattern;
-import loop.ast.Node;
-import loop.ast.OtherwisePattern;
-import loop.ast.PatternRule;
-import loop.ast.PrivateField;
-import loop.ast.RegexLiteral;
-import loop.ast.StringLiteral;
-import loop.ast.StringPattern;
-import loop.ast.TernaryExpression;
-import loop.ast.TypeLiteral;
-import loop.ast.Variable;
+import loop.ast.*;
 import loop.ast.script.ArgDeclList;
 import loop.ast.script.FunctionDecl;
 import loop.ast.script.ModuleDecl;
@@ -283,11 +259,29 @@ public class Parser {
       PatternRule rule = new PatternRule();
       rule.pattern = pattern;
 
-      if (match(Token.Kind.ASSIGN) == null)
-        throw new RuntimeException("Expected ':' after pattern.");
+      boolean guarded = false;
+      while (match(Token.Kind.PIPE) != null) {
+        guarded = true;
 
-      rule.rhs = line();
-      chewEols();
+        Node guardExpression = computation();
+        if (match(Token.Kind.ASSIGN) == null)
+          throw new RuntimeException("Expected ':' after guard expression.");
+
+        Node line = line();
+        chewEols();
+        withIndent();
+
+        Guard guard = new Guard(guardExpression, line);
+        rule.add(guard);
+      }
+
+      if (!guarded) {
+        if (match(Token.Kind.ASSIGN) == null)
+          throw new RuntimeException("Expected ':' after pattern");
+
+        rule.rhs = line();
+        chewEols();
+      }
 
       functionDecl.add(rule);
       if (endOfInput() || match(Token.Kind.RBRACE) != null)

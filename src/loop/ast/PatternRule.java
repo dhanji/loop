@@ -13,6 +13,7 @@ public class PatternRule extends Node {
   public Node rhs;
 
   @Override public String toSymbol() {
-    return "\n  => " + Parser.stringify(pattern) + " : " + Parser.stringify(rhs);
+    return "\n  => " + Parser.stringify(pattern)
+        + ((rhs != null) ? " : " + Parser.stringify(rhs) : "");
   }
 }
