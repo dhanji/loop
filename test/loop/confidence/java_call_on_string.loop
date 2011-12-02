@@ -1,0 +1,4 @@
+# Call a java method
+
+main ->
+  "HELLO".toLowerCase()

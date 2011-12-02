@@ -1,0 +1,10 @@
+# Pattern Matching of literal integers
+
+details(id) =>
+  0         : [:]
+  1         : [ 'name' : 'Dhanji', 'age' : '30' ]
+  2         : [ 'name' : 'Michael', 'age' : '212' ]
+  otherwise : [ 'name' : 'Unknown', 'age' : '-1' ]
+
+main ->
+  details(2)

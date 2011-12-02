@@ -1,41 +1,28 @@
-Constraints
-
-- All free variables must be resolvable to the set of known types
-- The set of known types consists of:
-  - All primitive types bundled with loop
-  - All user defined abstract types
-  - All user defined concrete types
-- Two types are convertible if all their members are convertible
-- Two functions are convertible if their signatures match
-  - If An = Bn where n is the number of arguments
-  - If A1t = B1t where A1t is the type of the first argument of A and so on
-  - if At = Bt, i.e. if the return types are convertible
-
-Completed
----------
-
-
-
-To be done
-----------
+TODO
+----
 
 Parsing Classes
 - class declaration
-- function declaration in class
 - enumeration type
 - class constants?
+x 'where' scoping
+- Pattern matching methods
+  - match lists, empty, mixed with literals, regexes
+  - match strings, regexes
+  - match against single literals
+  - match character streams
+  - match patterns against multiple arguments
 
-- Type analyzer
+- Pattern matching methods on character streams
+- guards for pattern matching methods
+- Type classes (better than interfaces/traits)
+- Interactive interpreter/shell
+x Calling into Java methods
+- Parsing require decl hiding (stuff)
+
 
 Stretch
 -------
 
-- 'where' scoping
-- Pattern matching methods
-- guards for pattern matching methods
-- Type classes (better than interfaces/traits)
-- Optimizer
-- Interactive interpreter/shell
-- Calling into Java methods
-- immutables?
-- Parsing require decl hiding (stuff)
+- Tail call optimizer
+- Basic function inlining

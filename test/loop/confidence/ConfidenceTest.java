@@ -4,6 +4,8 @@ import loop.Loop;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
@@ -57,5 +59,19 @@ public class ConfidenceTest {
   @Test(expected = RuntimeException.class)
   public final void reverseLoopPatternMissingError() {
     assertEquals(Arrays.asList(3, 2, 1), Loop.run("test/loop/confidence/reverse_error.loop"));
+  }
+
+  @Test
+  public final void callJavaMethodOnString() {
+    assertEquals("hello", Loop.run("test/loop/confidence/java_call_on_string.loop"));
+  }
+
+  @Test
+  public final void literalPatternMatching() {
+    Map<String, String> map = new HashMap<String, String>();
+    map.put("name", "Michael");
+    map.put("age", "212");
+
+    assertEquals(map, Loop.run("test/loop/confidence/literal_pattern_matching.loop", true));
   }
 }
