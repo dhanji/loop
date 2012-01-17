@@ -67,11 +67,20 @@ public class ConfidenceTest {
   }
 
   @Test
-  public final void literalPatternMatching() {
+  public final void intLiteralPatternMatching() {
     Map<String, String> map = new HashMap<String, String>();
     map.put("name", "Michael");
     map.put("age", "212");
 
     assertEquals(map, Loop.run("test/loop/confidence/literal_pattern_matching.loop", true));
+  }
+
+  @Test
+  public final void regexPatternMatching() {
+    Map<String, String> map = new HashMap<String, String>();
+    map.put("name", "Michael");
+    map.put("age", "212");
+
+    assertEquals(map, Loop.run("test/loop/confidence/regex_pattern_matching.loop", true));
   }
 }

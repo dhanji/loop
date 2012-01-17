@@ -30,6 +30,12 @@ public class TokenizerTest {
   }
 
   @Test
+  public final void regexAndStringLiterals() {
+    compare("2 . 0 'hello' \"hi\" / yo / 123", "2.0 'hello' \"hi\" /yo/ 123");
+    compare("2 . 0 'hello' \"hi\" / yo */ 123", "2.0 'hello' \"hi\" /yo*/ 123");
+  }
+
+  @Test
   public final void singleLineStatementsWithComments() {
     compare("\" hi there! \" . to_s - 1", "\" hi there! \".to_s - 1 # yoyoy");
     compare("1 + 2", "1 +    2 # + 2");

@@ -14,6 +14,7 @@ import loop.ast.Node;
 import loop.ast.OtherwisePattern;
 import loop.ast.PatternRule;
 import loop.ast.PrivateField;
+import loop.ast.RegexLiteral;
 import loop.ast.StringLiteral;
 import loop.ast.StringPattern;
 import loop.ast.Variable;
@@ -63,6 +64,7 @@ import java.util.concurrent.atomic.AtomicInteger;
     EMITTERS.put(Variable.class, variableEmitter);
     EMITTERS.put(BinaryOp.class, binaryOpEmitter);
     EMITTERS.put(StringLiteral.class, stringLiteralEmitter);
+    EMITTERS.put(RegexLiteral.class, regexLiteralEmitter);
     EMITTERS.put(Assignment.class, callEmitter);
     EMITTERS.put(InlineMapDef.class, inlineMapEmitter);
     EMITTERS.put(InlineListDef.class, inlineListEmitter);
@@ -154,6 +156,13 @@ import java.util.concurrent.atomic.AtomicInteger;
     @Override public void emitCode(Node node) {
       StringLiteral string = (StringLiteral) node;
       out.append(string.value);
+    }
+  };
+
+  private final Emitter regexLiteralEmitter = new Emitter() {
+    @Override public void emitCode(Node node) {
+      RegexLiteral regex = (RegexLiteral) node;
+      out.append('"').append(regex.value).append('"');
     }
   };
 
@@ -296,6 +305,13 @@ import java.util.concurrent.atomic.AtomicInteger;
           || rule.pattern instanceof IntLiteral) {
         String arg0 = context.arguments.get(0);
         out.append("if (").append(arg0).append(" == ");
+        emit(rule.pattern);
+        out.append(") {\n return ");
+        emit(rule.rhs);
+        out.append(";\n}\n");
+      } else if (rule.pattern instanceof RegexLiteral) {
+        String arg0 = context.arguments.get(0);
+        out.append("if (").append(arg0).append(" ~= ");
         emit(rule.pattern);
         out.append(") {\n return ");
         emit(rule.rhs);

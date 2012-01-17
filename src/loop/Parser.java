@@ -13,8 +13,8 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Takes the tokenized form of a raw string and converts it
- * to a CoffeeScript parse tree (an optimized form of its AST).
+ * Takes the tokenized form of a raw string and converts it to a CoffeeScript parse tree (an
+ * optimized form of its AST).
  *
  * @author dhanji@gmail.com (Dhanji R. Prasanna)
  */
@@ -49,35 +49,28 @@ public class Parser {
 
   /**
    * if := IF computation
-   *
+   * <p/>
    * assign := computation ASSIGN computation
-   *
-   * computation := chain (op chain)+
-   * chain := term call*
-   *
+   * <p/>
+   * computation := chain (op chain)+ chain := term call*
+   * <p/>
    * call := DOT IDENT (LPAREN RPAREN)?
-   *
-   * term := (literal | variable)
-   * literal := (regex | string | number)
-   * variable := IDENT
-   *
-   *
-   * Examples
-   * --------
-   *
+   * <p/>
+   * term := (literal | variable) literal := (regex | string | number) variable := IDENT
+   * <p/>
+   * <p/>
+   * Examples --------
+   * <p/>
    * (assign)
-   *
-   * x = "hi".tos().tos()
-   * x = 1
-   *
+   * <p/>
+   * x = "hi".tos().tos() x = 1
+   * <p/>
    * (computation)
-   *
-   * 1 + 2
-   * 1 + 2 - 3 * 4
-   * 1.int + 2.y() - 3.a.b * 4
-   *
+   * <p/>
+   * 1 + 2 1 + 2 - 3 * 4 1.int + 2.y() - 3.a.b * 4
+   * <p/>
    * --------------------
-   *
+   * <p/>
    * parse := module | require | line
    */
   public Node parse() {
@@ -93,12 +86,10 @@ public class Parser {
   }
 
   /**
-   * The top level parsing rule. Do not use parse() to parse entire programs,
-   * it is more for one-line expressions.
-   *
-   * script := module?
-   * require*
-   * (functionDecl | classDecl)*
+   * The top level parsing rule. Do not use parse() to parse entire programs, it is more for
+   * one-line expressions.
+   * <p/>
+   * script := module? require* (functionDecl | classDecl)*
    */
   public Unit script() {
     chewEols();
@@ -151,15 +142,12 @@ public class Parser {
 
   /**
    * Dual purpose parsing rule. Functions and anonymous functions.
-   *
-   * anonymousFunctionDecl := ANONYMOUS_TOKEN argDeclList? ARROW EOL
-   * (INDENT+ line EOL)
-   *
-   * functionDecl := (PRIVATE_FIELD | IDENT) argDeclList? ARROW EOL
-   * (INDENT+ line EOL)
-   *
-   * patternFunctionDecl := (PRIVATE_FIELD | IDENT) argDeclList? HASHROCKET EOL
-   * (INDENT+ line EOL)*
+   * <p/>
+   * anonymousFunctionDecl := ANONYMOUS_TOKEN argDeclList? ARROW EOL (INDENT+ line EOL)
+   * <p/>
+   * functionDecl := (PRIVATE_FIELD | IDENT) argDeclList? ARROW EOL (INDENT+ line EOL)
+   * <p/>
+   * patternFunctionDecl := (PRIVATE_FIELD | IDENT) argDeclList? HASHROCKET EOL (INDENT+ line EOL)*
    */
   private FunctionDecl internalFunctionDecl(boolean anonymous) {
     List<Token> funcName = null;
@@ -239,6 +227,9 @@ public class Parser {
       if (null == pattern)
         pattern = stringGroupPattern();
 
+      if (null == pattern)
+        pattern = regexLiteral();
+
       if (pattern == null)
         pattern = term();
 
@@ -254,9 +245,9 @@ public class Parser {
             break;
         }
 
-      if (pattern == null) {
+      if (pattern == null)
         throw new RuntimeException("Pattern syntax error. Expected a pattern rule.");
-      }
+
       PatternRule rule = new PatternRule();
       rule.pattern = pattern;
 
@@ -345,7 +336,7 @@ public class Parser {
    * listOrMapPattern := (LBRACKET term ((ASSIGN term)* | UNARROW term (COMMA term UNARROW term)*) RBRACKET)
    */
   private Node listOrMapPattern() {
-    Node pattern = null;
+    Node pattern;
 
     // We should allow the possibility of matching a type identifier.
     List<Token> type = match(Token.Kind.TYPE_IDENT);
@@ -388,7 +379,8 @@ public class Parser {
       throw new RuntimeException("Expected '<-' in object pattern rule");
 
     if (!(term instanceof Variable))
-      throw new RuntimeException("Must select into a valid variable name in object pattern rule: " + term.toSymbol());
+      throw new RuntimeException(
+          "Must select into a valid variable name in object pattern rule: " + term.toSymbol());
 
     Node rhs = term();
     if (rhs == null)
@@ -445,10 +437,7 @@ public class Parser {
   }
 
   /**
-   * argDeclList := LPAREN
-   * IDENT (ASSIGN TYPE_IDENT)?
-   * (COMMA IDENT (ASSIGN TYPE_IDENT)? )*
-   * RPAREN
+   * argDeclList := LPAREN IDENT (ASSIGN TYPE_IDENT)? (COMMA IDENT (ASSIGN TYPE_IDENT)? )* RPAREN
    */
   private ArgDeclList argDeclList() {
     if (match(Token.Kind.LPAREN) == null) {
@@ -566,12 +555,9 @@ public class Parser {
 
   /**
    * This is really both "free standing expression" and "assignment".
-   *
-   * assign := computation
-   * (ASSIGN
-   * (computation (IF computation | comprehension)?)
-   * | (IF computation THEN computation ELSE computation)
-   * )?
+   * <p/>
+   * assign := computation (ASSIGN (computation (IF computation | comprehension)?)
+   *                        | (IF computation THEN computation ELSE computation) )?
    */
   private Node assign() {
     Node left = computation();
@@ -613,7 +599,7 @@ public class Parser {
 
   /**
    * Ternary operator, like Java's ?:
-   *
+   * <p/>
    * ternaryIf := IF computation then computation else computation
    */
   private Node ternaryIf() {
@@ -793,33 +779,27 @@ public class Parser {
       return null;
     }
 
-    boolean isParenthetical = (null != parenthetical);
-    boolean isPositional = true;
-
     // Slurp arguments while commas exist.
-    CallArguments callArguments = null;
-    if (isParenthetical) {
+    CallArguments callArguments;
+    // See if this may be a named-arg invocation.
+    List<Token> named = match(Token.Kind.IDENT, Token.Kind.ASSIGN);
+    boolean isPositional = (null == named);
 
-      // See if this may be a named-arg invocation.
-      List<Token> named = match(Token.Kind.IDENT, Token.Kind.ASSIGN);
-      isPositional = (null == named);
+    callArguments = new CallArguments(isPositional);
+    Node arg = computation();
+    if (null != arg) {
 
-      callArguments = new CallArguments(isPositional);
-      Node arg = computation();
-      if (null != arg) {
-
-        // If this is a named arg, wrap it in a name.
-        if (isPositional) {
-          callArguments.add(arg);
-        } else {
-          callArguments.add(new CallArguments.NamedArg(named.get(0).value, arg));
-        }
+      // If this is a named arg, wrap it in a name.
+      if (isPositional) {
+        callArguments.add(arg);
+      } else {
+        callArguments.add(new CallArguments.NamedArg(named.get(0).value, arg));
       }
     }
 
     // Rest of argument list, comma separated.
-    while (isParenthetical && match(Token.Kind.COMMA) != null) {
-      List<Token> named = null;
+    while (match(Token.Kind.COMMA) != null) {
+      named = null;
       if (!isPositional) {
         named = match(Token.Kind.IDENT, Token.Kind.ASSIGN);
         if (null == named) {
@@ -827,7 +807,7 @@ public class Parser {
         }
       }
 
-      Node arg = computation();
+      arg = computation();
       if (null == arg) {
         throw new RuntimeException("Expected expression after ','");
       }
@@ -840,7 +820,7 @@ public class Parser {
     }
 
     // Ensure the method invocation is properly closed.
-    if (isParenthetical && match(Token.Kind.RPAREN) == null) {
+    if (match(Token.Kind.RPAREN) == null) {
       throw new RuntimeException("Expected ')' at end of function call argument list");
     }
 
@@ -849,7 +829,7 @@ public class Parser {
 
   /**
    * An array deref.
-   *
+   * <p/>
    * indexIntoList := LBRACKET (computation | computation? DOT DOT computation?)? RBRACKET
    */
   private Node indexIntoList() {
@@ -882,17 +862,10 @@ public class Parser {
 
   /**
    * Inline list/map definition.
-   *
-   * listOrMapDef :=
-   * LBRACKET
-   * (computation
-   * ((COMMA computation)* | computation? DOT DOT computation?))
-   * |
-   * (computation HASHROCKET computation
-   * (COMMA computation HASHROCKET computation)*)
-   * |
-   * HASHROCKET
-   * RBRACKET
+   * <p/>
+   * listOrMapDef := LBRACKET (computation ((COMMA computation)* | computation? DOT DOT computation?))
+   *    | (computation COLON computation (COMMA computation COLON computation)*)
+   *    | COLON RBRACKET
    */
   private Node listOrMapDef() {
     boolean isBraced = false;
@@ -976,7 +949,7 @@ public class Parser {
 
   /**
    * A method call production rule.
-   *
+   * <p/>
    * call := DOT (IDENT | PRIVATE_FIELD) arglist?
    */
   private Node call() {
@@ -1014,12 +987,59 @@ public class Parser {
   }
 
   /**
-   * (lexer super rule)
-   * literal := string | regex | MINUS? integer | decimal | TYPE_IDENT
+   * regexLiteral := DIVIDE ^(DIVIDE|EOL|EOF) DIVIDE
+   */
+  private Node regexLiteral() {
+    int cursor = i;
+
+    Token token = tokens.get(cursor);
+    if (Token.Kind.DIVIDE == token.kind) {
+
+      // Look ahead until we find the ending terminal, EOL or EOF.
+      boolean noTerminal = false;
+      do {
+        cursor++;
+        token = tokens.get(cursor);
+        if (Token.Kind.EOL == token.kind) {
+          noTerminal = true;
+          break;
+        }
+
+      } while (notEndOfRegex(token) && cursor < tokens.size() /* EOF check */);
+
+      // Skip the last divide.
+      cursor++;
+
+      if (noTerminal)
+        return null;
+
+    } else
+      return null;
+
+    int start = i;
+    i = cursor;
+
+    // Compress tokens into regex literal.
+    StringBuilder builder = new StringBuilder();
+    for (Token part : tokens.subList(start, i))
+      builder.append(part.value);
+
+    String expression = builder.toString();
+    if (expression.startsWith("/") && expression.endsWith("/"))
+      expression = expression.substring(1, expression.length() - 1);
+    return new RegexLiteral(expression);
+  }
+
+  private static boolean notEndOfRegex(Token token) {
+    return (Token.Kind.DIVIDE != token.kind && Token.Kind.REGEX != token.kind);
+  }
+
+  /**
+   * (lexer super rule) literal := string | regex | MINUS? integer | decimal | TYPE_IDENT
    */
   private Node literal() {
     Token token =
-        anyOf(Token.Kind.STRING, Token.Kind.INTEGER, Token.Kind.REGEX, Token.Kind.TYPE_IDENT);
+        anyOf(Token.Kind.STRING, Token.Kind.INTEGER, Token.Kind.TYPE_IDENT);
     if (null == token) {
       List<Token> match = match(Token.Kind.MINUS, Token.Kind.INTEGER);
       if (null != match)
@@ -1034,8 +1054,6 @@ public class Parser {
         return new StringLiteral(token.value);
       case TYPE_IDENT:
         return new TypeLiteral(token.value);
-      case REGEX:
-        return new RegexLiteral(token.value);
     }
     return null;
   }
@@ -1140,8 +1158,7 @@ public class Parser {
   }
 
   /**
-   * recursively walks a parse tree and turns it into a symbolic form
-   * that is test-readable.
+   * recursively walks a parse tree and turns it into a symbolic form that is test-readable.
    */
   public static String stringify(Node tree) {
     StringBuilder builder = new StringBuilder();

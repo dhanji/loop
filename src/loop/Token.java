@@ -157,6 +157,10 @@ public class Token {
       if (Character.isUpperCase(first)) {
         return TYPE_IDENT;
       }
+
+      if (value.endsWith("/"))
+        return REGEX;
+
       return IDENT;
     }
   }

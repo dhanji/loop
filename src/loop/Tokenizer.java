@@ -10,6 +10,7 @@ import java.util.*;
  * @author Dhanji R. Prasanna
  */
 public class Tokenizer {
+  private static final char REGEX_TERMINATOR = '/';
   private final String input;
 
   public Tokenizer(String input) {
