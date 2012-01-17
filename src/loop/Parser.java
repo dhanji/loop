@@ -132,6 +132,7 @@ public class Parser {
 
   private void chewEols() {
     // Chew up end-of-lines.
+    //noinspection StatementWithEmptyBody
     while (match(Token.Kind.EOL) != null) ;
   }
 

@@ -292,7 +292,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
       if (rule.pattern instanceof ListPattern) {
         emitListPatternRule(rule, context);
-      } else if (rule.pattern instanceof StringLiteral) {
+      } else if (rule.pattern instanceof StringLiteral
+          || rule.pattern instanceof IntLiteral) {
         String arg0 = context.arguments.get(0);
         out.append("if (").append(arg0).append(" == ");
         emit(rule.pattern);
