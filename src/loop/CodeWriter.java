@@ -11,7 +11,7 @@ import loop.ast.InlineMapDef;
 import loop.ast.IntLiteral;
 import loop.ast.ListPattern;
 import loop.ast.Node;
-import loop.ast.OtherwisePattern;
+import loop.ast.WildcardPattern;
 import loop.ast.PatternRule;
 import loop.ast.PrivateField;
 import loop.ast.RegexLiteral;
@@ -318,7 +318,7 @@ import java.util.concurrent.atomic.AtomicInteger;
         out.append(";\n}\n");
       } else if (rule.pattern instanceof StringPattern) {
         emitStringPatternRule(rule, context);
-      } else if (rule.pattern instanceof OtherwisePattern) {
+      } else if (rule.pattern instanceof WildcardPattern) {
         out.append("return ");
         emit(rule.rhs);
         out.append(";\n");

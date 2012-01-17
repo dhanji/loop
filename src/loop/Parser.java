@@ -235,8 +235,8 @@ public class Parser {
 
       // Try "otherwise" default fall thru.
       if (pattern == null)
-        if (match(Token.Kind.OTHERWISE) != null)
-          pattern = new OtherwisePattern();
+        if (match(Token.Kind.STAR) != null)
+          pattern = new WildcardPattern();
 
       // Look for a where block at the end of this pattern matching decl.
       if (pattern == null)

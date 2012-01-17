@@ -70,7 +70,6 @@ public class Token {
     WHERE,
 
     WHEN,
-    OTHERWISE,
 
     // specials
     EOL,
@@ -117,8 +116,6 @@ public class Token {
       TOKEN_MAP.put("in", IN);
       TOKEN_MAP.put("constructor", CONSTRUCTOR);
       TOKEN_MAP.put("class", CLASS);
-
-      TOKEN_MAP.put("otherwise", OTHERWISE);
 
       TOKEN_MAP.put("require", REQUIRE);
       TOKEN_MAP.put("module", MODULE);

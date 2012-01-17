@@ -2,7 +2,7 @@
 
 unline(input) =>
   (first: '\n' : rest)  : first + unline(rest)
-  otherwise             : input
+  *                     : input
 
 main ->
   unline("hello\nthere\ndude")

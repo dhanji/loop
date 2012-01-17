@@ -3,7 +3,7 @@
 details(name) =>
   /Jochen/       : [:]
   /Si.*/         : [ 'name' : 'Michael', 'age' : '212' ]
-  otherwise      : [ 'name' : 'Unknown', 'age' : '-1' ]
+  *              : [ 'name' : 'Unknown', 'age' : '-1' ]
 
 main ->
   details('Simon')

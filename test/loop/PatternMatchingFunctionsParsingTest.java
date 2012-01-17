@@ -59,7 +59,7 @@ public class PatternMatchingFunctionsParsingTest {
         "reverse(list) =>\n" +
             "  []          : []\n" +
             "  ['hello x':xs]      : reverse(xs) + x\n" +
-            "  otherwise           : reverse(xs) + x");
+            "  *                   : reverse(xs) + x");
   }
 
   @Test
@@ -72,7 +72,7 @@ public class PatternMatchingFunctionsParsingTest {
         "reverse(list) =>\n" +
             "  [:]                  : 1\n" +
             "  [name <- first]      : 2\n" +
-            "  otherwise            : -1");
+            "  *                    : -1");
   }
 
   @Test
@@ -90,7 +90,7 @@ public class PatternMatchingFunctionsParsingTest {
             "  [name <- first]        : 3\n" +
             "  [name <- first," +
             "   age  <- second]       : 2\n" +
-            "  otherwise              : -1");
+            "  *                      : -1");
   }
 
   @Test
@@ -104,8 +104,8 @@ public class PatternMatchingFunctionsParsingTest {
         "reverse(list) =>\n" +
             "  []                     : 0\n" +
             "  [:]                    : 1\n" +
-            "  [ dad <- parent.name ]        : dad\n" +
-            "  otherwise              : -1");
+            "  [ dad <- parent.name ]       : dad\n" +
+            "  *                      : -1");
   }
 
   @Test
@@ -118,7 +118,7 @@ public class PatternMatchingFunctionsParsingTest {
         "reverse(list) =>\n" +
             "  0            : 1\n" +
             "  'hello'      : 2\n" +
-            "  otherwise    : -1");
+            "  *            : -1");
   }
 
   @Test
@@ -156,6 +156,6 @@ public class PatternMatchingFunctionsParsingTest {
         "handle(req) =>\n" +
             "  HttpRequest[name <- params.name]   | name == 'Dhanji'  : 'Hi'\n" +
             "                                     | name == 'Dude'    : 'Bye'\n" +
-            "  otherwise                                              : Nothing\n");
+            "  *                                                      : Nothing\n");
   }
 }
