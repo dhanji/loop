@@ -3,8 +3,8 @@ package loop.ast;
 /**
  * @author dhanji@gmail.com (Dhanji R. Prasanna)
  */
-public class WildcardPattern extends Node {
+public class OtherwiseGuard extends Node {
   @Override public String toSymbol() {
-    return "wildcard";
+    return "otherwise";
   }
 }

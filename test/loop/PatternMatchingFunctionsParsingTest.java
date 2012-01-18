@@ -55,7 +55,7 @@ public class PatternMatchingFunctionsParsingTest {
         "(reverse: (()= list) -> \n" +
         "  => [] : (comput list) \n" +
         "  => ([] 'hello x' xs) : (comput (. reverse(()= (comput (. xs)))) (+ (. x))) \n" +
-        "  => otherwise : (comput (. reverse(()= (comput (. xs)))) (+ (. x))))",
+        "  => wildcard : (comput (. reverse(()= (comput (. xs)))) (+ (. x))))",
         "reverse(list) =>\n" +
             "  []          : []\n" +
             "  ['hello x':xs]      : reverse(xs) + x\n" +
@@ -68,7 +68,7 @@ public class PatternMatchingFunctionsParsingTest {
         "(reverse: (()= list) -> \n" +
         "  => [::] : (comput (. 1)) \n" +
         "  => ([::] name <- (. first)) : (comput (. 2)) \n" +
-        "  => otherwise : (comput (. -1)))",
+        "  => wildcard : (comput (. -1)))",
         "reverse(list) =>\n" +
             "  [:]                  : 1\n" +
             "  [name <- first]      : 2\n" +
@@ -83,7 +83,7 @@ public class PatternMatchingFunctionsParsingTest {
         "  => [::] : (comput (. 1)) \n" +
         "  => ([::] name <- (. first)) : (comput (. 3)) \n" +
         "  => ([::] name <- (. first) age <- (. second)) : (comput (. 2)) \n" +
-        "  => otherwise : (comput (. -1)))",
+        "  => wildcard : (comput (. -1)))",
         "reverse(list) =>\n" +
             "  []                     : 0\n" +
             "  [:]                    : 1\n" +
@@ -100,7 +100,7 @@ public class PatternMatchingFunctionsParsingTest {
         "  => [] : (comput (. 0)) \n" +
         "  => [::] : (comput (. 1)) \n" +
         "  => ([::] dad <- (. parent name)) : (comput (. dad)) \n" +
-        "  => otherwise : (comput (. -1)))",
+        "  => wildcard : (comput (. -1)))",
         "reverse(list) =>\n" +
             "  []                     : 0\n" +
             "  [:]                    : 1\n" +
@@ -114,7 +114,7 @@ public class PatternMatchingFunctionsParsingTest {
         "(reverse: (()= list) -> \n" +
         "  => 0 : (comput (. 1)) \n" +
         "  => 'hello' : (comput (. 2)) \n" +
-        "  => otherwise : (comput (. -1)))",
+        "  => wildcard : (comput (. -1)))",
         "reverse(list) =>\n" +
             "  0            : 1\n" +
             "  'hello'      : 2\n" +
@@ -152,10 +152,26 @@ public class PatternMatchingFunctionsParsingTest {
             "  => ([::] HttpRequest name <- (. params name)) \n" +
             "    | (comput (. name) (== (. 'Dhanji'))) : (comput (. 'Hi')) \n" +
             "    | (comput (. name) (== (. 'Dude'))) : (comput (. 'Bye'))) \n" +
-            "  => otherwise : (comput (. Nothing)))",
+            "  => wildcard : (comput (. Nothing)))",
         "handle(req) =>\n" +
             "  HttpRequest[name <- params.name]   | name == 'Dhanji'  : 'Hi'\n" +
             "                                     | name == 'Dude'    : 'Bye'\n" +
+            "  *                                                      : Nothing\n");
+  }
+
+  @Test
+  public final void guardedObjectTypePatternMatchingWithOtherwise() {
+    compareFunction("handle",
+        "(handle: (()= req) -> (\n" +
+            "  => ([::] HttpRequest name <- (. params name)) \n" +
+            "    | (comput (. name) (== (. 'Dhanji'))) : (comput (. 'Hi')) \n" +
+            "    | (comput (. name) (== (. 'Dude'))) : (comput (. 'Bye')) \n" +
+            "    | otherwise : (comput (. 'Error'))) \n" +
+            "  => wildcard : (comput (. Nothing)))",
+        "handle(req) =>\n" +
+            "  HttpRequest[name <- params.name]   | name == 'Dhanji'  : 'Hi'\n" +
+            "                                     | name == 'Dude'    : 'Bye'\n" +
+            "                                     | else              : 'Error'\n" +
             "  *                                                      : Nothing\n");
   }
 }

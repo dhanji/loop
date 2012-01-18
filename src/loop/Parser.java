@@ -256,6 +256,10 @@ public class Parser {
         guarded = true;
 
         Node guardExpression = computation();
+        if (guardExpression == null)
+          if (match(Token.Kind.ELSE) != null)
+            guardExpression = new OtherwiseGuard();
+
         if (match(Token.Kind.ASSIGN) == null)
           throw new RuntimeException("Expected ':' after guard expression.");
 
@@ -547,10 +551,7 @@ public class Parser {
    * line := assign
    */
   private Node line() {
-    Node parsed = assign();
-    if (null == parsed) {
-    }
-    return parsed;
+    return assign();
   }
 
   /**
