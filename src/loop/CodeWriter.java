@@ -5,19 +5,21 @@ import loop.ast.BinaryOp;
 import loop.ast.Call;
 import loop.ast.CallChain;
 import loop.ast.Computation;
+import loop.ast.Guard;
 import loop.ast.IndexIntoList;
 import loop.ast.InlineListDef;
 import loop.ast.InlineMapDef;
 import loop.ast.IntLiteral;
 import loop.ast.ListPattern;
 import loop.ast.Node;
-import loop.ast.WildcardPattern;
+import loop.ast.OtherwiseGuard;
 import loop.ast.PatternRule;
 import loop.ast.PrivateField;
 import loop.ast.RegexLiteral;
 import loop.ast.StringLiteral;
 import loop.ast.StringPattern;
 import loop.ast.Variable;
+import loop.ast.WildcardPattern;
 import loop.ast.script.ArgDeclList;
 import loop.ast.script.FunctionDecl;
 import loop.ast.script.Unit;
@@ -313,8 +315,14 @@ import java.util.concurrent.atomic.AtomicInteger;
         String arg0 = context.arguments.get(0);
         out.append("if (").append(arg0).append(" ~= ");
         emit(rule.pattern);
-        out.append(") {\n return ");
-        emit(rule.rhs);
+        out.append(") {\n");
+
+        if (rule.rhs != null) {
+          out.append(" return ");
+          emit(rule.rhs);
+        } else
+          emitGuards(rule);
+
         out.append(";\n}\n");
       } else if (rule.pattern instanceof StringPattern) {
         emitStringPatternRule(rule, context);
@@ -325,6 +333,33 @@ import java.util.concurrent.atomic.AtomicInteger;
       }
     }
   };
+
+  private void emitGuards(PatternRule rule) {
+    List<Node> children = rule.children();
+    for (int i = 0, childrenSize = children.size(); i < childrenSize; i++) {
+      Node node = children.get(i);
+      if (!(node instanceof Guard))
+        throw new RuntimeException("Apparent pattern rule missing guards: "
+            + Parser.stringify(rule));
+
+      if (i > 0)
+        out.append(" else ");
+
+      Guard guard = (Guard) node;
+
+      // The "Otherwise" expression is a plain else.
+      if (!(guard.expression instanceof OtherwiseGuard)) {
+        out.append("if (");
+        emit(guard.expression);
+        out.append(") ");
+      }
+      out.append("{\n return ");
+      emit(guard.line);
+
+      // If this is not the last guard.
+      out.append(";\n} ");
+    }
+  }
 
   private void emitStringPatternRule(PatternRule rule, Context context) {
     String arg0 = context.arguments.get(0);

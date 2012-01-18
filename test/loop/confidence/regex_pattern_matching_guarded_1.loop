@@ -1,0 +1,10 @@
+# Guarded Pattern Matching against regex literals
+
+details(name) =>
+  /[A-Z].*/      | name.startsWith('Jo')      : [ 'name' : 'Jochen', 'age' : '19' ]
+                 | name.startsWith('Dh')      : [ 'name' : 'Dhanji', 'age' : '20' ]
+                 | else                       : [:]
+  *                                           : [ 'name' : 'Unknown', 'age' : '-1' ]
+
+main ->
+  details('Dhanj')
