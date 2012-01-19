@@ -1,0 +1,9 @@
+# Pattern Matching reverse list
+
+reverse(ls) =>
+  []                  : []
+  [x:xs]  | x < 10    : reverse(xs) + x
+          | else      : x + reverse(xs)
+
+main ->
+  reverse([1,2,3])

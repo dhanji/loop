@@ -333,7 +333,7 @@ public class Parser {
   }
 
   private Node emptyListPattern() {
-    return match(Token.Kind.LBRACKET, Token.Kind.RBRACKET) != null ? new ListPattern() : null;
+    return match(Token.Kind.LBRACKET, Token.Kind.RBRACKET) != null ? new ListDestructuringPattern() : null;
   }
 
   /**
@@ -356,9 +356,9 @@ public class Parser {
     if (term == null)
       throw new RuntimeException("Expected term after '[' in pattern rule");
 
-    // This is a list rule.
+    // This is a list denaturing rule.
     if (match(Token.Kind.ASSIGN) != null) {
-      pattern = new ListPattern();
+      pattern = new ListDestructuringPattern();
       pattern.add(term);
       term = term();
       if (term == null)
@@ -367,6 +367,32 @@ public class Parser {
 
       while (match(Token.Kind.ASSIGN) != null)
         pattern.add(term());
+
+      if (match(Token.Kind.RBRACKET) == null)
+        throw new RuntimeException("Expected ']' at end of list pattern rule");
+
+      return pattern;
+    }
+
+    // This is a list literal rule.
+    boolean endList = match(Token.Kind.RBRACKET) != null;
+    if (endList || match(Token.Kind.COMMA) != null) {
+      pattern = new ListSimplePattern();
+      pattern.add(term);
+      if (endList)
+        return pattern;
+
+      term = term();
+      if (null == term)
+        throw new RuntimeException("Expected term after ',' in list pattern rule");
+
+      while (match(Token.Kind.COMMA) != null) {
+        term = term();
+        if (null == term)
+          throw new RuntimeException("Expected term after ',' in list pattern rule");
+
+        pattern.add(term);
+      }
 
       if (match(Token.Kind.RBRACKET) == null)
         throw new RuntimeException("Expected ']' at end of list pattern rule");

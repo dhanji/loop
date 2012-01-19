@@ -10,7 +10,7 @@ import loop.ast.IndexIntoList;
 import loop.ast.InlineListDef;
 import loop.ast.InlineMapDef;
 import loop.ast.IntLiteral;
-import loop.ast.ListPattern;
+import loop.ast.ListDestructuringPattern;
 import loop.ast.Node;
 import loop.ast.OtherwiseGuard;
 import loop.ast.PatternRule;
@@ -296,7 +296,7 @@ import java.util.concurrent.atomic.AtomicInteger;
       if (context.arguments.isEmpty())
         throw new RuntimeException("Incorrect number of arguments for pattern matching");
 
-      if (rule.pattern instanceof ListPattern) {
+      if (rule.pattern instanceof ListDestructuringPattern) {
         emitListPatternRule(rule, context);
       } else if (rule.pattern instanceof StringLiteral
           || rule.pattern instanceof IntLiteral) {
@@ -448,7 +448,7 @@ import java.util.concurrent.atomic.AtomicInteger;
   }
 
   private void emitListPatternRule(PatternRule rule, Context context) {
-    ListPattern listPattern = (ListPattern) rule.pattern;
+    ListDestructuringPattern listPattern = (ListDestructuringPattern) rule.pattern;
     String arg0 = context.arguments.get(0);
     out.append("if (");
     out.append(arg0);
@@ -488,8 +488,7 @@ import java.util.concurrent.atomic.AtomicInteger;
         }
       }
 
-      out.append("return ");
-      emit(rule.rhs);
+      emitPatternClauses(rule);
       out.append(';');
     }
     out.append("}\n");

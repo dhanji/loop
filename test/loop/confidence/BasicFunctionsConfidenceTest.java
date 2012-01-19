@@ -22,6 +22,23 @@ public class BasicFunctionsConfidenceTest {
   }
 
   @Test
+  public final void reverseListPatternMatchingGuarded1() {
+    assertEquals(Arrays.asList(3, 2, 1), Loop.run("test/loop/confidence/reverse_guarded_1.loop"));
+  }
+
+  @Test
+  public final void reverseListPatternMatchingGuarded2() {
+    // Doesn't reverse the list if the first element is >= 10.
+    assertEquals(Arrays.asList(10, 20, 30), Loop.run("test/loop/confidence/reverse_guarded_2.loop"));
+  }
+
+  @Test
+  public final void listPatternMatchingGuarded2() {
+    // Doesn't reverse the list if the first element is >= 10.
+    assertEquals(Arrays.asList(10, 2, 3), Loop.run("test/loop/confidence/list_pattern_guarded_1.loop"));
+  }
+
+  @Test
   public final void reverseListPatternMatchingUsingWhereBlock() {
     assertEquals(Arrays.asList(3, 2, 1), Loop.run("test/loop/confidence/whereblock_1.loop"));
   }
