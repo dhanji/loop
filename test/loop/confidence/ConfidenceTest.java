@@ -99,4 +99,13 @@ public class ConfidenceTest {
 
     assertEquals(map, Loop.run("test/loop/confidence/regex_pattern_matching_guarded_2.loop", true));
   }
+
+  @Test
+  public final void regexPatternMatchingGuarded3() {
+    Map<String, String> map = new HashMap<String, String>();
+    map.put("name", "Unknown");
+    map.put("age", "-1");
+
+    assertEquals(map, Loop.run("test/loop/confidence/regex_pattern_matching_guarded_3.loop", true));
+  }
 }
