@@ -1,0 +1,9 @@
+# Pattern Matching list guarded
+
+scan(ls) =>
+  []                    : []
+  [x, y, z]             : [x + y + z]
+  [x:xs]                : scan(xs) + x
+
+main ->
+  scan([50,2,3])

@@ -385,6 +385,7 @@ public class Parser {
       term = term();
       if (null == term)
         throw new RuntimeException("Expected term after ',' in list pattern rule");
+      pattern.add(term);
 
       while (match(Token.Kind.COMMA) != null) {
         term = term();

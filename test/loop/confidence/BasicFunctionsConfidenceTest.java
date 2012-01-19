@@ -33,15 +33,18 @@ public class BasicFunctionsConfidenceTest {
   }
 
   @Test
-  public final void listPatternMatchingGuarded1() {
-    // Doesn't reverse the list if the first element is >= 10.
-    assertEquals(Arrays.asList(10), Loop.run("test/loop/confidence/list_pattern_guarded_1.loop", true));
+  public final void listStructurePatternMatchingGuarded1() {
+    assertEquals(Arrays.asList(10), Loop.run("test/loop/confidence/list_pattern_guarded_1.loop"));
   }
 
   @Test
-  public final void listPatternMatchingGuarded2() {
-    // Doesn't reverse the list if the first element is >= 10.
-    assertEquals(Arrays.asList(5), Loop.run("test/loop/confidence/list_pattern_guarded_2.loop", true));
+  public final void listStructurePatternMatchingGuarded2() {
+    assertEquals(Arrays.asList(5), Loop.run("test/loop/confidence/list_pattern_guarded_2.loop"));
+  }
+
+  @Test
+  public final void listStructurePatternMatchingGuarded3() {
+    assertEquals(Arrays.asList(55), Loop.run("test/loop/confidence/list_pattern_guarded_3.loop", true));
   }
 
   @Test
