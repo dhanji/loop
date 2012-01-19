@@ -92,4 +92,11 @@ public class ConfidenceTest {
 
     assertEquals(map, Loop.run("test/loop/confidence/regex_pattern_matching_guarded_1.loop", true));
   }
+
+  @Test
+  public final void regexPatternMatchingGuarded2() {
+    Map<String, String> map = new HashMap<String, String>();
+
+    assertEquals(map, Loop.run("test/loop/confidence/regex_pattern_matching_guarded_2.loop", true));
+  }
 }

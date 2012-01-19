@@ -44,18 +44,10 @@ import java.util.concurrent.atomic.AtomicInteger;
   }
 
   /**
-   * Call : 'emitCall',
-   * Computation : 'emitComputation',
-   * IntLiteral : 'emitLiteral',
-   * Variable : 'emitVariable',
-   * BinaryOp : 'emitBinaryOp',
-   * StringLiteral : 'emitString',
-   * Assignment : 'emitAssignment',
-   * InlineMapDef : 'emitMap',
-   * InlineListDef : 'emitList',
-   * IndexIntoList : 'emitIndexInto',
-   * CallChain : 'emitCallChain',
-   * PatternRule : 'emitPatternRule',
+   * Call : 'emitCall', Computation : 'emitComputation', IntLiteral : 'emitLiteral', Variable :
+   * 'emitVariable', BinaryOp : 'emitBinaryOp', StringLiteral : 'emitString', Assignment :
+   * 'emitAssignment', InlineMapDef : 'emitMap', InlineListDef : 'emitList', IndexIntoList :
+   * 'emitIndexInto', CallChain : 'emitCallChain', PatternRule : 'emitPatternRule',
    */
   private static final Map<Class<?>, Emitter> EMITTERS = new HashMap<Class<?>, Emitter>();
 
@@ -184,7 +176,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
       Context context = new Context(name);
       for (Node arg : functionDecl.arguments().children()) {
-        context.arguments.add(((ArgDeclList.Argument)arg).name());
+        context.arguments.add(((ArgDeclList.Argument) arg).name());
       }
       functionStack.push(context);
 
@@ -249,17 +241,20 @@ import java.util.concurrent.atomic.AtomicInteger;
 
       out.append('[');
       final List<Node> children = inlineMapDef.children();
-      for (int i = 0, childrenSize = children.size(); i < childrenSize; i++) {
-        emit(children.get(i));
-        if (i < childrenSize - 1) {
+      if (children.isEmpty())
+        out.append(':');
+      else
+        for (int i = 0, childrenSize = children.size(); i < childrenSize; i++) {
+          emit(children.get(i));
+          if (i < childrenSize - 1) {
 
-          // On every other node, emit a ','
-          if (i % 2 != 0)
-            out.append(", ");
-          else
-            out.append(": ");
+            // On every other node, emit a ','
+            if (i % 2 != 0)
+              out.append(", ");
+            else
+              out.append(": ");
+          }
         }
-      }
       out.append(']');
     }
   };
@@ -395,8 +390,15 @@ import java.util.concurrent.atomic.AtomicInteger;
             out.append(");\n");
             out.append("if (").append(thisIndex).append(" > -1) {\n");
             emit(child);
-            out.append(" = ").append(arg0).append(".substring(").append(lastIndex).append(" == -1 ? 0 : ").append(lastIndex)
-                .append(", ").append(thisIndex).append(");\n");
+            out.append(" = ")
+                .append(arg0)
+                .append(".substring(")
+                .append(lastIndex)
+                .append(" == -1 ? 0 : ")
+                .append(lastIndex)
+                .append(", ")
+                .append(thisIndex)
+                .append(");\n");
             // Advance the index by the length of this match.
             out.append(lastIndex).append(" = ").append(thisIndex).append(" + ");
             emit(next);
