@@ -6,7 +6,7 @@ package loop.ast;
  *
  * @author dhanji@gmail.com (Dhanji R. Prasanna)
  */
-public class ListSimplePattern extends Node {
+public class ListStructurePattern extends Node {
 
   @Override public String toSymbol() {
     return "[]";

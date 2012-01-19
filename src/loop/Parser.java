@@ -377,7 +377,7 @@ public class Parser {
     // This is a list literal rule.
     boolean endList = match(Token.Kind.RBRACKET) != null;
     if (endList || match(Token.Kind.COMMA) != null) {
-      pattern = new ListSimplePattern();
+      pattern = new ListStructurePattern();
       pattern.add(term);
       if (endList)
         return pattern;

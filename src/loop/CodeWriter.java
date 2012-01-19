@@ -11,6 +11,7 @@ import loop.ast.InlineListDef;
 import loop.ast.InlineMapDef;
 import loop.ast.IntLiteral;
 import loop.ast.ListDestructuringPattern;
+import loop.ast.ListStructurePattern;
 import loop.ast.Node;
 import loop.ast.OtherwiseGuard;
 import loop.ast.PatternRule;
@@ -297,7 +298,9 @@ import java.util.concurrent.atomic.AtomicInteger;
         throw new RuntimeException("Incorrect number of arguments for pattern matching");
 
       if (rule.pattern instanceof ListDestructuringPattern) {
-        emitListPatternRule(rule, context);
+        emitListDestructuringPatternRule(rule, context);
+      } else if (rule.pattern instanceof ListStructurePattern) {
+        emitListStructurePatternRule(rule, context);
       } else if (rule.pattern instanceof StringLiteral
           || rule.pattern instanceof IntLiteral) {
         String arg0 = context.arguments.get(0);
@@ -447,7 +450,30 @@ import java.util.concurrent.atomic.AtomicInteger;
     return "$__" + functionNameSequence.incrementAndGet();
   }
 
-  private void emitListPatternRule(PatternRule rule, Context context) {
+  private void emitListStructurePatternRule(PatternRule rule, Context context) {
+    ListStructurePattern listPattern = (ListStructurePattern) rule.pattern;
+    String arg0 = context.arguments.get(0);
+    out.append("if (");
+    out.append(arg0);
+    out.append(" is java.util.List) {\n");
+
+    // Slice the list by terminals in the pattern list.
+    List<Node> children = listPattern.children();
+    for (int j = 0, childrenSize = children.size(); j < childrenSize; j++) {
+      Node child = children.get(j);
+      if (child instanceof Variable) {
+        emit(child);
+        out.append(" = ");
+        out.append(arg0);
+        out.append('[').append(j).append("];\n");
+      }
+    }
+
+    emitPatternClauses(rule);
+    out.append(";\n}\n");
+  }
+
+  private void emitListDestructuringPatternRule(PatternRule rule, Context context) {
     ListDestructuringPattern listPattern = (ListDestructuringPattern) rule.pattern;
     String arg0 = context.arguments.get(0);
     out.append("if (");
@@ -493,5 +519,4 @@ import java.util.concurrent.atomic.AtomicInteger;
     }
     out.append("}\n");
   }
-
 }
