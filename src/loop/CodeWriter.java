@@ -304,30 +304,35 @@ import java.util.concurrent.atomic.AtomicInteger;
         out.append("if (").append(arg0).append(" == ");
         emit(rule.pattern);
         out.append(") {\n return ");
+
         emit(rule.rhs);
         out.append(";\n}\n");
+
       } else if (rule.pattern instanceof RegexLiteral) {
         String arg0 = context.arguments.get(0);
         out.append("if (").append(arg0).append(" ~= ");
         emit(rule.pattern);
         out.append(") {\n");
 
-        if (rule.rhs != null) {
-          out.append(" return ");
-          emit(rule.rhs);
-        } else
-          emitGuards(rule);
+        emitPatternClauses(rule);
 
         out.append(";\n}\n");
       } else if (rule.pattern instanceof StringPattern) {
         emitStringPatternRule(rule, context);
       } else if (rule.pattern instanceof WildcardPattern) {
-        out.append("return ");
-        emit(rule.rhs);
+        emitPatternClauses(rule);
         out.append(";\n");
       }
     }
   };
+
+  private void emitPatternClauses(PatternRule rule) {
+    if (rule.rhs != null) {
+      out.append(" return ");
+      emit(rule.rhs);
+    } else
+      emitGuards(rule);
+  }
 
   private void emitGuards(PatternRule rule) {
     List<Node> children = rule.children();
