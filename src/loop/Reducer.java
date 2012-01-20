@@ -90,8 +90,7 @@ public class Reducer {
   }
 
   private boolean shouldUnwrap(Node node) {
-    return (node instanceof CallChain
-           || node instanceof Computation)
+    return (node instanceof CallChain || node instanceof Computation)
         && node.children().size() == 1;
   }
 }

@@ -3,26 +3,28 @@ TODO
 
 Parsing Classes
 - class declaration
-- enumeration type
-- class constants?
 x 'where' scoping
 - Pattern matching methods
-  - match lists, empty, mixed with literals, regexes
-  - match strings, regexes
-  - match against single literals
-  - match character streams
+  x match lists, empty, mixed with literals, regexes
+  x match strings, regexes
+  x match against single literals
   - match patterns against multiple arguments
 
-- Pattern matching methods on character streams
-- guards for pattern matching methods
-- Type classes (better than interfaces/traits)
+x guards for pattern matching methods
 - Interactive interpreter/shell
 x Calling into Java methods
-- Parsing require decl hiding (stuff)
-
+- Tail call optimization
+- Line/Column error reporting
+- Basic scope verification with symbol table
+- Modules/packaging/import
+- Exception unrolling
 
 Stretch
 -------
 
-- Tail call optimizer
 - Basic function inlining
+- enumeration type
+- class constants?
+- Type classes/extension methods (better than interfaces/traits)
+- Pattern matching methods on character streams
+- Parsing require decl hiding (stuff)

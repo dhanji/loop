@@ -2,7 +2,11 @@ package loop.ast.script;
 
 import loop.Reducer;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * A compilation unit containing imports classes, functions, etc. Represents a single file.
