@@ -38,6 +38,11 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 @SuppressWarnings({"FieldCanBeLocal"}) class CodeWriter {
   private static final AtomicInteger functionNameSequence = new AtomicInteger();
+  private static final Map<String, String> BINARY_OP_TRANSLATIONS = new HashMap<String, String>();
+
+  static {
+    BINARY_OP_TRANSLATIONS.put("not", "!=");
+  }
 
   private final StringBuilder out = new StringBuilder();
   private final Stack<Context> functionStack = new Stack<Context>();
@@ -148,7 +153,11 @@ import java.util.concurrent.atomic.AtomicInteger;
   private final Emitter binaryOpEmitter = new Emitter() {
     @Override public void emitCode(Node node) {
       BinaryOp binaryOp = (BinaryOp) node;
-      out.append(' ').append(binaryOp.name()).append(' ');
+      String name = BINARY_OP_TRANSLATIONS.get(binaryOp.name());
+
+      if (null == name)
+        name = binaryOp.name();
+      out.append(' ').append(name).append(' ');
       emitOnlyChild(binaryOp);
     }
   };

@@ -35,6 +35,7 @@ public class Parser {
 
     RIGHT_ASSOCIATIVE.add(Token.Kind.AND);
     RIGHT_ASSOCIATIVE.add(Token.Kind.OR);
+    RIGHT_ASSOCIATIVE.add(Token.Kind.NOT);
     RIGHT_ASSOCIATIVE.add(Token.Kind.EQUALS);
     RIGHT_ASSOCIATIVE.add(Token.Kind.LEQ);
     RIGHT_ASSOCIATIVE.add(Token.Kind.GEQ);
