@@ -12,16 +12,19 @@ x 'where' scoping
 
 x guards for pattern matching methods
 - Interactive interpreter/shell
+- List comprehensions
+- Conditionals (if-then-else, ternaries)
 x Calling into Java methods
-- Tail call optimization
 - Line/Column error reporting
 - Basic scope verification with symbol table
 - Modules/packaging/import
-- Exception unrolling
+- Tail call optimization
+
 
 Stretch
 -------
 
+- Exception unrolling
 - Basic function inlining
 - enumeration type
 - class constants?

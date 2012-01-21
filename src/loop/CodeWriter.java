@@ -19,6 +19,7 @@ import loop.ast.PrivateField;
 import loop.ast.RegexLiteral;
 import loop.ast.StringLiteral;
 import loop.ast.StringPattern;
+import loop.ast.TernaryExpression;
 import loop.ast.Variable;
 import loop.ast.WildcardPattern;
 import loop.ast.script.ArgDeclList;
@@ -69,6 +70,7 @@ import java.util.concurrent.atomic.AtomicInteger;
     EMITTERS.put(ArgDeclList.class, argDeclEmitter);
     EMITTERS.put(PrivateField.class, privateFieldEmitter);
     EMITTERS.put(PatternRule.class, patternRuleEmitter);
+    EMITTERS.put(TernaryExpression.class, ternaryExpressionEmitter);
   }
 
   public String write(Unit unit) {
@@ -101,6 +103,22 @@ import java.util.concurrent.atomic.AtomicInteger;
   // EMITTERS ----------------------------------------------------------
   // -------------------------------------------------------------------
 
+  private final Emitter ternaryExpressionEmitter = new Emitter() {
+    @Override public void emitCode(Node node) {
+      TernaryExpression expression = (TernaryExpression) node;
+
+      // IF test
+      out.append('(');
+      emit(expression.children().get(0));
+
+      out.append(" ? ");
+      emit(expression.children().get(1));
+      out.append(" : ");
+      emit(expression.children().get(2));
+      out.append(")\n");
+    }
+  };
+
   private final Emitter computationEmitter = new Emitter() {
     @Override public void emitCode(Node node) {
       Computation computation = (Computation) node;
@@ -124,7 +142,7 @@ import java.util.concurrent.atomic.AtomicInteger;
   private final Emitter binaryOpEmitter = new Emitter() {
     @Override public void emitCode(Node node) {
       BinaryOp binaryOp = (BinaryOp) node;
-      out.append(binaryOp.name()).append(' ');
+      out.append(' ').append(binaryOp.name()).append(' ');
       emitOnlyChild(binaryOp);
     }
   };

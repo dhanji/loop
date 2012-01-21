@@ -31,6 +31,7 @@ public class Parser {
     RIGHT_ASSOCIATIVE.add(Token.Kind.MINUS);
     RIGHT_ASSOCIATIVE.add(Token.Kind.DIVIDE);
     RIGHT_ASSOCIATIVE.add(Token.Kind.STAR);
+    RIGHT_ASSOCIATIVE.add(Token.Kind.MODULUS);
 
     RIGHT_ASSOCIATIVE.add(Token.Kind.AND);
     RIGHT_ASSOCIATIVE.add(Token.Kind.OR);
