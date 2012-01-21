@@ -132,8 +132,12 @@ import java.util.concurrent.atomic.AtomicInteger;
     @Override public void emitCode(Node node) {
       Call call = (Call) node;
       out.append(normalizeMethodName(call.name())).append('(');
-      if (!call.args().children().isEmpty()) {
-        emit(call.args().children().get(0));
+      List<Node> children = call.args().children();
+      for (int i = 0, childrenSize = children.size(); i < childrenSize; i++) {
+        emit(children.get(i));
+
+        if (i < childrenSize - 1)
+          out.append(", ");
       }
       out.append(')');
     }

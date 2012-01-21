@@ -1,0 +1,10 @@
+# Inline ternary if
+
+cond(x) =>
+  /fet.*/     | if x.endsWith('sock') then true else false       :     [2]
+              | x.endsWith('lock')                               :     [1]
+              | else                                             :     []
+
+
+main ->
+  cond('fetsock')

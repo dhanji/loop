@@ -3,6 +3,7 @@ package loop.confidence;
 import loop.Loop;
 import org.junit.Test;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -26,7 +27,7 @@ public class ControlFlowConfidenceTest {
     map.put(1, 2);
     map.put(2, 13);
 
-    assertEquals(map, Loop.run("test/loop/confidence/cflow/if-then-else_2.loop", true));
+    assertEquals(map, Loop.run("test/loop/confidence/cflow/if-then-else_2.loop"));
   }
 
   @Test
@@ -35,6 +36,20 @@ public class ControlFlowConfidenceTest {
     map.put(1, 1);
     map.put(2, 13);
 
-    assertEquals(map, Loop.run("test/loop/confidence/cflow/if-then-else_3.loop", true));
+    assertEquals(map, Loop.run("test/loop/confidence/cflow/if-then-else_3.loop"));
+  }
+
+//  @Test DISABLED UNTIL MVEL IS FIXED.
+  public final void ifThenElseInExpressionWithPatternMatching() {
+    Map<Integer, Integer> map = new HashMap<Integer, Integer>();
+    map.put(1, 1);
+    map.put(2, 13);
+
+    assertEquals(map, Loop.run("test/loop/confidence/cflow/if-then-else_pmatch.loop", true));
+  }
+
+  @Test
+  public final void ifThenElseInInGuard() {
+    assertEquals(Arrays.asList(2), Loop.run("test/loop/confidence/cflow/if-then-else_pmatch_2.loop"));
   }
 }
