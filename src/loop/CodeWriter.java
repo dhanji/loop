@@ -4,6 +4,7 @@ import loop.ast.Assignment;
 import loop.ast.BinaryOp;
 import loop.ast.Call;
 import loop.ast.CallChain;
+import loop.ast.Comprehension;
 import loop.ast.Computation;
 import loop.ast.Guard;
 import loop.ast.IndexIntoList;
@@ -71,6 +72,7 @@ import java.util.concurrent.atomic.AtomicInteger;
     EMITTERS.put(PrivateField.class, privateFieldEmitter);
     EMITTERS.put(PatternRule.class, patternRuleEmitter);
     EMITTERS.put(TernaryExpression.class, ternaryExpressionEmitter);
+    EMITTERS.put(Comprehension.class, comprehensionEmitter);
   }
 
   public String write(Unit unit) {
@@ -307,6 +309,22 @@ import java.util.concurrent.atomic.AtomicInteger;
       out.append('[');
       emit(indexIntoList.from());
       out.append(']');
+    }
+  };
+
+  private final Emitter comprehensionEmitter = new Emitter() {
+    @Override public void emitCode(Node node) {
+      Comprehension comprehension = (Comprehension) node;
+
+      out.append(" ($");
+      out.append(" in ");
+      emit(comprehension.inList());
+
+      if (comprehension.filter() != null) {
+        out.append(" if ");
+        emit(comprehension.filter());
+      }
+      out.append(") ");
     }
   };
 

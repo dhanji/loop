@@ -30,6 +30,20 @@ public class Reducer {
     for (Node node : bloated.children()) {
       node = reduce(node);
 
+      // Merge list comprehension fragment nodes together.
+      List<Node> children = node.children();
+      if (!children.isEmpty()) {
+        Node last = children.get(children.size() - 1);
+        if (last instanceof Comprehension) {
+          // Assign all preceding siblings as the "project expression"
+          // E.g. (x) (+ 2) (for x in ls) becomes ((x + 2) for x in ls)
+          ((Comprehension) last).projection(children.subList(0, children.size() - 1));
+
+          // Replace current "wrapper" node with comprehension, and discard wrapper.
+          node = last;
+        }
+      }
+
       // Unwrap any redundant wrappers.
       if (shouldUnwrap(node)) {
         reduced.add(onlyChildOf(node));

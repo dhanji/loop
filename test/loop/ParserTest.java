@@ -51,27 +51,27 @@ public class ParserTest {
 
   @Test
   public final void listComprehensions() {
-    compare("(= (comput (. output)) (comput (. x) (* (. 2)) for x in (comput (. list))))",
+    compare("(= (comput (. output)) (comput (. x) (* (. 2)) (cpr for x in (comput (. list)))))",
         "output = x * 2 for x in list");
-    compare("(= (comput (. output)) (comput (. x) (* (. 2)) for x in (comput (. list)) if (comput (. x) (< (. 10)))))",
+    compare("(= (comput (. output)) (comput (. x) (* (. 2)) (cpr for x in (comput (. list)) if (comput (. x) (< (. 10))))))",
         "output = x * 2 for x in list if x < 10");
   }
 
   @Test
   public final void messyListComprehensions() {
-    compare("(comput (list (comput (. x) (/ (. 2)) for x in (comput (list (comput (. 1)) (comput (. 2)) (comput (. 3))))" +
-        " if (comput (. x) (> (. 2))))))",
+    compare("(comput (list (comput (. x) (/ (. 2)) (cpr for x in (comput (list (comput (. 1)) (comput (. 2)) (comput (. 3))))" +
+        " if (comput (. x) (> (. 2)))))))",
         "[x/2 for x in [1, 2, 3] if x > 2]");
-    compare("(comput (comput (. x) (/ (. 2)) for x in (comput (list (comput (. 1)) (comput (. 2)) (comput (. 3))))" +
-        " if (comput (. x) (> (. 2)))))",
-        "(x/2 for x in [1, 2, 3] if x > 2)");
-    compare("(= (comput (. ls)) (comput (comput (. x) (/ (. 2)) for x in (comput (list (comput (. 1)) (comput (. 2)) (comput (. 3))))" +
+    compare("(comput (comput (. x) (/ (. 2)) (cpr for x in (comput (list (comput (. 1)) (comput (. 2)) (comput (. 3))))" +
         " if (comput (. x) (> (. 2))))))",
+        "(x/2 for x in [1, 2, 3] if x > 2)");
+    compare("(= (comput (. ls)) (comput (comput (. x) (/ (. 2)) (cpr for x in (comput (list (comput (. 1)) (comput (. 2)) (comput (. 3))))" +
+        " if (comput (. x) (> (. 2)))))))",
         "ls = (x/2 for x in [1, 2, 3] if x > 2)");
 
     // without group.
-    compare("(= (comput (. ls)) (comput (. x) (/ (. 2)) for x in (comput (list (comput (. 1)) (comput (. 2)) (comput (. 3))))" +
-        " if (comput (. x) (> (. 2)))))",
+    compare("(= (comput (. ls)) (comput (. x) (/ (. 2)) (cpr for x in (comput (list (comput (. 1)) (comput (. 2)) (comput (. 3))))" +
+        " if (comput (. x) (> (. 2))))))",
         "ls = x/2 for x in [1, 2, 3] if x > 2");
   }
 
@@ -249,13 +249,28 @@ public class ParserTest {
   }
 
   @Test(expected = RuntimeException.class)
+  public final void mapError4() {
+    compare("(comput (. map))", "[1:]");
+  }
+
+  @Test(expected = RuntimeException.class)
   public final void mapError2() {
     compare("(comput (. map))", "[::1]");
   }
 
   @Test(expected = RuntimeException.class)
+  public final void mapError5() {
+    compare("(comput (. map))", "[:1]");
+  }
+
+  @Test(expected = RuntimeException.class)
   public final void mapError3() {
     compare("(comput (. map))", "[1::1, 2]");
+  }
+
+  @Test(expected = RuntimeException.class)
+  public final void mapError6() {
+    compare("(comput (. map))", "[1:1, 2]");
   }
 
   @Test

@@ -2,10 +2,14 @@ package loop.ast;
 
 import loop.Parser;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * A list comprehension
  */
 public class Comprehension extends Node {
+  private List<Node> projection = new ArrayList<Node>();
   private final Node var;
   private Node inList;
   private Node filter;
@@ -32,9 +36,30 @@ public class Comprehension extends Node {
     this.inList = inList;
   }
 
+  public void projection(List<Node> nodes) {
+    projection.addAll(nodes);
+  }
+
+  public List<Node> projection() {
+    return projection;
+  }
+
+  public Node var() {
+    return var;
+  }
+
   @Override
   public String toSymbol() {
-    return "for " + var.toSymbol() + " in " + Parser.stringify(inList)
-        + (filter == null ? "" : " if " + Parser.stringify(filter));
+    StringBuilder symbol = new StringBuilder("(cpr ");
+    for (Node child : projection) {
+      symbol.append(Parser.stringify(child)).append(' ');
+    }
+    return symbol.append("for ")
+        .append(var.toSymbol())
+        .append(" in ")
+        .append(Parser.stringify(inList))
+        .append(filter == null ? "" : " if " + Parser.stringify(filter))
+        .append(")")
+        .toString();
   }
 }
