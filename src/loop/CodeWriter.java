@@ -348,6 +348,9 @@ import java.util.concurrent.atomic.AtomicInteger;
       if (var.name.equals(local.name)) {
         local.name = with;
       }
+    } else if (top instanceof Call) {
+      Call call = (Call) top;
+      replaceVarInTree(call.args(), var, with);
     }
   }
 
