@@ -2,10 +2,8 @@ package loop.confidence.lists;
 
 import loop.Loop;
 import org.junit.Test;
-import org.mvel2.MVEL;
 
 import java.util.Arrays;
-import java.util.HashMap;
 
 import static org.junit.Assert.assertEquals;
 
@@ -16,13 +14,19 @@ import static org.junit.Assert.assertEquals;
  * @author dhanji@gmail.com (Dhanji R. Prasanna)
  */
 public class ListComprehensionConfidenceTest {
-//  @Test
-  public final void projectFunctionAcrossList() {
-    assertEquals(Arrays.asList(), Loop.run("test/loop/confidence/lists/projection.loop", true));
+  @Test
+  public final void identityComprehension() {
+    assertEquals(Arrays.asList(10, 20, 30), Loop.run("test/loop/confidence/lists/projection.loop"));
   }
 
   @Test
-  public final void test() {
-    System.out.println(MVEL.eval("ls = [1,2,3];\n ($ in ls);", new HashMap()));
+  public final void identityFilterComprehension() {
+    assertEquals(Arrays.asList(10, 20), Loop.run("test/loop/confidence/lists/projection_filter.loop"));
   }
+
+  @Test
+  public final void expressionProjectComprehension() {
+    assertEquals(Arrays.asList(100, 200, 300), Loop.run("test/loop/confidence/lists/projection_expr.loop"));
+  }
+
 }

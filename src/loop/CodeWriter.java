@@ -316,17 +316,40 @@ import java.util.concurrent.atomic.AtomicInteger;
     @Override public void emitCode(Node node) {
       Comprehension comprehension = (Comprehension) node;
 
-      out.append(" ($");
+      out.append(" (");
+      for (Node element : comprehension.projection()) {
+        replaceVarInTree(element, comprehension.var(), "$");
+        emit(element);
+      }
+
       out.append(" in ");
       emit(comprehension.inList());
 
-      if (comprehension.filter() != null) {
+      Node filter = comprehension.filter();
+      if (filter != null) {
+        // Replace all occurrences of var in filter with $.
+        replaceVarInTree(filter, comprehension.var(), "$");
+
         out.append(" if ");
-        emit(comprehension.filter());
+        emit(filter);
       }
       out.append(") ");
     }
   };
+
+  private void replaceVarInTree(Node top, Variable var, String with) {
+    // Pre-order traversal.
+    for (Node node : top.children()) {
+      replaceVarInTree(node, var, with);
+    }
+
+    if (top instanceof Variable) {
+      Variable local = (Variable) top;
+      if (var.name.equals(local.name)) {
+        local.name = with;
+      }
+    }
+  }
 
   private final Emitter patternRuleEmitter = new Emitter() {
     @Override public void emitCode(Node node) {

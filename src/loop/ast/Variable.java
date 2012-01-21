@@ -7,7 +7,7 @@ import loop.type.Types;
  * @author dhanji@gmail.com (Dhanji R. Prasanna)
  */
 public class Variable extends Node {
-  public final String name;
+  public String name;
   private Type type = Types.INTEGER; // defaults to int
   public String value = Types.INTEGER.defaultValue();
 

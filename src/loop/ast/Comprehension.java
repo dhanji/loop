@@ -10,12 +10,12 @@ import java.util.List;
  */
 public class Comprehension extends Node {
   private List<Node> projection = new ArrayList<Node>();
-  private final Node var;
+  private final Variable var;
   private Node inList;
   private Node filter;
 
   public Comprehension(Node var, Node inList, Node filter) {
-    this.var = var;
+    this.var = (Variable) var;
     this.inList = inList;
     this.filter = filter;
   }
@@ -44,7 +44,7 @@ public class Comprehension extends Node {
     return projection;
   }
 
-  public Node var() {
+  public Variable var() {
     return var;
   }
 
