@@ -49,27 +49,27 @@ public class ReducerTest {
 
   @Test
   public final void listComprehensions() {
-    compare("(= output (comput x (* 2) for x in list))",
+    compare("(= output (cpr x (* 2) for x in list))",
         "output = x * 2 for x in list");
-    compare("(= output (comput x (* 2) for x in list if (comput x (< 10))))",
+    compare("(= output (cpr x (* 2) for x in list if (comput x (< 10))))",
         "output = x * 2 for x in list if x < 10");
 
     // Sanity check
-    compare("(= output (comput x (* 2) for x in (comput list1 (+ list2)) if (comput x (< 10))))",
+    compare("(= output (cpr x (* 2) for x in (comput list1 (+ list2)) if (comput x (< 10))))",
         "output = x * 2 for x in list1 + list2 if x < 10");
   }
 
   @Test
   public final void messyListComprehensions() {
-    compare("(list (comput x (/ 2) for x in (list 1 2 3) if (comput x (> 2))))",
+    compare("(list (cpr x (/ 2) for x in (list 1 2 3) if (comput x (> 2))))",
         "[x/2 for x in [1, 2, 3] if x > 2]");
-    compare("(comput (comput x (/ 2) for x in (list 1 2 3) if (comput x (> 2))) (+ y))",
+    compare("(comput (cpr x (/ 2) for x in (list 1 2 3) if (comput x (> 2))) (+ y))",
         "(x/2 for x in [1, 2, 3] if x > 2) + y");
-    compare("(= ls (comput x (/ 2) for x in (list 1 2 3) if (comput x (> 2))))",
+    compare("(= ls (cpr x (/ 2) for x in (list 1 2 3) if (comput x (> 2))))",
         "ls = (x/2 for x in [1, 2, 3] if x > 2)");
 
     // without group (reduces to the same).
-    compare("(= ls (comput x (/ 2) for x in (list 1 2 3) if (comput x (> 2))))",
+    compare("(= ls (cpr x (/ 2) for x in (list 1 2 3) if (comput x (> 2))))",
         "ls = x/2 for x in [1, 2, 3] if x > 2");
   }
 

@@ -36,6 +36,12 @@ public class TokenizerTest {
   }
 
   @Test
+  public final void regexAndStringAndJavaLiterals() {
+    compare("2 . 0 'hello' \"hi\" / yo / 123 `java.lang.System`",
+        "2.0 'hello' \"hi\" /yo/ 123 `java.lang.System`");
+  }
+
+  @Test
   public final void singleLineStatementsWithComments() {
     compare("\" hi there! \" . to_s - 1", "\" hi there! \".to_s - 1 # yoyoy");
     compare("1 + 2", "1 +    2 # + 2");

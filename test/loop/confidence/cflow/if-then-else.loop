@@ -1,0 +1,10 @@
+# Simple control flow
+
+cond(x) ->
+  if x % 2 == 0 then 'even' else 'odd'
+
+cond2(x) ->
+  if (x % 2 == 0) then 'even' else 'odd'
+
+main ->
+  cond(4) + cond2(1)

@@ -4,12 +4,14 @@ import loop.ast.Assignment;
 import loop.ast.BinaryOp;
 import loop.ast.Call;
 import loop.ast.CallChain;
+import loop.ast.Comprehension;
 import loop.ast.Computation;
 import loop.ast.Guard;
 import loop.ast.IndexIntoList;
 import loop.ast.InlineListDef;
 import loop.ast.InlineMapDef;
 import loop.ast.IntLiteral;
+import loop.ast.JavaLiteral;
 import loop.ast.ListDestructuringPattern;
 import loop.ast.ListStructurePattern;
 import loop.ast.Node;
@@ -19,6 +21,8 @@ import loop.ast.PrivateField;
 import loop.ast.RegexLiteral;
 import loop.ast.StringLiteral;
 import loop.ast.StringPattern;
+import loop.ast.TernaryExpression;
+import loop.ast.TypeLiteral;
 import loop.ast.Variable;
 import loop.ast.WildcardPattern;
 import loop.ast.script.ArgDeclList;
@@ -36,6 +40,11 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 @SuppressWarnings({"FieldCanBeLocal"}) class CodeWriter {
   private static final AtomicInteger functionNameSequence = new AtomicInteger();
+  private static final Map<String, String> BINARY_OP_TRANSLATIONS = new HashMap<String, String>();
+
+  static {
+    BINARY_OP_TRANSLATIONS.put("not", "!=");
+  }
 
   private final StringBuilder out = new StringBuilder();
   private final Stack<Context> functionStack = new Stack<Context>();
@@ -56,7 +65,9 @@ import java.util.concurrent.atomic.AtomicInteger;
     EMITTERS.put(Call.class, callEmitter);
     EMITTERS.put(Computation.class, computationEmitter);
     EMITTERS.put(IntLiteral.class, intEmitter);
+    EMITTERS.put(TypeLiteral.class, typeLiteralEmitter);
     EMITTERS.put(Variable.class, variableEmitter);
+    EMITTERS.put(JavaLiteral.class, javaLiteralEmitter);
     EMITTERS.put(BinaryOp.class, binaryOpEmitter);
     EMITTERS.put(StringLiteral.class, stringLiteralEmitter);
     EMITTERS.put(RegexLiteral.class, regexLiteralEmitter);
@@ -69,6 +80,8 @@ import java.util.concurrent.atomic.AtomicInteger;
     EMITTERS.put(ArgDeclList.class, argDeclEmitter);
     EMITTERS.put(PrivateField.class, privateFieldEmitter);
     EMITTERS.put(PatternRule.class, patternRuleEmitter);
+    EMITTERS.put(TernaryExpression.class, ternaryExpressionEmitter);
+    EMITTERS.put(Comprehension.class, comprehensionEmitter);
   }
 
   public String write(Unit unit) {
@@ -101,6 +114,22 @@ import java.util.concurrent.atomic.AtomicInteger;
   // EMITTERS ----------------------------------------------------------
   // -------------------------------------------------------------------
 
+  private final Emitter ternaryExpressionEmitter = new Emitter() {
+    @Override public void emitCode(Node node) {
+      TernaryExpression expression = (TernaryExpression) node;
+
+      // IF test
+      out.append('(');
+      emit(expression.children().get(0));
+
+      out.append(" ? ");
+      emit(expression.children().get(1));
+      out.append(" : ");
+      emit(expression.children().get(2));
+      out.append(")\n");
+    }
+  };
+
   private final Emitter computationEmitter = new Emitter() {
     @Override public void emitCode(Node node) {
       Computation computation = (Computation) node;
@@ -113,9 +142,24 @@ import java.util.concurrent.atomic.AtomicInteger;
   private final Emitter callEmitter = new Emitter() {
     @Override public void emitCode(Node node) {
       Call call = (Call) node;
-      out.append(normalizeMethodName(call.name())).append('(');
-      if (!call.args().children().isEmpty()) {
-        emit(call.args().children().get(0));
+      String name;
+
+      // This is a special invocation so we emit it without the dot.
+      if ("@call".equals(call.name())) {
+        name = "";
+
+        // Chew the previous dot in the call chain.
+        out.deleteCharAt(out.length() - 1);
+      } else
+        name = normalizeMethodName(call.name());
+
+      out.append(name).append('(');
+      List<Node> children = call.args().children();
+      for (int i = 0, childrenSize = children.size(); i < childrenSize; i++) {
+        emit(children.get(i));
+
+        if (i < childrenSize - 1)
+          out.append(", ");
       }
       out.append(')');
     }
@@ -124,7 +168,11 @@ import java.util.concurrent.atomic.AtomicInteger;
   private final Emitter binaryOpEmitter = new Emitter() {
     @Override public void emitCode(Node node) {
       BinaryOp binaryOp = (BinaryOp) node;
-      out.append(binaryOp.name()).append(' ');
+      String name = BINARY_OP_TRANSLATIONS.get(binaryOp.name());
+
+      if (null == name)
+        name = binaryOp.name();
+      out.append(' ').append(name).append(' ');
       emitOnlyChild(binaryOp);
     }
   };
@@ -137,13 +185,27 @@ import java.util.concurrent.atomic.AtomicInteger;
   };
 
   private static String normalizeMethodName(String name) {
-    return name.replace("@", "__");
+    return name.replaceFirst("@", "__");
   }
 
   private final Emitter intEmitter = new Emitter() {
     @Override public void emitCode(Node node) {
       IntLiteral intLiteral = (IntLiteral) node;
       out.append(intLiteral.value);
+    }
+  };
+
+  private final Emitter typeLiteralEmitter = new Emitter() {
+    @Override public void emitCode(Node node) {
+      TypeLiteral type = (TypeLiteral) node;
+      out.append(type.name);
+    }
+  };
+
+  private final Emitter javaLiteralEmitter = new Emitter() {
+    @Override public void emitCode(Node node) {
+      JavaLiteral java = (JavaLiteral) node;
+      out.append(java.value);
     }
   };
 
@@ -287,6 +349,48 @@ import java.util.concurrent.atomic.AtomicInteger;
       out.append(']');
     }
   };
+
+  private final Emitter comprehensionEmitter = new Emitter() {
+    @Override public void emitCode(Node node) {
+      Comprehension comprehension = (Comprehension) node;
+
+      out.append(" (");
+      for (Node element : comprehension.projection()) {
+        replaceVarInTree(element, comprehension.var(), "$");
+        emit(element);
+      }
+
+      out.append(" in ");
+      emit(comprehension.inList());
+
+      Node filter = comprehension.filter();
+      if (filter != null) {
+        // Replace all occurrences of var in filter with $.
+        replaceVarInTree(filter, comprehension.var(), "$");
+
+        out.append(" if ");
+        emit(filter);
+      }
+      out.append(") ");
+    }
+  };
+
+  private void replaceVarInTree(Node top, Variable var, String with) {
+    // Pre-order traversal.
+    for (Node node : top.children()) {
+      replaceVarInTree(node, var, with);
+    }
+
+    if (top instanceof Variable) {
+      Variable local = (Variable) top;
+      if (var.name.equals(local.name)) {
+        local.name = with;
+      }
+    } else if (top instanceof Call) {
+      Call call = (Call) top;
+      replaceVarInTree(call.args(), var, with);
+    }
+  }
 
   private final Emitter patternRuleEmitter = new Emitter() {
     @Override public void emitCode(Node node) {

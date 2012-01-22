@@ -1,0 +1,8 @@
+# List comprehensions
+
+comp(ls) ->
+  (x for x in ls)
+
+
+main ->
+  comp([10, 20, 30])

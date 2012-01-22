@@ -1,0 +1,8 @@
+# List comprehensions
+
+comp(ls) ->
+  (x * 10 for x in ls if x <= 30)
+
+
+main ->
+  comp([10, 20, 30, 40])

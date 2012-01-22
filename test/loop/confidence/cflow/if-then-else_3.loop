@@ -1,0 +1,8 @@
+# Inline ternary if
+
+cond(x) ->
+  [1 : (if x then 1 else 2), 2 : (12 + 1)]
+
+
+main ->
+  cond(true)

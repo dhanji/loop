@@ -1,0 +1,8 @@
+# Simple closures
+
+comp(fn) ->
+  fn() * 2
+
+main ->
+  comp(@() ->
+         50)
