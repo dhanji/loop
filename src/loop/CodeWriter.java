@@ -138,7 +138,18 @@ import java.util.concurrent.atomic.AtomicInteger;
   private final Emitter callEmitter = new Emitter() {
     @Override public void emitCode(Node node) {
       Call call = (Call) node;
-      out.append(normalizeMethodName(call.name())).append('(');
+      String name;
+
+      // This is a special invocation so we emit it without the dot.
+      if ("@call".equals(call.name())) {
+        name = "";
+
+        // Chew the previous dot in the call chain.
+        out.deleteCharAt(out.length() - 1);
+      } else
+        name = normalizeMethodName(call.name());
+
+      out.append(name).append('(');
       List<Node> children = call.args().children();
       for (int i = 0, childrenSize = children.size(); i < childrenSize; i++) {
         emit(children.get(i));
@@ -170,7 +181,7 @@ import java.util.concurrent.atomic.AtomicInteger;
   };
 
   private static String normalizeMethodName(String name) {
-    return name.replace("@", "__");
+    return name.replaceFirst("@", "__");
   }
 
   private final Emitter intEmitter = new Emitter() {

@@ -1,0 +1,8 @@
+# Calling Java and Loop functions.
+
+@lower(str) ->
+  str.toLowerCase()
+
+
+main ->
+  @lower('HELLO')
