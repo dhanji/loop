@@ -23,6 +23,12 @@ public class ParserTest {
   }
 
   @Test
+  public final void javaLiteral() {
+    // Same thing but this time with a field instead.
+    compare("(comput (. `java.lang.System`))", "`java.lang.System`");
+  }
+
+  @Test
   public final void multilineParentheticalExpr() {
     compare("(comput (comput (. 1) (+ (. 2)) (+ (. 3))))", "(1\n + 2\n + 3)");
     compare("(comput (comput (. 1) (+ (. 2))) (+ (comput (. 3 triple))))",

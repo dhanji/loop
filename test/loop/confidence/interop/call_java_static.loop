@@ -1,0 +1,8 @@
+# Calling Java and Loop functions.
+
+@do(str) ->
+  str + `java.lang.System`.currentTimeMillis()
+
+
+main ->
+  @do('')

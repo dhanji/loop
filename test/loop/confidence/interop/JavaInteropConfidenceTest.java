@@ -4,6 +4,7 @@ import loop.Loop;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Confidence tests run a bunch of semi-realistic programs and assert that their results are
@@ -13,7 +14,13 @@ import static org.junit.Assert.assertEquals;
  */
 public class JavaInteropConfidenceTest {
   @Test
-  public final void createAndCallAnonymousFunction() {
+  public final void normalFunctionCall() {
     assertEquals("hello", Loop.run("test/loop/confidence/interop/postfix_call_1.loop"));
+  }
+
+  @Test
+  public final void callJavaStaticFunction() {
+    assertTrue(1327205727145L /* epoch time when this test was written */ < Long.parseLong(
+        Loop.run("test/loop/confidence/interop/call_java_static.loop").toString()));
   }
 }

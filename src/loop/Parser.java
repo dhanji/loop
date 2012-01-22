@@ -1065,11 +1065,12 @@ public class Parser {
   }
 
   /**
-   * (lexer super rule) literal := string | regex | MINUS? integer | decimal | TYPE_IDENT
+   * (lexer super rule) literal := string | MINUS? integer | decimal
+   *                               | TYPE_IDENT | JAVA_LITERAL
    */
   private Node literal() {
     Token token =
-        anyOf(Token.Kind.STRING, Token.Kind.INTEGER, Token.Kind.TYPE_IDENT);
+        anyOf(Token.Kind.STRING, Token.Kind.INTEGER, Token.Kind.TYPE_IDENT, Token.Kind.JAVA_LITERAL);
     if (null == token) {
       List<Token> match = match(Token.Kind.MINUS, Token.Kind.INTEGER);
       if (null != match)
@@ -1084,6 +1085,8 @@ public class Parser {
         return new StringLiteral(token.value);
       case TYPE_IDENT:
         return new TypeLiteral(token.value);
+      case JAVA_LITERAL:
+        return new JavaLiteral(token.value);
     }
     return null;
   }

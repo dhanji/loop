@@ -22,6 +22,7 @@ public class Token {
     TYPE_IDENT,
     INTEGER,
     STRING,
+    JAVA_LITERAL,
     REGEX,
     DOT,
 
@@ -141,6 +142,8 @@ public class Token {
 
       if (first == '"' || first == '\'')
         return STRING;
+      else if (first == '`' && value.endsWith("`"))
+        return JAVA_LITERAL;
 
       Kind knownKind = TOKEN_MAP.get(value);
       if (null != knownKind)

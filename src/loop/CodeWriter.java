@@ -11,6 +11,7 @@ import loop.ast.IndexIntoList;
 import loop.ast.InlineListDef;
 import loop.ast.InlineMapDef;
 import loop.ast.IntLiteral;
+import loop.ast.JavaLiteral;
 import loop.ast.ListDestructuringPattern;
 import loop.ast.ListStructurePattern;
 import loop.ast.Node;
@@ -21,6 +22,7 @@ import loop.ast.RegexLiteral;
 import loop.ast.StringLiteral;
 import loop.ast.StringPattern;
 import loop.ast.TernaryExpression;
+import loop.ast.TypeLiteral;
 import loop.ast.Variable;
 import loop.ast.WildcardPattern;
 import loop.ast.script.ArgDeclList;
@@ -63,7 +65,9 @@ import java.util.concurrent.atomic.AtomicInteger;
     EMITTERS.put(Call.class, callEmitter);
     EMITTERS.put(Computation.class, computationEmitter);
     EMITTERS.put(IntLiteral.class, intEmitter);
+    EMITTERS.put(TypeLiteral.class, typeLiteralEmitter);
     EMITTERS.put(Variable.class, variableEmitter);
+    EMITTERS.put(JavaLiteral.class, javaLiteralEmitter);
     EMITTERS.put(BinaryOp.class, binaryOpEmitter);
     EMITTERS.put(StringLiteral.class, stringLiteralEmitter);
     EMITTERS.put(RegexLiteral.class, regexLiteralEmitter);
@@ -188,6 +192,20 @@ import java.util.concurrent.atomic.AtomicInteger;
     @Override public void emitCode(Node node) {
       IntLiteral intLiteral = (IntLiteral) node;
       out.append(intLiteral.value);
+    }
+  };
+
+  private final Emitter typeLiteralEmitter = new Emitter() {
+    @Override public void emitCode(Node node) {
+      TypeLiteral type = (TypeLiteral) node;
+      out.append(type.name);
+    }
+  };
+
+  private final Emitter javaLiteralEmitter = new Emitter() {
+    @Override public void emitCode(Node node) {
+      JavaLiteral java = (JavaLiteral) node;
+      out.append(java.value);
     }
   };
 
