@@ -11,10 +11,10 @@ x 'where' scoping
   - match patterns against multiple arguments
 
 x guards for pattern matching methods
-- Interactive interpreter/shell
 x List comprehensions
 x Conditionals (if-then-else, ternaries)
 x Calling into Java methods
+- Interactive interpreter/shell
 - Line/Column error reporting
 - Basic scope verification with symbol table
 - Modules/packaging/import

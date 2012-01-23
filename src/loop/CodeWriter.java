@@ -71,7 +71,7 @@ import java.util.concurrent.atomic.AtomicInteger;
     EMITTERS.put(BinaryOp.class, binaryOpEmitter);
     EMITTERS.put(StringLiteral.class, stringLiteralEmitter);
     EMITTERS.put(RegexLiteral.class, regexLiteralEmitter);
-    EMITTERS.put(Assignment.class, callEmitter);
+    EMITTERS.put(Assignment.class, assignmentEmitter);
     EMITTERS.put(InlineMapDef.class, inlineMapEmitter);
     EMITTERS.put(InlineListDef.class, inlineListEmitter);
     EMITTERS.put(IndexIntoList.class, indexIntoListEmitter);
@@ -177,6 +177,20 @@ import java.util.concurrent.atomic.AtomicInteger;
     }
   };
 
+  private final Emitter assignmentEmitter = new Emitter() {
+    @Override public void emitCode(Node node) {
+      Assignment assignment = (Assignment) node;
+      if (!(assignment.lhs() instanceof Variable))
+        throw new RuntimeException("Expected a variable on the LHS of assignment: "
+            + Parser.stringify(assignment));
+
+      emit(assignment.lhs());
+      out.append(" = ");
+      emit(assignment.rhs());
+      out.append(";\n");
+    }
+  };
+
   private final Emitter variableEmitter = new Emitter() {
     @Override public void emitCode(Node node) {
       Variable var = (Variable) node;
@@ -232,8 +246,8 @@ import java.util.concurrent.atomic.AtomicInteger;
         name = "$" + functionNameSequence.incrementAndGet();
       }
 
-      // Emit locally-scoped helper functions.
-      for (FunctionDecl helper : functionDecl.whereBlock) {
+      // Emit locally-scoped helper functions and variables.
+      for (Node helper : functionDecl.whereBlock) {
         emit(helper);
       }
 

@@ -32,4 +32,9 @@ public class JavaInteropConfidenceTest {
   public final void callJavaStaticConstant() {
     assertEquals(CONSTANT + 1, Loop.run("test/loop/confidence/interop/call_java_static_2.loop"));
   }
+
+  @Test
+  public final void callJavaStaticClassUsingWhere() {
+    assertTrue(CONSTANT <= (Long)Loop.run("test/loop/confidence/interop/call_java_static_3.loop", true));
+  }
 }

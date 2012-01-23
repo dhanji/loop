@@ -295,15 +295,23 @@ public class Parser {
     boolean hasWhere = false;
     if (match(Token.Kind.WHERE) != null) {
       FunctionDecl helperFunction;
+      Node assignment = null;
       do {
         chewEols();
         withIndent();
         helperFunction = functionDecl();
+
+        if (null == helperFunction)
+          assignment = variableAssignment();
+
         chewEols();
 
         if (null != helperFunction) {
           hasWhere = true;
           functionDecl.whereBlock.add(helperFunction);
+        } else if (null != assignment) {
+          hasWhere = true;
+          functionDecl.whereBlock.add(assignment);
         }
       } while (helperFunction != null);
     }
@@ -581,6 +589,27 @@ public class Parser {
    */
   private Node line() {
     return assign();
+  }
+
+  /**
+   * Assign a variable an expression.
+   *
+   * variableAssignment := variable ASSIGN computation
+   */
+  private Node variableAssignment() {
+    Node left = variable();
+    if (null == left)
+      return null;
+
+    if (match(Token.Kind.ASSIGN) == null)
+      throw new RuntimeException("Expected ':' after variable name.");
+
+    Node right = term();
+
+    Assignment assignment = new Assignment();
+    assignment.add(left);
+    assignment.add(right);
+    return assignment;
   }
 
   /**

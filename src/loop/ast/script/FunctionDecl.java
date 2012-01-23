@@ -13,7 +13,7 @@ public class FunctionDecl extends Node {
   private final String name;
   private final ArgDeclList arguments;
   public boolean patternMatching;
-  public final List<FunctionDecl> whereBlock = new ArrayList<FunctionDecl>();
+  public final List<Node> whereBlock = new ArrayList<Node>();
 
   public FunctionDecl(String name, ArgDeclList arguments) {
     this.name = name;
