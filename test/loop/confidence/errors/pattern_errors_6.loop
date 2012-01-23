@@ -1,0 +1,13 @@
+# Errors in pattern matching functions
+
+
+
+
+scan(ls) =>
+  [x,]                  : []
+  [x]       | x < 10    : [x]
+            | x > 10      [10]
+  [x:xs]                : scan(xs) + x
+
+main ->
+  scan([100,2,3])

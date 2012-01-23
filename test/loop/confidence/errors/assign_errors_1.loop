@@ -1,0 +1,8 @@
+# Errors in pattern matching functions
+
+func() ->
+  x + 1
+  where
+    x:
+
+

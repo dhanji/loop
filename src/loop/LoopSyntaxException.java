@@ -13,8 +13,8 @@ public class LoopSyntaxException extends RuntimeException {
     this.errors = errors;
   }
 
-  public LoopSyntaxException(String message) {
-    super(message);
+  public LoopSyntaxException() {
+    super("Syntax errors exist");
 
     this.errors = null;
   }

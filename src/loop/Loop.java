@@ -87,12 +87,20 @@ public class Loop {
       System.out.println();
 
       // Show some context around this file.
-      if (error.line() > 0)
-        System.out.println("  " + error.line() + ": " + lines.get(error.line() - 1));
-
       int lineNumber = error.line() + 1;
-      System.out.println("  " + lineNumber + ": " + lines.get(error.line()));
-      int spaces = error.column() + Integer.toString(lineNumber).length() + 1;
+      int column = error.column();
+
+      // Unwrap to the previous line if the highlighted line is empty.
+      if (lineNumber > 0 && (lines.get(lineNumber - 1).trim().isEmpty() || column == 0)) {
+        lineNumber-= 1;
+        column = lines.get(lineNumber - 1).length();
+      }
+
+      if (error.line() > 0)
+        System.out.println("  " + error.line() + ": " + lines.get(lineNumber - 2));
+
+      System.out.println("  " + lineNumber + ": " + lines.get(lineNumber - 1));
+      int spaces = column + Integer.toString(lineNumber).length() + 1;
       System.out.println("  " + whitespace(spaces) + "^\n");
     }
   }

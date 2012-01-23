@@ -269,7 +269,7 @@ public class ParserTest {
     compare("(comput (. map))", "[1::1, 2]");
   }
 
-  @Test(expected = RuntimeException.class)
+  @Test(expected = LoopSyntaxException.class)
   public final void mapError6() {
     compare("(comput (. map))", "[1:1, 2]");
   }

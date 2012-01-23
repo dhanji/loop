@@ -1,0 +1,17 @@
+# Errors in pattern matching functions
+
+require a.
+
+
+
+
+
+
+
+scan( =>
+  []                    : [1: 2, 1: 3]
+  [x]       | x < 10    : [x]
+  [x:xs]                : scan(xs) + x
+
+main ->
+  scan([100, 1])
