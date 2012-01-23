@@ -294,15 +294,15 @@ public class Parser {
     withIndent();
     boolean hasWhere = false;
     if (match(Token.Kind.WHERE) != null) {
-      FunctionDecl helperFunction;
-      Node assignment = null;
+      FunctionDecl helperFunction = null;
+      Node assignment;
       do {
         chewEols();
         withIndent();
-        helperFunction = functionDecl();
 
-        if (null == helperFunction)
-          assignment = variableAssignment();
+        assignment = variableAssignment();
+        if (null == assignment)
+          helperFunction = functionDecl();
 
         chewEols();
 
@@ -597,14 +597,14 @@ public class Parser {
    * variableAssignment := variable ASSIGN computation
    */
   private Node variableAssignment() {
-    Node left = variable();
-    if (null == left)
+    List<Token> startTokens = match(Token.Kind.IDENT, Token.Kind.ASSIGN);
+    if (null == startTokens)
       return null;
 
-    if (match(Token.Kind.ASSIGN) == null)
-      throw new RuntimeException("Expected ':' after variable name.");
-
+    Node left = new Variable(startTokens.get(0).value);
     Node right = term();
+    if (right == null)
+      throw new RuntimeException("Expected expression after ':' in assignment");
 
     Assignment assignment = new Assignment();
     assignment.add(left);

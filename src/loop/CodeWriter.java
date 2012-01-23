@@ -246,11 +246,6 @@ import java.util.concurrent.atomic.AtomicInteger;
         name = "$" + functionNameSequence.incrementAndGet();
       }
 
-      // Emit locally-scoped helper functions and variables.
-      for (Node helper : functionDecl.whereBlock) {
-        emit(helper);
-      }
-
       Context context = new Context(name);
       for (Node arg : functionDecl.arguments().children()) {
         context.arguments.add(((ArgDeclList.Argument) arg).name());
@@ -260,6 +255,12 @@ import java.util.concurrent.atomic.AtomicInteger;
       out.append("def ").append(normalizeMethodName(name));
       emit(functionDecl.arguments());
       out.append(" {\n");
+
+      // Emit locally-scoped helper functions and variables.
+      for (Node helper : functionDecl.whereBlock) {
+        emit(helper);
+      }
+
       emitChildren(node);
       if (functionDecl.patternMatching) {
         // If we got this far, then none of the patterns were sufficient.
