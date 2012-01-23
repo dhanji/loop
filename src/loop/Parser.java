@@ -19,6 +19,7 @@ import java.util.Set;
  * @author dhanji@gmail.com (Dhanji R. Prasanna)
  */
 public class Parser {
+  private final List<ParseError> errors = new ArrayList<ParseError>();
   private final List<Token> tokens;
   private Node last = null;
   private int i = 0;
@@ -47,6 +48,14 @@ public class Parser {
 
   public Parser(List<Token> tokens) {
     this.tokens = tokens;
+  }
+
+  public List<ParseError> getErrors() {
+    return errors;
+  }
+
+  public void addError(String message, Token token) {
+    errors.add(new ParseError(message, token));
   }
 
   /**
@@ -177,7 +186,7 @@ public class Parser {
       if (match(Token.Kind.HASHROCKET, Token.Kind.LBRACE) == null) {
         return null;
       } else
-        return patternMatchingFunctionDecl(functionDecl, anonymous);
+        return patternMatchingFunctionDecl(functionDecl);
     }
 
     // Optionally match eols here.
@@ -213,7 +222,7 @@ public class Parser {
     return functionDecl;
   }
 
-  private FunctionDecl patternMatchingFunctionDecl(FunctionDecl functionDecl, boolean anonymous) {
+  private FunctionDecl patternMatchingFunctionDecl(FunctionDecl functionDecl) {
     chewEols();
     do {
       withIndent();
@@ -241,14 +250,17 @@ public class Parser {
           pattern = new WildcardPattern();
 
       // Look for a where block at the end of this pattern matching decl.
+      int currentToken = i;
       if (pattern == null)
         if (whereBlock(functionDecl)) {
           if (endOfInput() || match(Token.Kind.RBRACE) != null)
             break;
         }
 
-      if (pattern == null)
-        throw new RuntimeException("Pattern syntax error. Expected a pattern rule.");
+      if (pattern == null) {
+        addError("Pattern syntax error. Expected a pattern rule", tokens.get(currentToken));
+        return null;
+      }
 
       PatternRule rule = new PatternRule();
       rule.pattern = pattern;
@@ -263,7 +275,8 @@ public class Parser {
             guardExpression = new OtherwiseGuard();
 
         if (match(Token.Kind.ASSIGN) == null)
-          throw new RuntimeException("Expected ':' after guard expression.");
+          addError("Expected ':' after guard expression", tokens.get(i - 1));
+//          throw new RuntimeException();
 
         Node line = line();
         chewEols();
@@ -275,7 +288,8 @@ public class Parser {
 
       if (!guarded) {
         if (match(Token.Kind.ASSIGN) == null)
-          throw new RuntimeException("Expected ':' after pattern");
+          addError("Expected ':' after pattern", tokens.get(i));
+//          throw new RuntimeException("Expected ':' after pattern");
 
         rule.rhs = line();
         chewEols();
@@ -331,8 +345,11 @@ public class Parser {
         break;
     }
 
-    if (match(Token.Kind.RPAREN) == null)
-      throw new RuntimeException("Expected ')' at end of string group pattern rule.");
+    if (match(Token.Kind.RPAREN) == null) {
+      addError("Expected ')' at end of string group pattern rule.", tokens.get(i - 1));
+      throw new LoopSyntaxException("Cannot continue parsing");
+    }
+//      throw new RuntimeException("Expected ')' at end of string group pattern rule.");
 
     return pattern;
   }
@@ -378,8 +395,11 @@ public class Parser {
       while (match(Token.Kind.ASSIGN) != null)
         pattern.add(term());
 
-      if (match(Token.Kind.RBRACKET) == null)
-        throw new RuntimeException("Expected ']' at end of list pattern rule");
+      if (match(Token.Kind.RBRACKET) == null) {
+        addError("Expected ']' at end of list pattern rule", tokens.get(i - 1));
+//        throw new RuntimeException();
+        return null;
+      }
 
       return pattern;
     }
@@ -985,7 +1005,8 @@ public class Parser {
       boolean slice;
       if (match(Token.Kind.DOT) != null) {
         if (match(Token.Kind.DOT) == null) {
-          throw new RuntimeException("Syntax error, range specifier incomplete. Expected '..'");
+          addError("Syntax error, range specifier incomplete. Expected '..'", tokens.get(i - 1));
+          throw new LoopSyntaxException("Syntax errors");
         }
 
         slice = true;
@@ -1000,7 +1021,8 @@ public class Parser {
       list = new InlineMapDef(isBraced);
     }
     if (anyOf(Token.Kind.RBRACKET, Token.Kind.RBRACE) == null) {
-      throw new RuntimeException("Expected " + (isBraced ? "}" : "]"));
+      addError("Expected '" + (isBraced ? "}" : "]'"), tokens.get(i - 1));
+      return null;
     }
 
     return list;

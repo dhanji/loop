@@ -57,14 +57,14 @@ public class TokenizerTest {
   public final void typeNames() {
     List<Token> tokens = new Tokenizer("class MyClass").tokenize();
     Assert.assertEquals(Arrays.asList(
-        new Token("class", Token.Kind.CLASS),
-        new Token("MyClass", Token.Kind.TYPE_IDENT)),
+        new Token("class", Token.Kind.CLASS, 0, 0),
+        new Token("MyClass", Token.Kind.TYPE_IDENT, 0, 0)),
         tokens);
 
     tokens = new Tokenizer("class aClass").tokenize();
     Assert.assertFalse(Arrays.asList(
-        new Token("class", Token.Kind.CLASS),
-        new Token("aClass", Token.Kind.TYPE_IDENT)).equals(tokens));
+        new Token("class", Token.Kind.CLASS, 0, 0),
+        new Token("aClass", Token.Kind.TYPE_IDENT, 0, 0)).equals(tokens));
   }
 
   @Test

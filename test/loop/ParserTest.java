@@ -259,14 +259,9 @@ public class ParserTest {
     compare("(comput (. map))", "[1:]");
   }
 
-  @Test(expected = RuntimeException.class)
+  @Test
   public final void mapError2() {
-    compare("(comput (. map))", "[::1]");
-  }
-
-  @Test(expected = RuntimeException.class)
-  public final void mapError5() {
-    compare("(comput (. map))", "[:1]");
+    expectNoOutput("[::1]");
   }
 
   @Test(expected = RuntimeException.class)
@@ -295,5 +290,10 @@ public class ParserTest {
     System.out.println("Parse S-Expr:\n" + Parser.stringify(parser.ast()));
     Assert.assertEquals(expected, Parser.stringify(parser.ast()));
     System.out.println("PASS");
+  }
+
+  static void expectNoOutput(String input) {
+    Parser parser = new Parser(new Tokenizer(input).tokenize());
+    Assert.assertNull("Parser returned output!", parser.parse());
   }
 }

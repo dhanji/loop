@@ -14,11 +14,11 @@ x guards for pattern matching methods
 x List comprehensions
 x Conditionals (if-then-else, ternaries)
 x Calling into Java methods
-- Interactive interpreter/shell
 - Line/Column error reporting
+- Interactive interpreter/shell
 - Basic scope verification with symbol table
 - Modules/packaging/import
-- Closures
+x Closures
 
 
 Stretch

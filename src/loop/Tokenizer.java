@@ -78,11 +78,19 @@ public class Tokenizer {
     List<Token> tokens = new ArrayList<Token>();
     char[] input = this.input.toCharArray();
 
+    int line = 0, column = 0;
+
     int i = 0, start = 0;
     boolean inWhitespace = false, inDelimiter = false, inComment = false, leading = true;
     char inStringSequence = 0;
     for (; i < input.length; i++) {
       char c = input[i];
+      column++;
+
+      if (c == '\n') {
+        line++;
+        column = 0;
+      }
 
       // strings and sequences
       if (STRING_TERMINATORS[c]) {
@@ -92,7 +100,7 @@ public class Tokenizer {
           // end of the current string sequence. bake.
           if (inStringSequence == c) {
             // +1 to include the terminating token.
-            bakeToken(tokens, input, i + 1, start);
+            bakeToken(tokens, input, i + 1, start, line, column);
             start = i + 1;
 
             inStringSequence = 0; // reset to normal language
@@ -104,7 +112,7 @@ public class Tokenizer {
         } else {
           // Also bake if there is any leading tokenage.
           if (i > start) {
-            bakeToken(tokens, input, i, start);
+            bakeToken(tokens, input, i, start, line, column);
             start = i;
           }
 
@@ -139,13 +147,13 @@ public class Tokenizer {
 
         if (!inWhitespace) {
           //bake token
-          bakeToken(tokens, input, i, start);
+          bakeToken(tokens, input, i, start, line, column);
           inWhitespace = true;
         }
 
         // leading whitespace is a special token...
         if (leading) {
-          tokens.add(new Token(" ", Token.Kind.INDENT));
+          tokens.add(new Token(" ", Token.Kind.INDENT, line, column));
         }
 
         // skip whitespace
@@ -162,11 +170,11 @@ public class Tokenizer {
       // break early.
       if (isSingleTokenDelimiter(c)) {
 
-        bakeToken(tokens, input, i, start);
+        bakeToken(tokens, input, i, start, line, column);
         start = i;
 
         // Also add the delimiter.
-        bakeToken(tokens, input, i + 1, start);
+        bakeToken(tokens, input, i + 1, start, line, column);
         start = i + 1;
         continue;
       }
@@ -175,7 +183,7 @@ public class Tokenizer {
       if (isDelimiter(c)) {
 
         if (!inDelimiter) {
-          bakeToken(tokens, input, i, start);
+          bakeToken(tokens, input, i, start, line, column);
           inDelimiter = true;
           start = i;
         }
@@ -185,7 +193,7 @@ public class Tokenizer {
 
       // if coming out of a delimiter, we still need to bake
       if (inDelimiter) {
-        bakeToken(tokens, input, i, start);
+        bakeToken(tokens, input, i, start, line, column);
         start = i;
         inDelimiter = false;
       }
@@ -194,7 +202,7 @@ public class Tokenizer {
     // collect residual token
     if (i > start && !inComment) {
       // we don't want trailing whitespace
-      bakeToken(tokens, input, i, start);
+      bakeToken(tokens, input, i, start, line, column);
     }
 
     return cleanTokens(tokens);
@@ -223,7 +231,7 @@ public class Tokenizer {
 
       // Insert new function start token if necessary.
       if (isThinOrFatArrow(token)) {
-        iterator.add(new Token("{", Token.Kind.LBRACE));
+        iterator.add(new Token("{", Token.Kind.LBRACE, token.line, token.column));
         groupStack.push(Token.Kind.LBRACE);
       }
 
@@ -238,8 +246,8 @@ public class Tokenizer {
 
         while (!groupStack.isEmpty() && groupStack.peek() == Token.Kind.LBRACE) {
           // Add before cursor.
-          iterator.previous();
-          iterator.add(new Token("}", Token.Kind.RBRACE));
+          Token prev = iterator.previous();
+          iterator.add(new Token("}", Token.Kind.RBRACE, prev.line, prev.column));
           iterator.next();
 
           groupStack.pop();
@@ -252,8 +260,8 @@ public class Tokenizer {
       } else if (Token.Kind.RPAREN == token.kind) {
         while (groupStack.peek() != Token.Kind.LPAREN) {
           // Add before cursor.
-          iterator.previous();
-          iterator.add(new Token("}", Token.Kind.RBRACE));
+          Token prev = iterator.previous();
+          iterator.add(new Token("}", Token.Kind.RBRACE, prev.line, prev.column));
           iterator.next();
 
           groupStack.pop();
@@ -267,7 +275,7 @@ public class Tokenizer {
     // Close dangling functions
     while (!groupStack.isEmpty())
       if (groupStack.pop() == Token.Kind.LBRACE) {
-        tokens.add(new Token("}", Token.Kind.RBRACE));
+        tokens.add(new Token("}", Token.Kind.RBRACE, 0, 0));
       }
 
     return tokens;
@@ -303,12 +311,17 @@ public class Tokenizer {
     return DELIMITERS[c] != NON;
   }
 
-  private static void bakeToken(List<Token> tokens, char[] input, int i, int start) {
+  private static void bakeToken(List<Token> tokens,
+                                char[] input,
+                                int i,
+                                int start,
+                                int line,
+                                int column) {
     if (i > start) {
       String value = new String(input, start, i - start);
 
       // remove this disgusting hack when you can fix the lexer.
-      tokens.add(new Token(value, Token.Kind.determine(value)));
+      tokens.add(new Token(value, Token.Kind.determine(value), line, column));
     }
   }
 }

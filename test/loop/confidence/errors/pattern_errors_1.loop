@@ -1,0 +1,16 @@
+# Errors in pattern matching functions
+
+string_match(st) =>
+  ('xx'
+
+
+
+
+scan(ls) =>
+  []                      []
+  [x]       | x < 10    : [x]
+            | x > 10      [10]
+  [x:xs]                : scan(xs) + x
+
+main ->
+  scan([100,2,3])

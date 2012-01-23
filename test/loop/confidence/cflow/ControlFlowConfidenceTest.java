@@ -1,4 +1,4 @@
-package loop.confidence;
+package loop.confidence.cflow;
 
 import loop.Loop;
 import org.junit.Test;

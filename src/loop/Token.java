@@ -10,9 +10,14 @@ public class Token {
   public final String value;
   public final Kind kind;
 
-  public Token(String value, Kind kind) {
+  public final int line;
+  public final int column;
+
+  public Token(String value, Kind kind, int line, int column) {
     this.value = value;
     this.kind = kind;
+    this.line = line;
+    this.column = column;
   }
 
   public static enum Kind {
