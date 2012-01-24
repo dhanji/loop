@@ -3,6 +3,7 @@ TODO
 
 Parsing Classes
 - class declaration
+- object instantiation
 x 'where' scoping
 - Pattern matching methods
   x match lists, empty, mixed with literals, regexes
@@ -14,11 +15,12 @@ x guards for pattern matching methods
 x List comprehensions
 x Conditionals (if-then-else, ternaries)
 x Calling into Java methods
-- Line/Column error reporting
+x Line/Column error reporting
+x Closures
+- Null-safety (is this possible?)
 - Interactive interpreter/shell
 - Basic scope verification with symbol table
 - Modules/packaging/import
-x Closures
 
 
 Stretch
