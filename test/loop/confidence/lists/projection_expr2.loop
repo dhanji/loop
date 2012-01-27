@@ -1,7 +1,7 @@
 # List comprehensions
 
 comp(ls) ->
-  (x * 10 for x in ls if x <= 30) + (x * 10 for x in ls if x <= 30)
+  (x * 10 for x in ls if x <= 30) + (y * 10 for y in ls if y >= 40)
 
 
 main ->

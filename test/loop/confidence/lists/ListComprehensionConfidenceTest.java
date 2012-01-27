@@ -31,7 +31,8 @@ public class ListComprehensionConfidenceTest {
 
   @Test
   public final void expressionProjectComprehension2() {
-    assertEquals(Arrays.asList(100, 200, 300), Loop.run("test/loop/confidence/lists/projection_expr2.loop", true));
+    assertEquals(Arrays.asList(100, 200, 300, 400),
+        Loop.run("test/loop/confidence/lists/projection_expr2.loop"));
   }
 
   @Test
