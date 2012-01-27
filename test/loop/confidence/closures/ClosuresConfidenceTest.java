@@ -27,6 +27,11 @@ public class ClosuresConfidenceTest {
     assertEquals(4, Loop.run("test/loop/confidence/closures/simple_closures_3.loop"));
   }
 
+//  @Test
+  public final void whereblock() {
+    assertEquals(26208, Loop.run("test/loop/confidence/closures/whereblock.loop"));
+  }
+
 //  @Test   DISABLED UNTIL WE CAN FIGURE OUT HOW TO CALL AN ANONYMOUS FUNCTION.
   public final void explicitlyInvokeClosureMultipleArgs() {
     assertEquals(4, Loop.run("test/loop/confidence/closures/call_closures_1.loop"));

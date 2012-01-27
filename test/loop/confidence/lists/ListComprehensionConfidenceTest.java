@@ -30,12 +30,17 @@ public class ListComprehensionConfidenceTest {
   }
 
   @Test
+  public final void expressionProjectComprehension2() {
+    assertEquals(Arrays.asList(100, 200, 300), Loop.run("test/loop/confidence/lists/projection_expr2.loop", true));
+  }
+
+  @Test
   public final void functionProjectComprehension() {
-    assertEquals(Arrays.asList(20, 40, 60), Loop.run("test/loop/confidence/lists/projection_function.loop", true));
+    assertEquals(Arrays.asList(20, 40, 60), Loop.run("test/loop/confidence/lists/projection_function.loop"));
   }
 
   @Test
   public final void functionProjectComprehensionAltFilter() {
-    assertEquals(Arrays.asList(20, 40, 80), Loop.run("test/loop/confidence/lists/projection_function_2.loop", true));
+    assertEquals(Arrays.asList(20, 40, 80), Loop.run("test/loop/confidence/lists/projection_function_2.loop"));
   }
 }

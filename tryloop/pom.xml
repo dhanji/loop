@@ -3,28 +3,21 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>loop</groupId>
-  <artifactId>loop</artifactId>
+  <artifactId>tryloop</artifactId>
   <packaging>jar</packaging>
   <version>1.0</version>
   <url>http://looplang.org</url>
 
   <dependencies>
     <dependency>
-      <groupId>org.mvel</groupId>
-      <artifactId>mvel2</artifactId>
-      <version>2.1.Beta6</version>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-webapp</artifactId>
+      <version>8.0.4.v20111024</version>
     </dependency>
     <dependency>
-      <groupId>commons-io</groupId>
-      <artifactId>commons-io</artifactId>
-      <version>1.4</version>
-    </dependency>
-
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>4.8.2</version>
-      <scope>test</scope>
+      <groupId>loop</groupId>
+      <artifactId>loop</artifactId>
+      <version>1.0</version>
     </dependency>
   </dependencies>
 

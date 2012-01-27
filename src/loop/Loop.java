@@ -7,6 +7,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Converts parsed, type-solved, emitted code to Java classes.
@@ -17,6 +18,10 @@ public class Loop {
   }
 
   public static Object run(String file, boolean print) {
+    return run(file, print,  new HashMap<String, Object>());
+  }
+
+  public static Object run(String file, boolean print, Map<String, Object> context) {
     String unit = loopCompile(file);
     if (print)
       System.out.println(unit);
@@ -24,7 +29,7 @@ public class Loop {
     // Invoke main!
     unit += "; main();";
 
-    return MVEL.eval(unit, new HashMap<String, Object>());
+    return MVEL.eval(unit, context);
   }
 
   public static Serializable compile(String file) {

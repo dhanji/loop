@@ -212,7 +212,8 @@ public class Parser {
 
       // A function body must be terminated by } (this is ensured by the token-stream rewriter)
       if (!endOfInput() && match(Token.Kind.RBRACE) == null) {
-        throw new RuntimeException("Expected end of function, additional statements found");
+        addError("Expected end of function, additional statements found", tokens.get(i));
+        throw new LoopSyntaxException();
       } else
         shouldContinue = false;
 
@@ -325,7 +326,7 @@ public class Parser {
           hasWhere = true;
           functionDecl.whereBlock.add(assignment);
         }
-      } while (helperFunction != null);
+      } while (helperFunction != null || assignment != null);
     }
 
     return hasWhere;

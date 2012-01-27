@@ -1,0 +1,9 @@
+# Recursive functional quicksort
+
+quicksort(ls) =>
+  []        : []
+  [x:xs]    : quicksort(i for i in xs if i < x) + [x] + quicksort(i for i in xs if i > x)
+
+
+main ->
+  quicksort(5, 2, 6, 19, 0, 92, 144, 1)

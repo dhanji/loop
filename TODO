@@ -21,6 +21,7 @@ x Closures
 - Interactive interpreter/shell
 - Basic scope verification with symbol table
 - Modules/packaging/import
+- Value typing example
 
 
 Stretch
@@ -34,3 +35,17 @@ Stretch
 - Type classes/extension methods (better than interfaces/traits)
 - Pattern matching methods on character streams
 - Parsing require decl hiding (stuff)
+
+
+Algorithms
+----------
+
+- Quicksort
+- MergeSort
+- Insert Sort
+- Skyline (range sorting)
+- Djikstra's algroithm
+- A* pathfinding
+- Djikstra's Shunting Yard
+- Sieve of Eratosthenes
+-
