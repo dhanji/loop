@@ -11,6 +11,7 @@ x 'where' scoping
   x match against single literals
   - match patterns against multiple arguments
 
+x Fix List comprehensions parsing in pattern matching methods
 x guards for pattern matching methods
 x List comprehensions
 x Conditionals (if-then-else, ternaries)
@@ -21,7 +22,8 @@ x Closures
 - Interactive interpreter/shell
 - Basic scope verification with symbol table
 - Modules/packaging/import
-- Value typing example
+x Value typing example
+- String interpolation
 
 
 Stretch

@@ -6,4 +6,4 @@ quicksort(ls) =>
 
 
 main ->
-  quicksort(5, 2, 6, 19, 0, 92, 144, 1)
+  quicksort([5, 2, 6, 19, 0, 92, 144, 1])

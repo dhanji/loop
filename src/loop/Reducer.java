@@ -77,13 +77,23 @@ public class Reducer {
       if (call.args() != null) {
         reduce(call.args());
       }
+    } else if (bloated instanceof PatternRule) {
+      PatternRule rule = (PatternRule) bloated;
+
+      if (null != rule.rhs)
+        reduce(rule.rhs);
     }
 
     bloated.children().clear();
     bloated.children().addAll(reduced);
 
-
     // Run through the entire list again and compress list comprehension nodes.
+    reduceComprehension(reduced);
+
+    return bloated;
+  }
+
+  private void reduceComprehension(List<Node> reduced) {
     for (Node node : reduced) {
       List<Node> children = node.children();
       if (!children.isEmpty()) {
@@ -99,9 +109,6 @@ public class Reducer {
         }
       }
     }
-
-
-    return bloated;
   }
 
   private Node onlyChildOf(Node node) {

@@ -1,0 +1,11 @@
+# List comprehensions
+
+id(x) ->
+  x
+
+comp(ls) ->
+  id(x * 10 for x in ls if x <= 30) + [-1] + id(x * 10 for x in ls if x > 30)
+
+
+main ->
+  comp([10, 20, 30, 40])
