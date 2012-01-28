@@ -58,6 +58,11 @@ public class BasicFunctionsConfidenceTest {
   }
 
   @Test
+  public final void whereBlockAssignments() {
+    assertEquals(26208, Loop.run("test/loop/confidence/whereblock_3.loop"));
+  }
+
+  @Test
   public final void reverseStringPatternMatching() {
     assertEquals("olleh", Loop.run("test/loop/confidence/reverse_string.loop"));
   }

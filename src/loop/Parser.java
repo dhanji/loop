@@ -638,7 +638,7 @@ public class Parser {
       return null;
 
     Node left = new Variable(startTokens.get(0).value);
-    Node right = term();
+    Node right = computation();
     if (right == null) {
       addError("Expected expression after ':' in assignment", tokens.get(i - 1));
       throw new LoopSyntaxException();

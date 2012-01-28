@@ -22,8 +22,9 @@ x Closures
 - Interactive interpreter/shell
 - Basic scope verification with symbol table
 - Modules/packaging/import
-x Value typing example
 - String interpolation
+x Value typing example
+x Where block multiple var assigns
 
 
 Stretch
@@ -42,7 +43,7 @@ Stretch
 Algorithms
 ----------
 
-- Quicksort
+x Quicksort
 - MergeSort
 - Insert Sort
 - Skyline (range sorting)
@@ -50,4 +51,5 @@ Algorithms
 - A* pathfinding
 - Djikstra's Shunting Yard
 - Sieve of Eratosthenes
--
+- Ransom Note
+- Naive Factorial

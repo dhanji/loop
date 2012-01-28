@@ -1,0 +1,11 @@
+# Where block of local assignments
+
+years ->
+  year * 3
+  where
+    day: 24
+    week: 7 * day
+    year: 52 * week
+
+main ->
+  years()

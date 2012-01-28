@@ -1,6 +1,7 @@
 package loop;
 
 import loop.ast.*;
+import loop.ast.script.FunctionDecl;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -82,6 +83,13 @@ public class Reducer {
 
       if (null != rule.rhs)
         reduce(rule.rhs);
+    } else if (bloated instanceof FunctionDecl) {
+      FunctionDecl decl = (FunctionDecl) bloated;
+      if (!decl.whereBlock.isEmpty()) {
+        for (Node node : decl.whereBlock) {
+          reduce(node);
+        }
+      }
     }
 
     bloated.children().clear();
