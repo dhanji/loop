@@ -104,7 +104,7 @@ public class BasicFunctionsConfidenceTest {
 
 //  @Test
   public final void nullSafeCallChain2() {
-    assertEquals("dhanji", Loop.run("test/loop/confidence/nullsafe_2.loop"));
+    assertEquals("dhanji", Loop.run("test/loop/confidence/nullsafe_2.loop", true));
   }
 
   @Test

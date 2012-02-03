@@ -39,7 +39,7 @@ public class ControlFlowConfidenceTest {
     assertEquals(map, Loop.run("test/loop/confidence/cflow/if-then-else_3.loop"));
   }
 
-//  @Test DISABLED UNTIL MVEL IS FIXED.
+//  @Test //DISABLED UNTIL MVEL IS FIXED.
   public final void ifThenElseInExpressionWithPatternMatching() {
     Map<Integer, Integer> map = new HashMap<Integer, Integer>();
     map.put(1, 1);
