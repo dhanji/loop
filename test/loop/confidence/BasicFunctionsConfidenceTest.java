@@ -94,7 +94,34 @@ public class BasicFunctionsConfidenceTest {
 
   @Test
   public final void callJavaMethodOnString() {
-    assertEquals("hello", Loop.run("test/loop/confidence/java_call_on_string.loop"));
+    assertEquals("hello", Loop.run("test/loop/confidence/java_call_on_string.loop", true));
+  }
+
+  @Test
+  public final void nullSafeCallChain1() {
+    assertEquals("dhanji", Loop.run("test/loop/confidence/nullsafe_1.loop"));
+  }
+
+//  @Test
+  public final void nullSafeCallChain2() {
+    assertEquals("dhanji", Loop.run("test/loop/confidence/nullsafe_2.loop"));
+  }
+
+  @Test
+  public final void stringInterpolation1() {
+    assertEquals("Hello, Dhanji", Loop.run("test/loop/confidence/string_lerp_1.loop"));
+  }
+
+  @Test
+  public final void stringInterpolation2() {
+    assertEquals("There are 8 things going on in England",
+        Loop.run("test/loop/confidence/string_lerp_2.loop"));
+  }
+
+  @Test
+  public final void stringInterpolation3() {
+    assertEquals("There are @{2 + 6} things going @{\"on\"} in @{name}land",
+        Loop.run("test/loop/confidence/string_lerp_3.loop"));
   }
 
   @Test
@@ -103,7 +130,7 @@ public class BasicFunctionsConfidenceTest {
     map.put("name", "Michael");
     map.put("age", "212");
 
-    assertEquals(map, Loop.run("test/loop/confidence/literal_pattern_matching.loop", true));
+    assertEquals(map, Loop.run("test/loop/confidence/literal_pattern_matching.loop"));
   }
 
   @Test
@@ -111,7 +138,7 @@ public class BasicFunctionsConfidenceTest {
     Map<String, String> map = new HashMap<String, String>();
     map.put("count", "10");
 
-    assertEquals(map, Loop.run("test/loop/confidence/wildcard_pattern_matching_guarded_1.loop", true));
+    assertEquals(map, Loop.run("test/loop/confidence/wildcard_pattern_matching_guarded_1.loop"));
   }
 
   @Test
@@ -119,7 +146,7 @@ public class BasicFunctionsConfidenceTest {
     Map<String, String> map = new HashMap<String, String>();
     map.put("count", "100");
 
-    assertEquals(map, Loop.run("test/loop/confidence/wildcard_pattern_matching_guarded_2.loop", true));
+    assertEquals(map, Loop.run("test/loop/confidence/wildcard_pattern_matching_guarded_2.loop"));
   }
 
   @Test
@@ -127,7 +154,7 @@ public class BasicFunctionsConfidenceTest {
     Map<String, String> map = new HashMap<String, String>();
     map.put("count", "infinity");
 
-    assertEquals(map, Loop.run("test/loop/confidence/wildcard_pattern_matching_guarded_3.loop", true));
+    assertEquals(map, Loop.run("test/loop/confidence/wildcard_pattern_matching_guarded_3.loop"));
   }
 
   @Test
@@ -136,7 +163,7 @@ public class BasicFunctionsConfidenceTest {
     map.put("name", "Michael");
     map.put("age", "212");
 
-    assertEquals(map, Loop.run("test/loop/confidence/regex_pattern_matching.loop", true));
+    assertEquals(map, Loop.run("test/loop/confidence/regex_pattern_matching.loop"));
   }
 
   @Test
@@ -145,14 +172,14 @@ public class BasicFunctionsConfidenceTest {
     map.put("name", "Dhanji");
     map.put("age", "20");
 
-    assertEquals(map, Loop.run("test/loop/confidence/regex_pattern_matching_guarded_1.loop", true));
+    assertEquals(map, Loop.run("test/loop/confidence/regex_pattern_matching_guarded_1.loop"));
   }
 
   @Test
   public final void regexPatternMatchingGuarded2() {
     Map<String, String> map = new HashMap<String, String>();
 
-    assertEquals(map, Loop.run("test/loop/confidence/regex_pattern_matching_guarded_2.loop", true));
+    assertEquals(map, Loop.run("test/loop/confidence/regex_pattern_matching_guarded_2.loop"));
   }
 
   @Test
@@ -161,6 +188,6 @@ public class BasicFunctionsConfidenceTest {
     map.put("name", "Unknown");
     map.put("age", "-1");
 
-    assertEquals(map, Loop.run("test/loop/confidence/regex_pattern_matching_guarded_3.loop", true));
+    assertEquals(map, Loop.run("test/loop/confidence/regex_pattern_matching_guarded_3.loop"));
   }
 }

@@ -18,11 +18,9 @@ x Conditionals (if-then-else, ternaries)
 x Calling into Java methods
 x Line/Column error reporting
 x Closures
-- Null-safety (is this possible?)
 - Interactive interpreter/shell
 - Basic scope verification with symbol table
 - Modules/packaging/import
-- String interpolation
 x Value typing example
 x Where block multiple var assigns
 
@@ -30,6 +28,8 @@ x Where block multiple var assigns
 Stretch
 -------
 
+- Null-safety (is this possible?)
+- String interpolation
 - Tail call optimization
 - Exception unrolling
 - Basic function inlining

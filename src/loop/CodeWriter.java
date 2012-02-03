@@ -226,7 +226,22 @@ import java.util.concurrent.atomic.AtomicInteger;
   private final Emitter stringLiteralEmitter = new Emitter() {
     @Override public void emitCode(Node node) {
       StringLiteral string = (StringLiteral) node;
-      out.append(string.value);
+
+      if (string.parts != null) {
+        List<Node> parts = string.parts;
+        for (int i = 0, partSize = parts.size(); i < partSize; i++) {
+          Node part = parts.get(i);
+          if (part instanceof StringLiteral)
+            out.append('"').append(((StringLiteral) part).value).append('"');
+          else
+            emit(part);
+
+          // Concatenate string expression.
+          if (i < partSize - 1)
+            out.append(" + ");
+        }
+      } else
+        out.append(string.value);
     }
   };
 
@@ -348,7 +363,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
         if (i < childrenSize - 1) {
           // Do not emit DOT if the next node is not a method or property.
-          if (children.get(i + 1) instanceof IndexIntoList)
+          Node next = children.get(i + 1);
+          if (next instanceof IndexIntoList)
             continue;
           out.append('.');
         }

@@ -1,0 +1,6 @@
+# String interpolation
+
+main ->
+  "Hello, @{name}"
+  where
+    name: 'Dhanji'
