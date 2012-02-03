@@ -3,8 +3,15 @@ package loop;
 import loop.ast.script.Unit;
 import org.mvel2.MVEL;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,12 +20,27 @@ import java.util.Map;
  * Converts parsed, type-solved, emitted code to Java classes.
  */
 public class Loop {
+  public static void main(String[] args) {
+    if (args.length == 0) {
+      System.out.println("Usage: loop <script.loop> [args]");
+      System.exit(1);
+    }
+
+    Map<String, Object> map = new HashMap<String, Object>();
+    map.put("ARGV", Arrays.asList(args));
+
+    if (args.length > 1)
+      run(args[0], false, map);
+    else
+      run(args[0]);
+  }
+
   public static Object run(String file) {
     return run(file, false);
   }
 
   public static Object run(String file, boolean print) {
-    return run(file, print,  new HashMap<String, Object>());
+    return run(file, print, new HashMap<String, Object>());
   }
 
   public static Object run(String file, boolean print, Map<String, Object> context) {

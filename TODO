@@ -29,7 +29,7 @@ Stretch
 -------
 
 - Null-safety (is this possible?)
-- String interpolation
+x String interpolation
 - Tail call optimization
 - Exception unrolling
 - Basic function inlining
