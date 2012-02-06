@@ -1,7 +1,10 @@
 package loop;
 
+import loop.ast.Node;
+import loop.ast.script.FunctionDecl;
 import loop.ast.script.Unit;
 import org.mvel2.MVEL;
+import org.mvel2.PropertyAccessException;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -43,14 +46,49 @@ public class Loop {
   }
 
   public static Object run(String file, boolean print, Map<String, Object> context) {
+    return run(file, print, context, true);
+  }
+
+  public static Object run(String file, boolean print, Map<String, Object> context, boolean runMain) {
     String unit = loopCompile(file);
     if (print)
       System.out.println(unit);
 
-    // Invoke main!
-    unit += "; main();";
+    if (runMain)
+      unit += "; main();"; // Invoke main!
 
     return MVEL.eval(unit, context);
+  }
+
+  public static Object eval(String expression, Map<String, Object> context) {
+    Parser parser = new Parser(new Tokenizer(expression).tokenize());
+    Node reduce = new Reducer(parser.line()).reduce();
+
+    return safeEval(new CodeWriter().write(reduce), context);
+  }
+
+  public static Object evalFunction(String function, Map<String, Object> context) {
+    Parser parser = new Parser(new Tokenizer(function).tokenize());
+    FunctionDecl functionDecl = parser.functionDecl();
+    if (functionDecl == null) {
+      System.out.println("Not a function =/");
+      return "";
+    }
+
+    Node reduce = new Reducer(functionDecl).reduce();
+    return safeEval(new CodeWriter().write(reduce), context);
+  }
+
+  private static Object safeEval(String compiled, Map<String, Object> context) {
+    try {
+      return MVEL.eval(compiled, context);
+    } catch (PropertyAccessException e) {
+      if (e.getMessage().contains("unresolvable property")) {
+        System.out.println("I don't know that identifier =(");
+      } else if (e.getMessage().contains("unable to resolve method"))
+        System.out.println("I don't know that method =(");
+      return "";
+    }
   }
 
   public static Serializable compile(String file) {

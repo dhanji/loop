@@ -93,6 +93,13 @@ import java.util.concurrent.atomic.AtomicInteger;
     return out.toString();
   }
 
+  public String write(Node node) {
+    emit(node);
+    out.append(";\n");
+
+    return out.toString();
+  }
+
   private void emitChildren(Node node) {
     for (Node child : node.children()) {
       emit(child);

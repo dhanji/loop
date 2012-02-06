@@ -143,7 +143,7 @@ public class Parser {
   /**
    * Named function parsing rule.
    */
-  private FunctionDecl functionDecl() {
+  public FunctionDecl functionDecl() {
     return internalFunctionDecl(false);
   }
 
@@ -623,7 +623,7 @@ public class Parser {
   /**
    * line := assign
    */
-  private Node line() {
+  public Node line() {
     return assign();
   }
 

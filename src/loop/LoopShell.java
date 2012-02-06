@@ -3,6 +3,7 @@ package loop;
 import jline.console.ConsoleReader;
 import jline.console.completer.Completer;
 import jline.console.completer.FileNameCompleter;
+import org.mvel2.ast.Function;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -15,43 +16,100 @@ import java.util.Map;
  */
 public class LoopShell {
   public static void shell() {
+    System.out.println("loOp (http://loop-lang.org)");
+    System.out.println("     by Dhanji R. Prasanna\n");
+
     try {
       ConsoleReader reader = new ConsoleReader();
       reader.addCompleter(new MetaCommandCompleter());
 
       Map<String, Object> context = new HashMap<String, Object>();
-      boolean active = true;
-      do {
+      boolean inFunction = false;
 
-        String rawLine = reader.readLine("> ");
+      // Used to build up multiline statement blocks (like functions)
+      StringBuilder block = null;
+      do {
+        String prompt = inFunction ? "-->  " : ">> ";
+
+        String rawLine = reader.readLine(prompt);
+
+        if (inFunction) {
+          if (rawLine == null || rawLine.trim().isEmpty()) {
+            inFunction = false;
+
+            // Eval the function into our context.
+            printResult(Loop.evalFunction(block.toString(), context));
+            block = null;
+            continue;
+          }
+
+          block.append(rawLine).append('\n');
+          continue;
+        }
+
         if (rawLine == null) {
           quit();
         }
 
         String line = rawLine.trim();
-        System.out.println(reader.getCompleters());
+        if (line.isEmpty())
+          continue;
 
         if (line.startsWith(":q") || line.startsWith(":quit")) {
           quit();
         }
 
         if (isLoadCommand(line)) {
+          // Load the given file into context.
+          String[] split = line.split("[ ]+");
+          if (split.length <= 1) {
+            System.out.println("What should I load? (I like loading files that end in '.loop' =)");
+            continue;
+          }
+
+          for (int i = 1, splitLength = split.length; i < splitLength; i++) {
+            String script = split[i];
+            Loop.run(script, false, context, false);
+          }
+
           System.out.println("Loaded.");
-          System.exit(0);
+          continue;
+        }
+        if (line.startsWith(":r") || line.startsWith(":reset")) {
+          context = new HashMap<String, Object>();
+          System.out.println("Context reset.");
+          continue;
         }
 
+        // Function definitions can be multiline.
+        if (line.endsWith("->") || line.endsWith("=>")) {
+          inFunction = true;
+          block = new StringBuilder(line).append('\n');
+          continue;
+        }
 
-
-      } while (active);
-      System.exit(0);
-
+        // OK execute expression.
+        printResult(Loop.eval(rawLine, context));
+      } while (true);
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      System.err.println("Something went wrong =(");
+      System.exit(1);
     }
   }
 
+  private static void printResult(Object result) {
+    if (result instanceof Function) {
+      Function fun = (Function) result;
+      String args = Arrays.toString(fun.getParameters());
+      System.out.println("#function:" + fun.getName()
+          + "(" + args.substring(1, args.length() - 1) + ")");
+      return;
+    }
+    System.out.println(result == null ? "Nothing" : result);
+  }
+
   private static boolean isLoadCommand(String line) {
-    return line.startsWith(":l ") || line.startsWith(":load ");
+    return line.startsWith(":l") || line.startsWith(":load");
   }
 
   private static void quit() {
@@ -62,7 +120,8 @@ public class LoopShell {
   private static class MetaCommandCompleter implements Completer {
     private final List<String> commands = Arrays.asList(
         ":load",
-        ":quit"
+        ":quit",
+        ":reset"
     );
 
     private final FileNameCompleter fileNameCompleter = new FileNameCompleter();
@@ -76,11 +135,10 @@ public class LoopShell {
       // See if we should chain to the filename completer first.
       if (isLoadCommand(buffer)) {
         String[] split = buffer.split("[ ]+");
-        if (split.length > 2)
-          return cursor;
 
         // Always complete the first argument.
-        return fileNameCompleter.complete(split[1], cursor, candidates);
+        if (split.length > 1)
+          return fileNameCompleter.complete(split[split.length - 1], cursor, candidates);
       }
 
       for (String command : commands) {
