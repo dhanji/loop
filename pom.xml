@@ -19,6 +19,11 @@
       <artifactId>commons-io</artifactId>
       <version>1.4</version>
     </dependency>
+    <dependency>
+      <groupId>org.sonatype.jline</groupId>
+      <artifactId>jline</artifactId>
+      <version>2.5</version>
+    </dependency>
 
     <dependency>
       <groupId>junit</groupId>
@@ -40,6 +45,54 @@
           <target>1.6</target>
         </configuration>
       </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <version>2.3</version>
+        <configuration>
+          <descriptorRefs>
+            <descriptorRef>jar-with-dependencies</descriptorRef>
+          </descriptorRefs>
+          <archive>
+            <manifest>
+              <mainClass>loop.Loop</mainClass>
+            </manifest>
+          </archive>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.sonatype.plugins</groupId>
+        <artifactId>jarjar-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>none</phase>
+            <goals>
+              <goal>jarjar</goal>
+            </goals>
+            <configuration>
+              <includes>
+                <include>*:mvel2</include>
+                <include>*:commons-io</include>
+                <include>*:jline</include>
+              </includes>
+              <rules>
+                <rule>
+                  <pattern>org.apache.commons.**.*</pattern>
+                  <result>loop.internal.cio.@1.$@2</result>
+                </rule>
+                <rule>
+                  <pattern>org.mvel2.**.*</pattern>
+                  <result>loop.internal.mvel2.@1.$@2</result>
+                </rule>
+                <keep>
+                  <pattern>loop.*</pattern>
+                </keep>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
+
   </build>
 </project>
