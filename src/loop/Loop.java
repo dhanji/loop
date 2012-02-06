@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -22,8 +23,7 @@ import java.util.Map;
 public class Loop {
   public static void main(String[] args) {
     if (args.length == 0) {
-      System.out.println("Usage: loop <script.loop> [args]");
-      System.exit(1);
+      shell();
     }
 
     Map<String, Object> map = new HashMap<String, Object>();
@@ -68,6 +68,28 @@ public class Loop {
       throw new RuntimeException(e);
     }
     return new CodeWriter().write(unit);
+  }
+
+  public static void shell() {
+    try {
+      Map<String, Object> context = new HashMap<String, Object>();
+      BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+
+      boolean active = true;
+      do {
+        String line = reader.readLine();
+        
+
+        if (line.startsWith(":q") || line.startsWith(":quit")) {
+          System.out.println("Bye.");
+          System.exit(0);
+        }
+      } while (active);
+      System.exit(0);
+
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   public static Unit load(Reader reader) {
