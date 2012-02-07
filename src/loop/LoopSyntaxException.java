@@ -6,20 +6,20 @@ import java.util.List;
  * @author dhanji@gmail.com (Dhanji R. Prasanna)
  */
 public class LoopSyntaxException extends RuntimeException {
-  private final List<ParseError> errors;
+  private final Executable executable;
 
-  public LoopSyntaxException(String message, List<ParseError> errors) {
+  public LoopSyntaxException(String message, Executable executable) {
     super(message);
-    this.errors = errors;
+
+    this.executable = executable;
   }
 
   public LoopSyntaxException() {
     super("Syntax errors exist");
-
-    this.errors = null;
+    this.executable = null;
   }
 
   public List<ParseError> getErrors() {
-    return errors;
+    return executable.getParseErrors();
   }
 }

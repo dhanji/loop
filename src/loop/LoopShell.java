@@ -103,9 +103,10 @@ public class LoopShell {
       String args = Arrays.toString(fun.getParameters());
       System.out.println("#function:" + fun.getName()
           + "(" + args.substring(1, args.length() - 1) + ")");
-      return;
-    }
-    System.out.println(result == null ? "Nothing" : result);
+    } else if (result instanceof LoopError)
+      System.out.println("\n#error");
+    else
+      System.out.println(result == null ? "Nothing" : result);
   }
 
   private static boolean isLoadCommand(String line) {

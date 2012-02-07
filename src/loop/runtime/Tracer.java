@@ -1,5 +1,12 @@
 package loop.runtime;
 
+import loop.Executable;
+import org.mvel2.PropertyAccessException;
+
+import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Stack;
 
 /**
@@ -27,5 +34,19 @@ public class Tracer {
 
   public static void complete() {
     tracingStack.remove();
+  }
+
+  public static void printCurrentTrace(Executable executable,
+                                       PropertyAccessException e,
+                                       PrintStream out) {
+    out.println(e.getCause().getMessage());
+
+    List<String> elements = new ArrayList<String>(tracingStack.get());
+    Collections.reverse(elements);
+    for (String element : elements) {
+      out.print("  at ");
+      out.print(element);
+      out.println("()");
+    }
   }
 }

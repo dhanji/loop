@@ -16,7 +16,7 @@ import static org.junit.Assert.assertNotNull;
  *
  * @author dhanji@gmail.com (Dhanji R. Prasanna)
  */
-public class ErrorsConfidenceTest {
+public class SyntaxErrorsConfidenceTest {
   @Test
   public final void patternMatchingFunctionErrors1() {
     List<ParseError> errorList = null;

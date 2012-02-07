@@ -1,22 +1,16 @@
 package loop;
 
-import loop.ast.Node;
-import loop.ast.script.FunctionDecl;
-import loop.ast.script.Unit;
+import loop.runtime.Tracer;
 import org.mvel2.MVEL;
 import org.mvel2.PropertyAccessException;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.IOException;
-import java.io.Reader;
 import java.io.Serializable;
-import java.util.ArrayList;
+import java.io.StringReader;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -52,132 +46,85 @@ public class Loop {
     return run(file, print, context, true);
   }
 
-  public static Object run(String file, boolean print, Map<String, Object> context, boolean runMain) {
-    String unit = loopCompile(file);
+  public static Object run(String file,
+                           boolean print,
+                           Map<String, Object> context,
+                           boolean runMain) {
+    Executable unit = loopCompile(file);
     if (print)
-      System.out.println(unit);
+      System.out.println(unit.getCompiled());
 
-    if (runMain)
-      unit += "; main();"; // Invoke main!
-
-    return MVEL.eval(unit, context);
+    unit.runMain(runMain);
+    return safeEval(unit, context);
   }
 
   public static Object eval(String expression, Map<String, Object> context) {
-    Parser parser = new Parser(new Tokenizer(expression).tokenize());
-    Node reduce = new Reducer(parser.line()).reduce();
+    Executable executable = new Executable(new StringReader(expression));
+    executable.compileExpression();
 
-    return safeEval(new CodeWriter().write(reduce), context);
+    return safeEval(executable, context);
   }
 
   public static Object evalFunction(String function, Map<String, Object> context) {
-    Parser parser = new Parser(new Tokenizer(function).tokenize());
-    FunctionDecl functionDecl = parser.functionDecl();
-    if (functionDecl == null) {
-      System.out.println("Not a function =/");
-      return "";
-    }
+    Executable executable = new Executable(new StringReader(function));
+    executable.compileFunction();
 
-    Node reduce = new Reducer(functionDecl).reduce();
-    return safeEval(new CodeWriter().write(reduce), context);
+    return safeEval(executable, context);
   }
 
-  private static Object safeEval(String compiled, Map<String, Object> context) {
+  private static Object safeEval(Executable executable, Map<String, Object> context) {
     try {
-      return MVEL.eval(compiled, context);
+      return MVEL.eval(executable.getCompiled(), context);
     } catch (PropertyAccessException e) {
-      if (e.getMessage().contains("unresolvable property")) {
+      String message = e.getMessage();
+      if (message.contains("unresolvable property")) {
         System.out.println("I don't know that identifier =(");
-      } else if (e.getMessage().contains("unable to resolve method"))
+      } else if (message.contains("unable to resolve method"))
         System.out.println("I don't know that method =(");
-      return "";
+      else if (message.contains("null pointer exception")) {
+        System.out.println("Oh noes, you can't dereference a null value returned from Java code!");
+      } else {
+        if (enableStackTraces) {
+          Tracer.printCurrentTrace(executable, e, System.out);
+          Tracer.complete();
+        } else
+          e.printStackTrace();
+      }
+      return new LoopError();
+    } catch (LoopSyntaxException e) {
+      throw e;
+    } catch (Exception e) {
+      if (enableStackTraces) {
+        System.out.println(Tracer.getStackTrace());
+        Tracer.complete();
+      }
+      return new LoopError();
     }
   }
 
+  /**
+   * Compiles the specified file into a binary MVEL executable.
+   */
   public static Serializable compile(String file) {
-    String unit = loopCompile(file);
+    Executable unit = loopCompile(file);
 
-    return MVEL.compileExpression(unit, new HashMap<String, Object>());
+    return MVEL.compileExpression(unit.getCompiled(), new HashMap<String, Object>());
   }
 
-  private static String loopCompile(String file) {
-    Unit unit;
+  private static Executable loopCompile(String file) {
+    Executable executable;
     try {
-      unit = load(new FileReader(new File(file)));
+      executable = new Executable(new FileReader(new File(file)));
+      executable.compile();
+      if (executable.hasErrors()) {
+        executable.printErrors();
+
+        throw new LoopSyntaxException("Syntax errors exist", executable);
+      }
     } catch (FileNotFoundException e) {
       throw new RuntimeException(e);
     }
-    return new CodeWriter().write(unit);
-  }
-
-  public static Unit load(Reader reader) {
-    List<String> lines = new ArrayList<String>();
-    StringBuilder builder;
-    try {
-      BufferedReader br = new BufferedReader(reader);
-
-      builder = new StringBuilder();
-      while (br.ready()) {
-        String line = br.readLine();
-        builder.append(line);
-        builder.append('\n');
-
-        lines.add(line);
-      }
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-
-    String input = builder.toString();
-    Parser parser = new Parser(new Tokenizer(input).tokenize());
-    Unit unit = null;
-    try {
-      unit = parser.script();
-      unit.reduceAll();
-    } catch (LoopSyntaxException e) {
-      // Ignore as it will be rethrown.
-    }
-
-    if (!parser.getErrors().isEmpty()) {
-      printErrors(lines, parser);
-
-      throw new LoopSyntaxException("Syntax errors exist", parser.getErrors());
-    }
-    return unit;
-  }
-
-  private static void printErrors(List<String> lines, Parser parser) {
-    List<ParseError> errors = parser.getErrors();
-    for (int i = 0, errorsSize = errors.size(); i < errorsSize; i++) {
-      ParseError error = errors.get(i);
-      System.out.println((i + 1) + ") " + error.getMessage());
-      System.out.println();
-
-      // Show some context around this file.
-      int lineNumber = error.line() + 1;
-      int column = error.column();
-
-      // Unwrap to the previous line if the highlighted line is empty.
-      if (lineNumber > 0 && (lines.get(lineNumber - 1).trim().isEmpty() || column == 0)) {
-        lineNumber-= 1;
-        column = lines.get(lineNumber - 1).length();
-      }
-
-      if (error.line() > 0)
-        System.out.println("  " + error.line() + ": " + lines.get(lineNumber - 2));
-
-      System.out.println("  " + lineNumber + ": " + lines.get(lineNumber - 1));
-      int spaces = column + Integer.toString(lineNumber).length() + 1;
-      System.out.println("  " + whitespace(spaces) + "^\n");
-    }
-  }
-
-  private static String whitespace(int amount) {
-    StringBuilder builder = new StringBuilder(amount);
-    for (int i = 0; i < amount; i++) {
-      builder.append(' ');
-    }
-    return builder.toString();
+    return executable;
   }
 
   public static void error(String error) {

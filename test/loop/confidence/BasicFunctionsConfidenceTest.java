@@ -1,6 +1,7 @@
 package loop.confidence;
 
 import loop.Loop;
+import loop.LoopError;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -8,6 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Confidence tests run a bunch of semi-realistic programs and assert that their results are
@@ -82,14 +84,12 @@ public class BasicFunctionsConfidenceTest {
     assertEquals("3", Loop.run("test/loop/confidence/split_various_selective.loop"));
   }
 
-  @Test(expected = RuntimeException.class)
   public final void splitVariousStringsPatternMatchingNotAllMatches() {
-    assertEquals("1234", Loop.run("test/loop/confidence/split_various_string_error.loop"));
+    assertTrue(Loop.run("test/loop/confidence/split_various_string_error.loop") instanceof LoopError);
   }
 
-  @Test(expected = RuntimeException.class)
   public final void reverseLoopPatternMissingError() {
-    assertEquals(Arrays.asList(3, 2, 1), Loop.run("test/loop/confidence/reverse_error.loop"));
+    assertTrue(Loop.run("test/loop/confidence/reverse_error.loop") instanceof LoopError);
   }
 
   @Test

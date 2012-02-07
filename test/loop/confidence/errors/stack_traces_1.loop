@@ -1,0 +1,14 @@
+# Test that the function call stack is traced correctly
+
+func3(num) ->
+  `loop.Loop`.error('simulation')
+
+func2 ->
+  1 + func3(2)
+
+func1 ->
+  func2()
+
+
+main ->
+  func1()

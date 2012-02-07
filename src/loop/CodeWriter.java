@@ -283,7 +283,20 @@ import java.util.concurrent.atomic.AtomicInteger;
         emit(helper);
       }
 
-      emitChildren(node);
+      // We only support stack traces for non-pattern functions right now.
+      if (Loop.enableStackTraces && !functionDecl.patternMatching) {
+        out.append("loop.runtime.Tracer.push('").append(functionDecl.name()).append("');\n");
+
+        String retVal = "$_" + functionNameSequence.incrementAndGet();
+
+        out.append(retVal).append(" = ");
+        emitChildren(node);
+
+        out.append(";\nloop.runtime.Tracer.pop();\n");
+        out.append("return ").append(retVal).append(";\n");
+      } else
+        emitChildren(node);
+
       if (functionDecl.patternMatching) {
         // If we got this far, then none of the patterns were sufficient.
         out.append("loop.Loop.error(\"No pattern rules matched arguments: ");
