@@ -6,6 +6,7 @@ import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
@@ -194,5 +195,11 @@ public class BasicFunctionsConfidenceTest {
   @Test
   public final void propertyNavigation1() {
     assertEquals("Peter", Loop.run("test/loop/confidence/property_nav_1.loop"));
+  }
+
+  @Test
+  public final void simpleSet() {
+    assertEquals(new HashSet<Integer>(Arrays.asList(1, 2, 3, 5)),
+        Loop.run("test/loop/confidence/sets_1.loop"));
   }
 }

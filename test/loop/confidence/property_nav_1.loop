@@ -3,7 +3,7 @@
 details() ->
   dude.friend.name
   where
-    buddy: [ 'name' : 'Peter' ]
+    buddy:  [ 'name' : 'Peter' ]
     dude:   [ 'friend' : buddy ]
 
 main ->

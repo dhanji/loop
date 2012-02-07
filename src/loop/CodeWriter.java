@@ -340,6 +340,9 @@ import java.util.concurrent.atomic.AtomicInteger;
     @Override public void emitCode(Node node) {
       InlineListDef inlineListDef = (InlineListDef) node;
 
+      if (inlineListDef.isSet) {
+        out.append("new java.util.HashSet(");
+      }
       out.append('[');
       final List<Node> children = inlineListDef.children();
       for (int i = 0, childrenSize = children.size(); i < childrenSize; i++) {
@@ -348,6 +351,9 @@ import java.util.concurrent.atomic.AtomicInteger;
           out.append(", ");
       }
       out.append(']');
+
+      if (inlineListDef.isSet)
+        out.append(")");
     }
   };
 

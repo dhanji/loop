@@ -4,7 +4,7 @@ package loop.ast;
  * Inline list definition.
  */
 public class InlineListDef extends Node {
-  private final boolean isSet;
+  public final boolean isSet;
 
   public InlineListDef(boolean set) {
     isSet = set;
