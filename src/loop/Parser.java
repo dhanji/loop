@@ -1,5 +1,6 @@
 package loop;
 
+import loop.Token.Kind;
 import loop.ast.*;
 import loop.ast.script.ArgDeclList;
 import loop.ast.script.FunctionDecl;
@@ -371,10 +372,11 @@ public class Parser {
     List<Token> type = match(Token.Kind.TYPE_IDENT);
     TypeLiteral typeLiteral = null;
     if (null != type) {
-      typeLiteral = new TypeLiteral(type.get(0).value);
+      typeLiteral = new TypeLiteral(type.get(0).value).sourceLocation(type);
     }
 
-    if (match(Token.Kind.LBRACKET) == null)
+    List<Token> lbracketTokens = match(Kind.LBRACKET);
+    if (lbracketTokens == null)
       return typeLiteral;
 
     Node term = term();
@@ -385,7 +387,7 @@ public class Parser {
 
     // This is a list denaturing rule.
     if (match(Token.Kind.ASSIGN) != null) {
-      pattern = new ListDestructuringPattern();
+      pattern = new ListDestructuringPattern().sourceLocation(lbracketTokens);
       pattern.add(term);
       term = term();
       if (term == null) {
@@ -408,7 +410,7 @@ public class Parser {
     // This is a list literal rule.
     boolean endList = match(Token.Kind.RBRACKET) != null;
     if (endList || match(Token.Kind.COMMA) != null) {
-      pattern = new ListStructurePattern();
+      pattern = new ListStructurePattern().sourceLocation(lbracketTokens);
       pattern.add(term);
       if (endList)
         return pattern;
@@ -439,7 +441,7 @@ public class Parser {
     }
 
     // This is a map pattern.
-    pattern = new MapPattern();
+    pattern = new MapPattern().sourceLocation(lbracketTokens);
     if (typeLiteral != null)
       pattern.add(typeLiteral);
 
@@ -579,7 +581,7 @@ public class Parser {
       throw new LoopSyntaxException();
     }
 
-    return new RequireDecl(requires);
+    return new RequireDecl(requires).sourceLocation(module);
   }
 
   /**
@@ -614,7 +616,7 @@ public class Parser {
       throw new LoopSyntaxException();
     }
 
-    return new ModuleDecl(modules);
+    return new ModuleDecl(modules).sourceLocation(module);
   }
 
 
@@ -644,10 +646,11 @@ public class Parser {
       throw new LoopSyntaxException();
     }
 
+    Token start = startTokens.iterator().next();
     Assignment assignment = new Assignment();
     assignment.add(left);
     assignment.add(right);
-    return assignment;
+    return assignment.sourceLocation(startTokens);
   }
 
   /**
@@ -700,7 +703,8 @@ public class Parser {
    * ternaryIf := IF computation then computation else computation
    */
   private Node ternaryIf() {
-    if (match(Token.Kind.IF) != null) {
+    List<Token> ifTokens = match(Kind.IF);
+    if (ifTokens != null) {
       Node ifPart = computation();
       if (match(Token.Kind.THEN) == null) {
         addError("IF expression missing THEN clause", tokens.get(i - 1));
@@ -715,10 +719,12 @@ public class Parser {
 
       Node elsePart = computation();
 
+      Token start = ifTokens.iterator().next();
       return new TernaryExpression()
           .add(ifPart)
           .add(thenPart)
-          .add(elsePart);
+          .add(elsePart)
+          .sourceLocation(ifTokens);
     }
 
     return null;
@@ -728,7 +734,8 @@ public class Parser {
    * comprehension := FOR variable IN computation (AND computation)?
    */
   private Node comprehension() {
-    if (match(Token.Kind.FOR) == null) {
+    List<Token> forTokens = match(Kind.FOR);
+    if (forTokens == null) {
       return null;
     }
 
@@ -750,7 +757,7 @@ public class Parser {
     }
 
     if (match(Token.Kind.IF) == null) {
-      return new Comprehension(variable, inList, null);
+      return new Comprehension(variable, inList, null).sourceLocation(forTokens);
     }
 
     Node filter = computation();
@@ -759,7 +766,7 @@ public class Parser {
       throw new LoopSyntaxException();
     }
 
-    return new Comprehension(variable, inList, filter);
+    return new Comprehension(variable, inList, filter).sourceLocation(forTokens);
   }
 
   /**
@@ -941,7 +948,8 @@ public class Parser {
    * indexIntoList := LBRACKET (computation | computation? DOT DOT computation?)? RBRACKET
    */
   private Node indexIntoList() {
-    if (match(Token.Kind.LBRACKET) == null) {
+    List<Token> lbracketTokens = match(Kind.LBRACKET);
+    if (lbracketTokens == null) {
       return null;
     }
 
@@ -967,7 +975,7 @@ public class Parser {
       throw new LoopSyntaxException();
     }
 
-    return new IndexIntoList(index, slice, to);
+    return new IndexIntoList(index, slice, to).sourceLocation(lbracketTokens);
   }
 
   /**
@@ -979,8 +987,9 @@ public class Parser {
    */
   private Node listOrMapDef() {
     boolean isBraced = false;
-    if (match(Token.Kind.LBRACKET) == null) {
-      if (match(Token.Kind.LBRACE) == null) {
+    List<Token> lbracketTokens = match(Kind.LBRACKET);
+    if (lbracketTokens == null) {
+      if ((lbracketTokens = match(Token.Kind.LBRACE)) == null) {
         return null;
       } else {
         isBraced = true;
@@ -989,11 +998,11 @@ public class Parser {
 
     Node index = computation();
 
-    Node list = new InlineListDef(isBraced);
+    Node list = new InlineListDef(isBraced).sourceLocation(lbracketTokens);
     if (null != index) {
       boolean isMap = match(Token.Kind.ASSIGN) != null;
       if (isMap) {
-        list = new InlineMapDef(isBraced);
+        list = new InlineMapDef(isBraced).sourceLocation(lbracketTokens);
 
         // This map will be stored as a list of alternating keys/values (in pairs).
         list.add(index);
@@ -1047,7 +1056,7 @@ public class Parser {
 
         slice = true;
         to = computation();
-        list = new ListRange(index, slice, to);
+        list = new ListRange(index, slice, to).sourceLocation(lbracketTokens);
       }
     }
 
@@ -1083,7 +1092,8 @@ public class Parser {
     CallArguments callArguments = arglist();
 
     // Use the ident as name, and it is a method if there are () at end.
-    return new Call(call.get(1).value, null != callArguments, callArguments);
+    return new Call(call.get(1).value, null != callArguments, callArguments)
+        .sourceLocation(call);
   }
 
   /**
@@ -1144,7 +1154,7 @@ public class Parser {
     String expression = builder.toString();
     if (expression.startsWith("/") && expression.endsWith("/"))
       expression = expression.substring(1, expression.length() - 1);
-    return new RegexLiteral(expression);
+    return new RegexLiteral(expression).sourceLocation(token);
   }
 
   private static boolean notEndOfRegex(Token token) {
@@ -1167,25 +1177,25 @@ public class Parser {
     }
     switch (token.kind) {
       case INTEGER:
-        return new IntLiteral(token.value);
+        return new IntLiteral(token.value).sourceLocation(token);
       case STRING:
-        return new StringLiteral(token.value);
+        return new StringLiteral(token.value).sourceLocation(token);
       case TYPE_IDENT:
-        return new TypeLiteral(token.value);
+        return new TypeLiteral(token.value).sourceLocation(token);
       case JAVA_LITERAL:
-        return new JavaLiteral(token.value);
+        return new JavaLiteral(token.value).sourceLocation(token);
     }
     return null;
   }
 
   private Node variable() {
     List<Token> var = match(Token.Kind.IDENT);
-    return (null != var) ? new Variable(var.get(0).value) : null;
+    return (null != var) ? new Variable(var.get(0).value).sourceLocation(var) : null;
   }
 
   private Node field() {
     List<Token> var = match(Token.Kind.PRIVATE_FIELD);
-    return (null != var) ? new PrivateField(var.get(0).value) : null;
+    return (null != var) ? new PrivateField(var.get(0).value).sourceLocation(var) : null;
   }
 
 
@@ -1199,7 +1209,7 @@ public class Parser {
     Token token = tokens.get(i);
     if (isRightAssociative(token)) {
       i++;
-      return new BinaryOp(token);
+      return new BinaryOp(token).sourceLocation(token);
     }
 
     // No right associative op found.

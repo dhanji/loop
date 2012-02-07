@@ -98,13 +98,13 @@ public class Executable {
     }
   }
 
-  public boolean hasErrors() {
+  public boolean hasParseErrors() {
     return parseErrors != null;
   }
 
   public void compile() {
     this.unit = parse(source);
-    if (hasErrors())
+    if (hasParseErrors())
       return;
 
     CodeWriter codeWriter = new CodeWriter();
@@ -116,7 +116,7 @@ public class Executable {
   public void compileExpression() {
     Parser parser = new Parser(new Tokenizer(source).tokenize());
     Node line = parser.line();
-    if (hasErrors())
+    if (hasParseErrors())
       return;
 
     this.node = new Reducer(line).reduce();
@@ -129,7 +129,7 @@ public class Executable {
   public void compileFunction() {
     Parser parser = new Parser(new Tokenizer(source).tokenize());
     FunctionDecl functionDecl = parser.functionDecl();
-    if (hasErrors())
+    if (hasParseErrors())
       return;
 
     this.node = new Reducer(functionDecl).reduce();

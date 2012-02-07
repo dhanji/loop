@@ -120,7 +120,7 @@ public class Loop {
     try {
       executable = new Executable(new FileReader(new File(file)));
       executable.compile();
-      if (executable.hasErrors()) {
+      if (executable.hasParseErrors()) {
         executable.printErrors();
 
         throw new LoopSyntaxException("Syntax errors exist", executable);

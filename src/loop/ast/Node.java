@@ -1,5 +1,7 @@
 package loop.ast;
 
+import loop.Token;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,6 +19,19 @@ public abstract class Node {
   public Node add(Node child) {
     children.add(child);
     return this;
+  }
+
+  @SuppressWarnings("unchecked")
+  public <T extends Node> T sourceLocation(List<Token> tokens) {
+    return sourceLocation(tokens.iterator().next());
+  }
+
+  @SuppressWarnings("unchecked")
+  public <T extends Node> T sourceLocation(Token start) {
+    this.sourceLine = start.line;
+    this.sourceColumn = start.column;
+
+    return (T) this;
   }
 
   public List<Node> children() {
