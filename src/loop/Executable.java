@@ -34,6 +34,9 @@ public class Executable {
       builder = new StringBuilder();
       while (br.ready()) {
         String line = br.readLine();
+        if (line == null)
+          break;
+
         builder.append(line);
         builder.append('\n');
 

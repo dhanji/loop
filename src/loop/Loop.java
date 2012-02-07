@@ -59,7 +59,7 @@ public class Loop {
   }
 
   public static Object eval(String expression, Map<String, Object> context) {
-    Executable executable = new Executable(new StringReader(expression));
+    Executable executable = new Executable(new StringReader(expression + '\n'));
     executable.compileExpression();
 
     return safeEval(executable, context);
