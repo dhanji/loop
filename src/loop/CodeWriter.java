@@ -160,15 +160,18 @@ import java.util.concurrent.atomic.AtomicInteger;
       } else
         name = normalizeMethodName(call.name());
 
-      out.append(name).append('(');
-      List<Node> children = call.args().children();
-      for (int i = 0, childrenSize = children.size(); i < childrenSize; i++) {
-        emit(children.get(i));
+      out.append(name);
+      if (call.isFunction) {
+        out.append('(');
+        List<Node> children = call.args().children();
+        for (int i = 0, childrenSize = children.size(); i < childrenSize; i++) {
+          emit(children.get(i));
 
-        if (i < childrenSize - 1)
-          out.append(", ");
+          if (i < childrenSize - 1)
+            out.append(", ");
+        }
+        out.append(')');
       }
-      out.append(')');
     }
   };
 

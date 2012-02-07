@@ -1,0 +1,10 @@
+# Property navigation across maps
+
+details() ->
+  dude.friend.name
+  where
+    buddy: [ 'name' : 'Peter' ]
+    dude:   [ 'friend' : buddy ]
+
+main ->
+  details()

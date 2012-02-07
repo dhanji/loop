@@ -29,7 +29,7 @@ public class LoopShell {
       // Used to build up multiline statement blocks (like functions)
       StringBuilder block = null;
       do {
-        String prompt = inFunction ? "-->  " : ">> ";
+        String prompt = inFunction ? "|    " : ">> ";
 
         String rawLine = reader.readLine(prompt);
 

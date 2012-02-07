@@ -39,7 +39,10 @@ public class Tracer {
   public static void printCurrentTrace(Executable executable,
                                        PropertyAccessException e,
                                        PrintStream out) {
-    out.println(e.getCause().getMessage());
+    if (e.getCause() != null)
+      out.println(e.getCause().getMessage());
+    else
+      out.println(e.getMessage());
 
     List<String> elements = new ArrayList<String>(tracingStack.get());
     Collections.reverse(elements);

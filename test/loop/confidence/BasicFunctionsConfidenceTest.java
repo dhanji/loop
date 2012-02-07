@@ -190,4 +190,9 @@ public class BasicFunctionsConfidenceTest {
 
     assertEquals(map, Loop.run("test/loop/confidence/regex_pattern_matching_guarded_3.loop"));
   }
+
+  @Test
+  public final void propertyNavigation1() {
+    assertEquals("Peter", Loop.run("test/loop/confidence/property_nav_1.loop"));
+  }
 }
