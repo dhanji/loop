@@ -1,0 +1,7 @@
+# Inline Binary trees. (trees store keys in order)
+
+make() ->
+ {3: 'o', 4: 'p', 1 : 'l', 2 : 'o'}
+
+main ->
+  make()

@@ -361,6 +361,8 @@ import java.util.concurrent.atomic.AtomicInteger;
     @Override public void emitCode(Node node) {
       InlineMapDef inlineMapDef = (InlineMapDef) node;
 
+      if (inlineMapDef.isTree)
+        out.append("new java.util.TreeMap(");
       out.append('[');
       final List<Node> children = inlineMapDef.children();
       if (children.isEmpty())
@@ -378,6 +380,8 @@ import java.util.concurrent.atomic.AtomicInteger;
           }
         }
       out.append(']');
+      if (inlineMapDef.isTree)
+        out.append(')');
     }
   };
 

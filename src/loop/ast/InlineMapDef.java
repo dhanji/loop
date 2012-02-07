@@ -5,7 +5,7 @@ package loop.ast;
  * by alternating keys/values as 1st-level children of this node.
  */
 public class InlineMapDef extends Node {
-  private final boolean isTree;
+  public final boolean isTree;
 
   public InlineMapDef(boolean isTree) {
     this.isTree = isTree;

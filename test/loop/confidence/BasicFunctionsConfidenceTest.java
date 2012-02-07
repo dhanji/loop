@@ -4,10 +4,12 @@ import loop.Loop;
 import loop.LoopError;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.TreeMap;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -207,5 +209,17 @@ public class BasicFunctionsConfidenceTest {
   public final void stringSet() {
     assertEquals(new HashSet<String>(Arrays.asList("hi")),
         Loop.run("test/loop/confidence/sets_2.loop"));
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  public final void simpleTree() {
+    Object tree = Loop.run("test/loop/confidence/trees_1.loop");
+    assertTrue(tree instanceof TreeMap);
+    assertTrue(Arrays.asList(
+        "l",
+        "o",
+        "o",
+        "p").equals(new ArrayList<String>(((Map) tree).values())));
   }
 }
