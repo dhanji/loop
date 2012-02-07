@@ -23,6 +23,9 @@ import java.util.Map;
  * Converts parsed, type-solved, emitted code to Java classes.
  */
 public class Loop {
+  // Global config options for the runtime.
+  static volatile boolean enableStackTraces = true;
+
   public static void main(String[] args) {
     if (args.length == 0) {
       LoopShell.shell();
