@@ -1,0 +1,9 @@
+# Inline Sets.
+
+make() ->
+ {'hi', "hi", 'h' + 'i', hi}
+ where
+   hi: 'hi'
+
+main ->
+  make()

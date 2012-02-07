@@ -202,4 +202,10 @@ public class BasicFunctionsConfidenceTest {
     assertEquals(new HashSet<Integer>(Arrays.asList(1, 2, 3, 5)),
         Loop.run("test/loop/confidence/sets_1.loop"));
   }
+
+  @Test
+  public final void stringSet() {
+    assertEquals(new HashSet<String>(Arrays.asList("hi")),
+        Loop.run("test/loop/confidence/sets_2.loop"));
+  }
 }
