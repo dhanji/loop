@@ -77,6 +77,10 @@ public class Loop {
       return MVEL.eval(executable.getCompiled(), context);
     } catch (PropertyAccessException e) {
       String message = e.getMessage();
+
+      // Show the source code fragment where this error occurred.
+      executable.printSourceFragment(e.getLineNumber(), e.getColumn());
+
       if (message.contains("unresolvable property")) {
         System.out.println("I don't know that identifier =(");
       } else if (message.contains("unable to resolve method"))

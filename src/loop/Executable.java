@@ -1,5 +1,6 @@
 package loop;
 
+import loop.CodeWriter.SourceLocation;
 import loop.ast.Node;
 import loop.ast.script.FunctionDecl;
 import loop.ast.script.Unit;
@@ -9,6 +10,8 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 /**
  * @author dhanji@gmail.com (Dhanji R. Prasanna)
@@ -24,6 +27,7 @@ public class Executable {
 
   private String compiled;  // Compiled MVEL script.
   private List<ParseError> parseErrors;
+  private TreeMap<SourceLocation, Node> emittedNodes;     // Lookup map of MVEL script -> Loop AST
 
   public Executable(Reader source) {
     List<String> lines = new ArrayList<String>();
@@ -103,7 +107,9 @@ public class Executable {
     if (hasErrors())
       return;
 
-    this.compiled = new CodeWriter().write(unit);
+    CodeWriter codeWriter = new CodeWriter();
+    this.emittedNodes = codeWriter.getEmittedNodeMap();
+    this.compiled = codeWriter.write(unit);
     this.source = null;
   }
 
@@ -114,7 +120,9 @@ public class Executable {
       return;
 
     this.node = new Reducer(line).reduce();
-    this.compiled = new CodeWriter().write(node);
+    CodeWriter codeWriter = new CodeWriter();
+    this.emittedNodes = codeWriter.getEmittedNodeMap();
+    this.compiled = codeWriter.write(node);
     this.source = null;
   }
 
@@ -125,7 +133,9 @@ public class Executable {
       return;
 
     this.node = new Reducer(functionDecl).reduce();
-    this.compiled = new CodeWriter().write(node);
+    CodeWriter codeWriter = new CodeWriter();
+    this.emittedNodes = codeWriter.getEmittedNodeMap();
+    this.compiled = codeWriter.write(node);
     this.source = null;
   }
 
@@ -144,5 +154,15 @@ public class Executable {
 
   public List<ParseError> getParseErrors() {
     return parseErrors;
+  }
+
+  public void printSourceFragment(int line, int column) {
+    SourceLocation start = new SourceLocation(line - 1, column);
+    SourceLocation end = new SourceLocation(line, 0);
+    SortedMap<SourceLocation,Node> range = emittedNodes.subMap(start, end);
+
+    if (!range.isEmpty()) {
+      System.out.println(range);
+    }
   }
 }

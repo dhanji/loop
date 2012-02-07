@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
+import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -52,9 +53,41 @@ import java.util.concurrent.atomic.AtomicInteger;
   // MVEL line and column to map back to our Loop AST.
   private int line;
   private int column;
+  private final TreeMap<SourceLocation, Node> emittedNodeMap = new TreeMap<SourceLocation, Node>();
 
   private static interface Emitter {
     void emitCode(Node node);
+  }
+
+  public static class SourceLocation implements Comparable<SourceLocation> {
+    public final int line;
+    public final int column;
+
+    public SourceLocation(int line, int column) {
+      this.line = line;
+      this.column = column;
+    }
+
+    @Override
+    public int compareTo(SourceLocation that) {
+      return (this.line * 1000000 + this.column) - (that.line * 1000000 + that.column);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) return true;
+      if (o == null || getClass() != o.getClass()) return false;
+
+      SourceLocation that = (SourceLocation) o;
+
+      return column == that.column && line == that.line;
+
+    }
+
+    @Override
+    public int hashCode() {
+      return 31 * line + column;
+    }
   }
 
   /**
@@ -115,7 +148,8 @@ import java.util.concurrent.atomic.AtomicInteger;
     if (str.contains("\n")) {
       line++;
       column = 0;
-    }
+    } else
+      column += str.length();
 
     return this;
   }
@@ -125,14 +159,20 @@ import java.util.concurrent.atomic.AtomicInteger;
     if (c == '\n') {
       line++;
       column = 0;
-    }
+    } else
+      column++;
 
     return this;
   }
 
   private CodeWriter append(int n) {
     out.append(n);
+    column++;
     return this;
+  }
+
+  private void trackLineAndColumn(Node node) {
+    emittedNodeMap.put(new SourceLocation(line, column), node);
   }
 
   private void emitChildren(Node node) {
@@ -151,6 +191,9 @@ import java.util.concurrent.atomic.AtomicInteger;
     EMITTERS.get(node.getClass()).emitCode(node);
   }
 
+  public TreeMap<SourceLocation, Node> getEmittedNodeMap() {
+    return emittedNodeMap;
+  }
 
   // -------------------------------------------------------------------
   // EMITTERS ----------------------------------------------------------
@@ -160,6 +203,7 @@ import java.util.concurrent.atomic.AtomicInteger;
     @Override public void emitCode(Node node) {
       TernaryExpression expression = (TernaryExpression) node;
 
+      trackLineAndColumn(expression);
       // IF test
       append('(');
       emit(expression.children().get(0));
@@ -175,6 +219,7 @@ import java.util.concurrent.atomic.AtomicInteger;
   private final Emitter computationEmitter = new Emitter() {
     @Override public void emitCode(Node node) {
       Computation computation = (Computation) node;
+      trackLineAndColumn(computation);
       append('(');
       emitChildren(computation);
       append(')');
@@ -186,6 +231,7 @@ import java.util.concurrent.atomic.AtomicInteger;
       Call call = (Call) node;
       String name;
 
+      trackLineAndColumn(call);
       // This is a special invocation so we emit it without the dot.
       if ("@call".equals(call.name())) {
         name = "";
@@ -217,6 +263,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
       if (null == name)
         name = binaryOp.name();
+      trackLineAndColumn(binaryOp);
       append(' ').append(name).append(' ');
       emitOnlyChild(binaryOp);
     }
@@ -229,6 +276,7 @@ import java.util.concurrent.atomic.AtomicInteger;
         throw new RuntimeException("Expected a variable on the LHS of assignment: "
             + Parser.stringify(assignment));
 
+      trackLineAndColumn(assignment);
       emit(assignment.lhs());
       append(" = ");
       emit(assignment.rhs());
@@ -239,6 +287,7 @@ import java.util.concurrent.atomic.AtomicInteger;
   private final Emitter variableEmitter = new Emitter() {
     @Override public void emitCode(Node node) {
       Variable var = (Variable) node;
+      trackLineAndColumn(var);
       append(var.name);
     }
   };
@@ -250,6 +299,7 @@ import java.util.concurrent.atomic.AtomicInteger;
   private final Emitter intEmitter = new Emitter() {
     @Override public void emitCode(Node node) {
       IntLiteral intLiteral = (IntLiteral) node;
+      trackLineAndColumn(intLiteral);
       append(intLiteral.value);
     }
   };
@@ -257,6 +307,7 @@ import java.util.concurrent.atomic.AtomicInteger;
   private final Emitter typeLiteralEmitter = new Emitter() {
     @Override public void emitCode(Node node) {
       TypeLiteral type = (TypeLiteral) node;
+      trackLineAndColumn(type);
       append(type.name);
     }
   };
@@ -264,6 +315,7 @@ import java.util.concurrent.atomic.AtomicInteger;
   private final Emitter javaLiteralEmitter = new Emitter() {
     @Override public void emitCode(Node node) {
       JavaLiteral java = (JavaLiteral) node;
+      trackLineAndColumn(java);
       append(java.value);
     }
   };
@@ -272,6 +324,7 @@ import java.util.concurrent.atomic.AtomicInteger;
     @Override public void emitCode(Node node) {
       StringLiteral string = (StringLiteral) node;
 
+      trackLineAndColumn(string);
       if (string.parts != null) {
         List<Node> parts = string.parts;
         for (int i = 0, partSize = parts.size(); i < partSize; i++) {
@@ -315,6 +368,7 @@ import java.util.concurrent.atomic.AtomicInteger;
       append("def ").append(normalizeMethodName(name));
       emit(functionDecl.arguments());
       append(" {\n");
+      trackLineAndColumn(functionDecl);
 
       // Emit locally-scoped helper functions and variables.
       for (Node helper : functionDecl.whereBlock) {
@@ -350,6 +404,7 @@ import java.util.concurrent.atomic.AtomicInteger;
   private final Emitter privateFieldEmitter = new Emitter() {
     @Override public void emitCode(Node node) {
       PrivateField privateField = (PrivateField) node;
+      trackLineAndColumn(privateField);
       append(normalizeMethodName(privateField.name()));
     }
   };
@@ -358,6 +413,8 @@ import java.util.concurrent.atomic.AtomicInteger;
     @Override public void emitCode(Node node) {
       ArgDeclList argDeclList = (ArgDeclList) node;
       append('(');
+
+      trackLineAndColumn(argDeclList);
       List<Node> children = argDeclList.children();
 
       for (int i = 0, childrenSize = children.size(); i < childrenSize; i++) {
@@ -379,6 +436,7 @@ import java.util.concurrent.atomic.AtomicInteger;
         append("new java.util.HashSet(");
       }
       append('[');
+      trackLineAndColumn(inlineListDef);
       final List<Node> children = inlineListDef.children();
       for (int i = 0, childrenSize = children.size(); i < childrenSize; i++) {
         emit(children.get(i));
@@ -399,6 +457,8 @@ import java.util.concurrent.atomic.AtomicInteger;
       if (inlineMapDef.isTree)
         append("new java.util.TreeMap(");
       append('[');
+
+      trackLineAndColumn(inlineMapDef);
       final List<Node> children = inlineMapDef.children();
       if (children.isEmpty())
         append(':');
@@ -427,6 +487,7 @@ import java.util.concurrent.atomic.AtomicInteger;
       List<Node> children = callChain.children();
       for (int i = 0, childrenSize = children.size(); i < childrenSize; i++) {
         Node child = children.get(i);
+        trackLineAndColumn(child);
         emit(child);
 
         if (i < childrenSize - 1) {
@@ -444,6 +505,8 @@ import java.util.concurrent.atomic.AtomicInteger;
     @Override public void emitCode(Node node) {
       IndexIntoList indexIntoList = (IndexIntoList) node;
       append('[');
+
+      trackLineAndColumn(indexIntoList);
       emit(indexIntoList.from());
       append(']');
     }
@@ -452,8 +515,9 @@ import java.util.concurrent.atomic.AtomicInteger;
   private final Emitter comprehensionEmitter = new Emitter() {
     @Override public void emitCode(Node node) {
       Comprehension comprehension = (Comprehension) node;
-
       append(" (");
+      trackLineAndColumn(comprehension);
+
       for (Node element : comprehension.projection()) {
         replaceVarInTree(element, comprehension.var(), "$");
         emit(element);

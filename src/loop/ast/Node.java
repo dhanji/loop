@@ -12,6 +12,8 @@ public abstract class Node {
   // the rest of the tree under this node
   protected final List<Node> children = new ArrayList<Node>();
 
+  public int sourceLine, sourceColumn;
+
   public Node add(Node child) {
     children.add(child);
     return this;
