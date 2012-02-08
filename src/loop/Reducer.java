@@ -78,6 +78,12 @@ public class Reducer {
       if (call.args() != null) {
         reduce(call.args());
       }
+    }  else if (bloated instanceof ConstructorCall) {
+      ConstructorCall call = (ConstructorCall) bloated;
+
+      if (call.args() != null) {
+        reduce(call.args());
+      }
     } else if (bloated instanceof PatternRule) {
       PatternRule rule = (PatternRule) bloated;
 

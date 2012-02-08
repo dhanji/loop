@@ -64,7 +64,7 @@ public class Token {
     MODULE,
 
     CLASS,
-    CONSTRUCTOR,
+    NEW,
     OR,
     AND,
     NOT,
@@ -120,7 +120,7 @@ public class Token {
       TOKEN_MAP.put("where", WHERE);
       TOKEN_MAP.put("for", FOR);
       TOKEN_MAP.put("in", IN);
-      TOKEN_MAP.put("constructor", CONSTRUCTOR);
+      TOKEN_MAP.put("new", NEW);
       TOKEN_MAP.put("class", CLASS);
 
       TOKEN_MAP.put("require", REQUIRE);

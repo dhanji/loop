@@ -1149,7 +1149,41 @@ public class Parser {
   }
 
   /**
-   * term := (literal | variable | field)
+   * constructorCall := NEW TYPE_IDENT arglist
+   */
+  private Node constructorCall() {
+    if (match(Kind.NEW) == null)
+      return null;
+
+    String modulePart = null;
+    List<Token> module;
+    do {
+      module = match(Kind.IDENT, Kind.DOT);
+      if (module != null) {
+        if (modulePart == null)
+          modulePart = "";
+
+        modulePart += module.iterator().next().value + ".";
+      }
+    } while (module != null);
+
+    List<Token> typeName = match(Kind.TYPE_IDENT);
+    if (null == typeName) {
+      addError("Expected type identifer after 'new'", tokens.get(i - 1));
+      throw new LoopSyntaxException();
+    }
+
+    CallArguments arglist = arglist();
+    if (null == arglist) {
+      addError("Expected '(' after constructor call", tokens.get(i - 1));
+      throw new LoopSyntaxException();
+    }
+
+    return new ConstructorCall(modulePart, typeName.iterator().next().value, arglist);
+  }
+
+  /**
+   * term := (literal | variable | field | constructorCall)
    */
   private Node term() {
     Node term = literal();
@@ -1160,6 +1194,10 @@ public class Parser {
 
     if (null == term) {
       term = field();
+    }
+
+    if (null == term) {
+      term = constructorCall();
     }
 
     return term;

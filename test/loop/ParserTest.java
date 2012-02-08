@@ -24,8 +24,18 @@ public class ParserTest {
 
   @Test
   public final void javaLiteral() {
-    // Same thing but this time with a field instead.
     compare("(comput (. `java.lang.System`))", "`java.lang.System`");
+  }
+
+  @Test
+  public final void callConstructor() {
+    compare("(comput (. new Date()))", "new Date()");
+    compare("(comput (. new Star(()= name: (comput (. 'Proxima Centauri')) mass: (comput (. 123)))))",
+        "new Star(name: 'Proxima Centauri', mass: 123)");
+    compare("(comput (. new java.util.Date()))", "new java.util.Date()");
+    compare("(comput (. new java.util.HashMap(()= (comput map))))", "new java.util.HashMap([:])");
+    compare("(comput (. new loop.MyType(()= a: (comput (. 1)) b: (comput (. 2)))))",
+        "new loop.MyType(a: 1, b: 2)");
   }
 
   @Test
