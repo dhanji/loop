@@ -13,23 +13,23 @@ public class TypeDeclarationsParsingTest {
   @Test
   public final void simpleTypeDeclaration() {
     compareType("Person",
-        "(class Person -> (= (comput (. name[String])) (comput (. 'dude'))))",
-        "class Person ->\n  String name: 'dude'\n");
+        "(class Person -> (= (comput (. name)) (comput (. 'dude'))))",
+        "class Person ->\n  name: 'dude'\n");
   }
 
   @Test
   public final void multilineTypeDeclaration() {
     compareType("Person",
         "(class Person ->" +
-            " (= (comput (. name[String])) (comput (. 'dude')))" +
-            " (= (comput (. age[Integer])) (comput (. 25)))" +
-            " (= (comput (. weight[Integer])) (comput (. 194)))" +
-            " (= (comput (. cool[Boolean])) (comput (. true))))",
+            " (= (comput (. name)) (comput (. 'dude')))" +
+            " (= (comput (. age)) (comput (. 25)))" +
+            " (= (comput (. weight)) (comput (. 194)))" +
+            " (= (comput (. cool)) (comput (. true))))",
         "class Person ->" +
-            "\n  String name: 'dude'" +
-            "\n  Integer age: 25" +
-            "\n  Integer weight: 194" +
-            "\n  Boolean cool: true"
+            "\n  name: 'dude'" +
+            "\n  age: 25" +
+            "\n  weight: 194" +
+            "\n  cool: true"
     );
   }
 
@@ -37,15 +37,15 @@ public class TypeDeclarationsParsingTest {
   public final void multilineTypeDeclarationWithSomeDefaults() {
     compareType("Person",
         "(class Person ->" +
-            " (comput (. age[Integer]))" +
-            " (= (comput (. name[String])) (comput (. 'Guy')))" +
-            " (comput (. weight[Integer]))" +
-            " (= (comput (. cool[Boolean])) (comput (. true))))",
+            " (comput (. age))" +
+            " (= (comput (. name)) (comput (. 'Guy')))" +
+            " (comput (. weight))" +
+            " (= (comput (. cool)) (comput (. true))))",
         "class Person ->" +
-            "\n  Integer age" +
-            "\n  String name: 'Guy'" +
-            "\n  Integer weight" +
-            "\n  Boolean cool: true"
+            "\n  age" +
+            "\n  name: 'Guy'" +
+            "\n  weight" +
+            "\n  cool: true"
     );
   }
 

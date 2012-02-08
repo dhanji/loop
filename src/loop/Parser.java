@@ -174,20 +174,8 @@ public class Parser {
       chewEols();
       withIndent();
 
-      List<Token> typeAnnotation = match(Kind.TYPE_IDENT);
-      if (typeAnnotation == null)
-        break;
-
       line = line();
       if (line != null) {
-        if (line instanceof Assignment) {
-          Assignment assignment = (Assignment) line;
-          ((Variable)assignment.lhs().onlyChild().onlyChild()).type = typeAnnotation.iterator().next().value;
-        } else if (line instanceof Computation) {
-          // This is just a field without any values.
-          ((Variable)line.onlyChild().onlyChild()).type = typeAnnotation.iterator().next().value;
-        }
-
         classDecl.add(line);
       }
 
