@@ -1,8 +1,10 @@
 package loop.ast.script;
 
 import loop.Reducer;
+import loop.ast.ClassDecl;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -16,7 +18,7 @@ public class Unit {
 
   private final Set<RequireDecl> imports = new HashSet<RequireDecl>();
   private final Map<String, FunctionDecl> functions = new LinkedHashMap<String, FunctionDecl>();
-//  private final Map<String, FunctionDecl> classes = new HashMap<String, FunctionDecl>();
+  private final Map<String, ClassDecl> classes = new HashMap<String, ClassDecl>();
 
   public Unit(ModuleDecl module) {
     this.module = module;
@@ -32,12 +34,20 @@ public class Unit {
     return functions.get(name);
   }
 
+  public ClassDecl getType(String name) {
+    return classes.get(name);
+  }
+
   public void add(FunctionDecl node) {
     functions.put(node.name(), node);
   }
 
   public void add(RequireDecl node) {
     imports.add(node);
+  }
+
+  public void add(ClassDecl classDecl) {
+    classes.put(classDecl.name, classDecl);
   }
 
   public Collection<FunctionDecl> functions() {

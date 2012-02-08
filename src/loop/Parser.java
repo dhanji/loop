@@ -121,14 +121,21 @@ public class Parser {
     } while (require != null);
 
     FunctionDecl function;
+    ClassDecl classDecl = null;
     do {
       function = functionDecl();
+      if (function == null) {
+        classDecl = classDecl();
+      }
+
       chewEols();
 
-      if (null != function) {
+      if (null != function)
         unit.add(function);
-      }
-    } while (function != null);
+      else if (null != classDecl)
+        unit.add(classDecl);
+
+    } while (function != null || classDecl != null);
 
     return unit;
   }
@@ -140,6 +147,60 @@ public class Parser {
   }
 
   /*** Class parsing rules ***/
+
+  /**
+   * Type declaration with inline constructors.
+   */
+  public ClassDecl classDecl() {
+    if (match(Kind.CLASS) == null) {
+      return null;
+    }
+
+    List<Token> className = match(Kind.TYPE_IDENT);
+    if (null == className) {
+      addError("Expected type identifier (Hint: Types must be upper CamelCase)", tokens.get(i));
+      throw new LoopSyntaxException();
+    }
+
+    if (null == match(Kind.ARROW, Kind.LBRACE)) {
+      addError("Expected '->' after type identifier", tokens.get(i));
+      throw new LoopSyntaxException();
+    }
+
+    ClassDecl classDecl = new ClassDecl(className.iterator().next().value);
+
+    Node line;
+    do {
+      chewEols();
+      withIndent();
+
+      List<Token> typeAnnotation = match(Kind.TYPE_IDENT);
+      if (typeAnnotation == null)
+        break;
+
+      line = line();
+      if (line != null) {
+        if (line instanceof Assignment) {
+          Assignment assignment = (Assignment) line;
+          ((Variable)assignment.lhs().onlyChild().onlyChild()).type = typeAnnotation.iterator().next().value;
+        } else if (line instanceof Computation) {
+          // This is just a field without any values.
+          ((Variable)line.onlyChild().onlyChild()).type = typeAnnotation.iterator().next().value;
+        }
+
+        classDecl.add(line);
+      }
+
+      chewEols();
+    } while (line != null);
+
+    if (!endOfInput() && match(Token.Kind.RBRACE) == null) {
+      addError("Expected end of type, additional statements found", tokens.get(i));
+      throw new LoopSyntaxException();
+    }
+
+    return classDecl;
+  }
 
   /**
    * Named function parsing rule.
