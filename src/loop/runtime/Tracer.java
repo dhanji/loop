@@ -15,13 +15,13 @@ import java.util.Stack;
 public class Tracer {
   private static final ThreadLocal<Stack<String>> tracingStack = new ThreadLocal<Stack<String>>();
 
-  public static void push(String element) {
-    Stack<String> trace = tracingStack.get();
-    if (trace == null) {
-      tracingStack.set(trace = new Stack<String>());
-    }
+  public static void startTrace() {
+    if (tracingStack.get() == null)
+      tracingStack.set(new Stack<String>());
+  }
 
-    trace.push(element);
+  public static void push(String element) {
+    tracingStack.get().push(element);
   }
 
   public static void pop() {
@@ -39,17 +39,19 @@ public class Tracer {
   public static void printCurrentTrace(Executable executable,
                                        PropertyAccessException e,
                                        PrintStream out) {
-    if (e.getCause() != null)
-      out.println(e.getCause().getMessage());
-    else
-      out.println(e.getMessage());
+    Stack<String> stackTrace = tracingStack.get();
+    if (stackTrace.isEmpty())
+      return;
 
-    List<String> elements = new ArrayList<String>(tracingStack.get());
+    out.println("trace:");
+    List<String> elements = new ArrayList<String>(stackTrace);
     Collections.reverse(elements);
     for (String element : elements) {
       out.print("  at ");
       out.print(element);
       out.println("()");
+
+      // Determine line and column of function.
     }
   }
 }

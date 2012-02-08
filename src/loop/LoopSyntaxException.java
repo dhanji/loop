@@ -19,7 +19,7 @@ public class LoopSyntaxException extends RuntimeException {
     this.executable = null;
   }
 
-  public List<ParseError> getErrors() {
+  public List<AnnotatedError> getErrors() {
     return executable.getParseErrors();
   }
 }

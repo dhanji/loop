@@ -60,49 +60,70 @@ public class Loop {
 
   public static Object eval(String expression, Map<String, Object> context) {
     Executable executable = new Executable(new StringReader(expression + '\n'));
-    executable.compileExpression();
+    try {
+      executable.compileExpression();
+    } catch (Exception e) {
+      return new LoopError("malformed expression '" + expression + "'");
+    }
 
     return safeEval(executable, context);
   }
 
   public static Object evalFunction(String function, Map<String, Object> context) {
     Executable executable = new Executable(new StringReader(function));
-    executable.compileFunction();
+    try {
+      executable.compileFunction();
+    } catch (Exception e) {
+      return new LoopError("malformed function");
+    }
 
     return safeEval(executable, context);
   }
 
   private static Object safeEval(Executable executable, Map<String, Object> context) {
     try {
+      if (enableStackTraces)
+        Tracer.startTrace();
+
       return MVEL.eval(executable.getCompiled(), context);
     } catch (PropertyAccessException e) {
       String message = e.getMessage();
-
-      // Show the source code fragment where this error occurred.
-      executable.printSourceFragment(e.getLineNumber(), e.getColumn());
+      String loopError;
+      boolean printStackTrace = false;
 
       if (message.contains("unresolvable property")) {
-        System.out.println("I don't know that identifier =(");
+        loopError = "I don't know that identifier =(";
       } else if (message.contains("unable to resolve method"))
-        System.out.println("I don't know that method =(");
+        loopError = "I don't know that method =(";
       else if (message.contains("null pointer exception")) {
-        System.out.println("Oh noes, you can't dereference a null value returned from Java code!");
+        loopError = "Oh noes, you can't dereference a null value returned from Java code!";
       } else {
+        if (e.getCause() != null)
+          loopError = e.getCause().getClass().getSimpleName() + ": " + e.getCause().getMessage();
+        else
+          loopError = message;
         if (enableStackTraces) {
-          Tracer.printCurrentTrace(executable, e, System.out);
-          Tracer.complete();
+          printStackTrace = true;
         } else
           e.printStackTrace();
       }
-      return new LoopError();
+
+      // Show the source code fragment where this error occurred.
+      executable.printSourceFragment(loopError, e.getLineNumber(), e.getColumn());
+      if (printStackTrace) {
+        Tracer.printCurrentTrace(executable, e, System.out);
+        Tracer.complete();
+      }
+
+      return new LoopError(e.getCause() != null ? (Exception) e.getCause().getCause() : null);
     } catch (LoopSyntaxException e) {
       throw e;
     } catch (Exception e) {
       if (enableStackTraces) {
-        System.out.println(Tracer.getStackTrace());
+        Tracer.printCurrentTrace(executable, null, System.out);
         Tracer.complete();
       }
-      return new LoopError();
+      return new LoopError(e);
     }
   }
 
@@ -121,7 +142,7 @@ public class Loop {
       executable = new Executable(new FileReader(new File(file)));
       executable.compile();
       if (executable.hasParseErrors()) {
-        executable.printErrors();
+        executable.printParseErrorsIfNecessary();
 
         throw new LoopSyntaxException("Syntax errors exist", executable);
       }

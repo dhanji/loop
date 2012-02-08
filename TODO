@@ -18,7 +18,7 @@ x Conditionals (if-then-else, ternaries)
 x Calling into Java methods
 x Line/Column error reporting
 x Closures
-- Interactive interpreter/shell
+x Interactive interpreter/shell
 - Basic scope verification with symbol table
 - Modules/packaging/import
 x Value typing example
@@ -31,13 +31,13 @@ Stretch
 - Null-safety (is this possible?)
 x String interpolation
 - Tail call optimization
-- Exception unrolling
+x Exception unrolling
 - Basic function inlining
 - enumeration type
 - class constants?
 - Type classes/extension methods (better than interfaces/traits)
 - Pattern matching methods on character streams
-- Parsing require decl hiding (stuff)
+- Parsing require as (stuff)
 
 
 Algorithms
@@ -52,4 +52,4 @@ x Quicksort
 - Djikstra's Shunting Yard
 - Sieve of Eratosthenes
 - Ransom Note
-- Naive Factorial
+x Naive Factorial

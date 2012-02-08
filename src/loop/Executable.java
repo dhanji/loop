@@ -9,6 +9,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -22,7 +23,8 @@ public class Executable {
 
 
   private Unit unit;             // Loop compilation unit.
-  private Node node;             // If a fragment and not a whole unit (mutually exclusive with unit)
+  private Node node;
+      // If a fragment and not a whole unit (mutually exclusive with unit)
 
 
   private String compiled;  // Compiled MVEL script.
@@ -73,9 +75,14 @@ public class Executable {
     return unit;
   }
 
-  public void printErrors() {
-    for (int i = 0, errorsSize = parseErrors.size(); i < errorsSize; i++) {
-      ParseError error = parseErrors.get(i);
+  public void printParseErrorsIfNecessary() {
+    if (parseErrors != null)
+      printErrors(getParseErrors());
+  }
+
+  public void printErrors(List<AnnotatedError> errors) {
+    for (int i = 0, errorsSize = errors.size(); i < errorsSize; i++) {
+      AnnotatedError error = errors.get(i);
       System.out.println((i + 1) + ") " + error.getMessage());
       System.out.println();
 
@@ -86,13 +93,13 @@ public class Executable {
       // Unwrap to the previous line if the highlighted line is empty.
       if (lineNumber > 0 && (lines.get(lineNumber - 1).trim().isEmpty() || column == 0)) {
         lineNumber -= 1;
-        column = lines.get(lineNumber - 1).length();
+        column = lines.get(Math.max(0, lineNumber - 1)).length();
       }
 
       if (error.line() > 0)
         System.out.println("  " + error.line() + ": " + lines.get(lineNumber - 2));
 
-      System.out.println("  " + lineNumber + ": " + lines.get(lineNumber - 1));
+      System.out.println("  " + lineNumber + ": " + lines.get(Math.max(0, lineNumber - 1)));
       int spaces = column + Integer.toString(lineNumber).length() + 1;
       System.out.println("  " + whitespace(spaces) + "^\n");
     }
@@ -152,17 +159,34 @@ public class Executable {
       compiled += "; main();";
   }
 
-  public List<ParseError> getParseErrors() {
-    return parseErrors;
+  @SuppressWarnings("unchecked")
+  public List<AnnotatedError> getParseErrors() {
+    return (List) parseErrors;
   }
 
-  public void printSourceFragment(int line, int column) {
+  public void printSourceFragment(final String message, int line, int column) {
     SourceLocation start = new SourceLocation(line - 1, column);
     SourceLocation end = new SourceLocation(line, 0);
-    SortedMap<SourceLocation,Node> range = emittedNodes.subMap(start, end);
+    SortedMap<SourceLocation, Node> range = emittedNodes.subMap(start, end);
+    if (range.isEmpty())
+      return;
 
-    if (!range.isEmpty()) {
-      System.out.println(range);
-    }
+    final Node errorLocation = range.values().iterator().next();
+    printErrors(Arrays.<AnnotatedError>asList(new AnnotatedError() {
+      @Override
+      public String getMessage() {
+        return message;
+      }
+
+      @Override
+      public int line() {
+        return errorLocation.sourceLine;
+      }
+
+      @Override
+      public int column() {
+        return errorLocation.sourceColumn;
+      }
+    }));
   }
 }

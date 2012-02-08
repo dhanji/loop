@@ -163,6 +163,7 @@ public class Parser {
    */
   private FunctionDecl internalFunctionDecl(boolean anonymous) {
     List<Token> funcName = null;
+    List<Token> startTokens = null;
     if (!anonymous) {
       funcName = match(Token.Kind.PRIVATE_FIELD);
 
@@ -174,12 +175,13 @@ public class Parser {
         return null;
       }
     } else {
-      if (match(Token.Kind.ANONYMOUS_TOKEN) == null)
+      if ((startTokens = match(Token.Kind.ANONYMOUS_TOKEN)) == null)
         return null;
     }
     ArgDeclList arguments = argDeclList();
     String name = anonymous ? null : funcName.get(0).value;
-    FunctionDecl functionDecl = new FunctionDecl(name, arguments);
+    startTokens = funcName != null ? funcName : startTokens;
+    FunctionDecl functionDecl = new FunctionDecl(name, arguments).sourceLocation(startTokens);
 
     // If it doesn't have a thin or fat arrow, then it's not a function either.
     if (match(Token.Kind.ARROW, Token.Kind.LBRACE) == null) {
@@ -510,7 +512,8 @@ public class Parser {
    * argDeclList := LPAREN IDENT (ASSIGN TYPE_IDENT)? (COMMA IDENT (ASSIGN TYPE_IDENT)? )* RPAREN
    */
   private ArgDeclList argDeclList() {
-    if (match(Token.Kind.LPAREN) == null) {
+    List<Token> lparenTokens = match(Kind.LPAREN);
+    if (lparenTokens == null) {
       return null;
     }
 
@@ -520,11 +523,11 @@ public class Parser {
         addError("Expected ')' or identifier in function argument list", tokens.get(i - 1));
         throw new LoopSyntaxException();
       }
-      return new ArgDeclList();
+      return new ArgDeclList().sourceLocation(lparenTokens);
     }
 
     List<Token> optionalType = match(Token.Kind.ASSIGN, Token.Kind.TYPE_IDENT);
-    ArgDeclList arguments = new ArgDeclList();
+    ArgDeclList arguments = new ArgDeclList().sourceLocation(lparenTokens);
 
     String firstTypeName = optionalType == null ? null : optionalType.get(1).value;
     arguments.add(new ArgDeclList.Argument(first.get(0).value, firstTypeName));

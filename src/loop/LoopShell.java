@@ -80,6 +80,18 @@ public class LoopShell {
           System.out.println("Context reset.");
           continue;
         }
+        if (line.startsWith(":t") || line.startsWith(":type")) {
+          String[] split = line.split("[ ]+", 2);
+          if (split.length <= 1)
+            System.out.println("Give me an expression to determine the type for.");
+
+          Object result = Loop.eval(split[1], context);
+          if (result instanceof LoopError)
+            System.out.println(result.toString());
+          else
+            System.out.println(result == null ? "Nothing" : result.getClass().getName());
+          continue;
+        }
 
         // Function definitions can be multiline.
         if (line.endsWith("->") || line.endsWith("=>")) {
@@ -100,12 +112,8 @@ public class LoopShell {
   private static void printResult(Object result) {
     if (result instanceof Function) {
       Function fun = (Function) result;
-      String args = Arrays.toString(fun.getParameters());
-      System.out.println("#function:" + fun.getName()
-          + "(" + args.substring(1, args.length() - 1) + ")");
-    } else if (result instanceof LoopError)
-      System.out.println("\n#error");
-    else
+      System.out.println("#function:" + fun.getName() + "()");
+    } else
       System.out.println(result == null ? "Nothing" : result);
   }
 
@@ -122,7 +130,9 @@ public class LoopShell {
     private final List<String> commands = Arrays.asList(
         ":load",
         ":quit",
-        ":reset"
+        ":reset",
+        ":type",
+        ":inspect"
     );
 
     private final FileNameCompleter fileNameCompleter = new FileNameCompleter();

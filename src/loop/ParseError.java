@@ -3,7 +3,7 @@ package loop;
 /**
  * @author dhanji@gmail.com (Dhanji R. Prasanna)
  */
-public class ParseError {
+public class ParseError implements AnnotatedError {
   private final String message;
   private final Token token;
 
