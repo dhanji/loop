@@ -131,9 +131,9 @@ public class Parser {
       chewEols();
 
       if (null != function)
-        unit.add(function);
+        unit.declare(function);
       else if (null != classDecl)
-        unit.add(classDecl);
+        unit.declare(classDecl);
 
     } while (function != null || classDecl != null);
 

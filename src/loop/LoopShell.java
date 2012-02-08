@@ -24,6 +24,7 @@ public class LoopShell {
       reader.addCompleter(new MetaCommandCompleter());
 
       Map<String, Object> context = new HashMap<String, Object>();
+      ShellScope shellScope = new ShellScope();
       boolean inFunction = false;
 
       // Used to build up multiline statement blocks (like functions)
@@ -38,7 +39,7 @@ public class LoopShell {
             inFunction = false;
 
             // Eval the function into our context.
-            printResult(Loop.evalFunction(block.toString(), context));
+            printResult(Loop.evalFunction(block.toString(), shellScope, context));
             block = null;
             continue;
           }
@@ -85,7 +86,7 @@ public class LoopShell {
           if (split.length <= 1)
             System.out.println("Give me an expression to determine the type for.");
 
-          Object result = Loop.eval(split[1], context);
+          Object result = Loop.eval(split[1], shellScope, context);
           if (result instanceof LoopError)
             System.out.println(result.toString());
           else
@@ -101,7 +102,7 @@ public class LoopShell {
         }
 
         // OK execute expression.
-        printResult(Loop.eval(rawLine, context));
+        printResult(Loop.eval(rawLine, shellScope, context));
       } while (true);
     } catch (IOException e) {
       System.err.println("Something went wrong =(");

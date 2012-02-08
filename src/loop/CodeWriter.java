@@ -4,8 +4,10 @@ import loop.ast.Assignment;
 import loop.ast.BinaryOp;
 import loop.ast.Call;
 import loop.ast.CallChain;
+import loop.ast.ClassDecl;
 import loop.ast.Comprehension;
 import loop.ast.Computation;
+import loop.ast.ConstructorCall;
 import loop.ast.Guard;
 import loop.ast.IndexIntoList;
 import loop.ast.InlineListDef;
@@ -28,6 +30,7 @@ import loop.ast.WildcardPattern;
 import loop.ast.script.ArgDeclList;
 import loop.ast.script.FunctionDecl;
 import loop.ast.script.Unit;
+import loop.runtime.Scope;
 
 import java.util.HashMap;
 import java.util.List;
@@ -54,6 +57,7 @@ import java.util.concurrent.atomic.AtomicInteger;
   private int line;
   private int column;
   private final TreeMap<SourceLocation, Node> emittedNodeMap = new TreeMap<SourceLocation, Node>();
+  private final Scope scope;
 
   private static interface Emitter {
     void emitCode(Node node);
@@ -98,7 +102,9 @@ import java.util.concurrent.atomic.AtomicInteger;
    */
   private static final Map<Class<?>, Emitter> EMITTERS = new HashMap<Class<?>, Emitter>();
 
-  CodeWriter() {
+  CodeWriter(Scope scope) {
+    this.scope = scope;
+
     EMITTERS.put(Call.class, callEmitter);
     EMITTERS.put(Computation.class, computationEmitter);
     EMITTERS.put(IntLiteral.class, intEmitter);
@@ -119,6 +125,7 @@ import java.util.concurrent.atomic.AtomicInteger;
     EMITTERS.put(PatternRule.class, patternRuleEmitter);
     EMITTERS.put(TernaryExpression.class, ternaryExpressionEmitter);
     EMITTERS.put(Comprehension.class, comprehensionEmitter);
+    EMITTERS.put(ConstructorCall.class, constructorCallEmitter);
   }
 
   public String write(Unit unit) {
@@ -243,6 +250,48 @@ import java.util.concurrent.atomic.AtomicInteger;
 
       append(name);
       if (call.isFunction) {
+        append('(');
+        List<Node> children = call.args().children();
+        for (int i = 0, childrenSize = children.size(); i < childrenSize; i++) {
+          emit(children.get(i));
+
+          if (i < childrenSize - 1)
+            append(", ");
+        }
+        append(')');
+      }
+    }
+  };
+
+  private final Emitter constructorCallEmitter = new Emitter() {
+    @Override public void emitCode(Node node) {
+      ConstructorCall call = (ConstructorCall) node;
+      trackLineAndColumn(call);
+
+      // Resolve a loop type internally. Note that this makes dynamic linking
+      // of Loop types impossible, but we CAN link Java binaries dynamically.
+      ClassDecl classDecl = scope.resolve(call.name);
+      if (classDecl != null) {
+        append("@@").append(classDecl.name);
+
+        // If arguments are not positional, reorder and emit them correctly.
+        append('(');
+        List<Node> children = call.args().children();
+        for (int i = 0, childrenSize = children.size(); i < childrenSize; i++) {
+          emit(children.get(i));
+
+          if (i < childrenSize - 1)
+            append(", ");
+        }
+        append(')');
+
+      } else {
+        // Emit Java constructor call.
+        append("new ");
+        if(call.modulePart != null)
+          append(call.modulePart);
+        append(call.name);
+
         append('(');
         List<Node> children = call.args().children();
         for (int i = 0, childrenSize = children.size(); i < childrenSize; i++) {

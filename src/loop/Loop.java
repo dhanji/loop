@@ -58,10 +58,10 @@ public class Loop {
     return safeEval(unit, context);
   }
 
-  public static Object eval(String expression, Map<String, Object> context) {
+  public static Object eval(String expression, ShellScope shellScope, Map<String, Object> context) {
     Executable executable = new Executable(new StringReader(expression + '\n'));
     try {
-      executable.compileExpression();
+      executable.compileExpression(shellScope);
     } catch (Exception e) {
       return new LoopError("malformed expression '" + expression + "'");
     }
@@ -69,10 +69,12 @@ public class Loop {
     return safeEval(executable, context);
   }
 
-  public static Object evalFunction(String function, Map<String, Object> context) {
+  public static Object evalFunction(String function,
+                                    ShellScope shellScope,
+                                    Map<String, Object> context) {
     Executable executable = new Executable(new StringReader(function));
     try {
-      executable.compileFunction();
+      executable.compileFunction(shellScope);
     } catch (Exception e) {
       return new LoopError("malformed function");
     }

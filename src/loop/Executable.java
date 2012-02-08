@@ -4,6 +4,7 @@ import loop.CodeWriter.SourceLocation;
 import loop.ast.Node;
 import loop.ast.script.FunctionDecl;
 import loop.ast.script.Unit;
+import loop.runtime.Scope;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -22,7 +23,7 @@ public class Executable {
   private final List<String> lines;    // Loop source code lines (for error tracing).
 
 
-  private Unit unit;             // Loop compilation unit.
+  private Scope scope;
   private Node node;
       // If a fragment and not a whole unit (mutually exclusive with unit)
 
@@ -110,40 +111,46 @@ public class Executable {
   }
 
   public void compile() {
-    this.unit = parse(source);
+    Unit unit = parse(source);
     if (hasParseErrors())
       return;
 
-    CodeWriter codeWriter = new CodeWriter();
+    CodeWriter codeWriter = new CodeWriter(unit);
+    this.scope = unit;
     this.emittedNodes = codeWriter.getEmittedNodeMap();
     this.compiled = codeWriter.write(unit);
     this.source = null;
   }
 
-  public void compileExpression() {
+  public void compileExpression(Scope scope) {
+    this.scope = scope;
     Parser parser = new Parser(new Tokenizer(source).tokenize());
     Node line = parser.line();
     if (hasParseErrors())
       return;
 
     this.node = new Reducer(line).reduce();
-    CodeWriter codeWriter = new CodeWriter();
+
+    CodeWriter codeWriter = new CodeWriter(scope);
     this.emittedNodes = codeWriter.getEmittedNodeMap();
     this.compiled = codeWriter.write(node);
     this.source = null;
   }
 
-  public void compileFunction() {
+  public void compileFunction(Scope scope) {
+    this.scope = scope;
     Parser parser = new Parser(new Tokenizer(source).tokenize());
     FunctionDecl functionDecl = parser.functionDecl();
     if (hasParseErrors())
       return;
 
     this.node = new Reducer(functionDecl).reduce();
-    CodeWriter codeWriter = new CodeWriter();
+    CodeWriter codeWriter = new CodeWriter(scope);
     this.emittedNodes = codeWriter.getEmittedNodeMap();
     this.compiled = codeWriter.write(node);
     this.source = null;
+
+    scope.declare(functionDecl);
   }
 
   private static String whitespace(int amount) {
