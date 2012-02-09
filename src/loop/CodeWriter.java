@@ -3,6 +3,7 @@ package loop;
 import loop.ast.Assignment;
 import loop.ast.BinaryOp;
 import loop.ast.Call;
+import loop.ast.CallArguments;
 import loop.ast.CallChain;
 import loop.ast.ClassDecl;
 import loop.ast.Comprehension;
@@ -138,6 +139,10 @@ import java.util.concurrent.atomic.AtomicInteger;
   }
 
   public String write(Node node) {
+    // We don't really emit classes.
+    if (node instanceof ClassDecl)
+      return "";
+
     emit(node);
     append(";\n");
 
@@ -272,17 +277,25 @@ import java.util.concurrent.atomic.AtomicInteger;
       // of Loop types impossible, but we CAN link Java binaries dynamically.
       ClassDecl classDecl = scope.resolve(call.name);
       if (classDecl != null) {
-        append("@@").append(classDecl.name);
+        append("loop.lang.LoopClass.newInstance('").append(classDecl.name);
 
         // If arguments are not positional, reorder and emit them correctly.
-        append('(');
+        append("', ");
         List<Node> children = call.args().children();
-        for (int i = 0, childrenSize = children.size(); i < childrenSize; i++) {
-          emit(children.get(i));
+        if (!children.isEmpty()) {
+          append('[');
+          for (int i = 0, childrenSize = children.size(); i < childrenSize; i++) {
+            CallArguments.NamedArg arg = (CallArguments.NamedArg) children.get(i);
 
-          if (i < childrenSize - 1)
-            append(", ");
-        }
+            append("'").append(arg.name).append("':");
+            emit(arg.arg);
+
+            if (i < childrenSize - 1)
+              append(", ");
+          }
+          append(']');
+        } else
+          append("null");
         append(')');
 
       } else {

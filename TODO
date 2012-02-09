@@ -2,8 +2,8 @@ TODO
 ----
 
 x Parsing Classes
-- class declaration
-- object instantiation
+x class declaration
+x object instantiation
 x 'where' scoping
 - Pattern matching methods
   x match lists, empty, mixed with literals, regexes
@@ -29,15 +29,16 @@ Stretch
 -------
 
 - Null-safety (is this possible?)
-x String interpolation
 - Tail call optimization
+x String interpolation
 x Exception unrolling
-- Basic function inlining
 - enumeration type
-- class constants?
+- immutable types
+- Setting values in objects
+- Prototypal single inheritance
 - Type classes/extension methods (better than interfaces/traits)
 - Pattern matching methods on character streams
-- Parsing require as (stuff)
+- require as (stuff)
 
 
 Algorithms

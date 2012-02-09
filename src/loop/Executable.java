@@ -1,6 +1,7 @@
 package loop;
 
 import loop.CodeWriter.SourceLocation;
+import loop.ast.ClassDecl;
 import loop.ast.Node;
 import loop.ast.script.FunctionDecl;
 import loop.ast.script.Unit;
@@ -137,20 +138,30 @@ public class Executable {
     this.source = null;
   }
 
-  public void compileFunction(Scope scope) {
+  public void compileClassOrFunction(Scope scope) {
     this.scope = scope;
     Parser parser = new Parser(new Tokenizer(source).tokenize());
     FunctionDecl functionDecl = parser.functionDecl();
+    ClassDecl classDecl = null;
+    if (null == functionDecl) {
+      classDecl = parser.classDecl();
+      this.node = classDecl;
+    } else
+      this.node = functionDecl;
+
     if (hasParseErrors())
       return;
 
-    this.node = new Reducer(functionDecl).reduce();
+    this.node = new Reducer(node).reduce();
     CodeWriter codeWriter = new CodeWriter(scope);
     this.emittedNodes = codeWriter.getEmittedNodeMap();
     this.compiled = codeWriter.write(node);
     this.source = null;
 
-    scope.declare(functionDecl);
+    if (functionDecl != null)
+      scope.declare(functionDecl);
+    else
+      scope.declare(classDecl);
   }
 
   private static String whitespace(int amount) {

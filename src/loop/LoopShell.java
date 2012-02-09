@@ -3,6 +3,7 @@ package loop;
 import jline.console.ConsoleReader;
 import jline.console.completer.Completer;
 import jline.console.completer.FileNameCompleter;
+import loop.lang.LoopObject;
 import org.mvel2.ast.Function;
 
 import java.io.IOException;
@@ -29,6 +30,7 @@ public class LoopShell {
 
       // Used to build up multiline statement blocks (like functions)
       StringBuilder block = null;
+      //noinspection InfiniteLoopStatement
       do {
         String prompt = inFunction ? "|    " : ">> ";
 
@@ -39,7 +41,7 @@ public class LoopShell {
             inFunction = false;
 
             // Eval the function into our context.
-            printResult(Loop.evalFunction(block.toString(), shellScope, context));
+            printResult(Loop.evalClassOrFunction(block.toString(), shellScope, context));
             block = null;
             continue;
           }
@@ -89,8 +91,23 @@ public class LoopShell {
           Object result = Loop.eval(split[1], shellScope, context);
           if (result instanceof LoopError)
             System.out.println(result.toString());
+          else if (result instanceof LoopObject)
+            System.out.println(((LoopObject)result).getType());
           else
-            System.out.println(result == null ? "Nothing" : result.getClass().getName());
+            System.out.println(result == null ? "Nothing" : "#java: " + result.getClass().getName());
+          continue;
+        }
+
+        if (line.startsWith(":javatype")) {
+          String[] split = line.split("[ ]+", 2);
+          if (split.length <= 1)
+            System.out.println("Give me an expression to determine the type for.");
+
+          Object result = Loop.eval(split[1], shellScope, context);
+          if (result instanceof LoopError)
+            System.out.println(result.toString());
+          else
+            System.out.println(result == null ? "null" : result.getClass().getName());
           continue;
         }
 

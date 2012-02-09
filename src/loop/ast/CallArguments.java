@@ -24,8 +24,8 @@ public class CallArguments extends Node {
   }
 
   public static class NamedArg extends Node {
-    private final String name;
-    private Node arg;
+    public final String name;
+    public final Node arg;
 
     public NamedArg(String name, Node arg) {
       this.name = name;

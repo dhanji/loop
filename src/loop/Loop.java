@@ -69,13 +69,14 @@ public class Loop {
     return safeEval(executable, context);
   }
 
-  public static Object evalFunction(String function,
-                                    ShellScope shellScope,
-                                    Map<String, Object> context) {
+  public static Object evalClassOrFunction(String function,
+                                           ShellScope shellScope,
+                                           Map<String, Object> context) {
     Executable executable = new Executable(new StringReader(function));
     try {
-      executable.compileFunction(shellScope);
+      executable.compileClassOrFunction(shellScope);
     } catch (Exception e) {
+      e.printStackTrace();
       return new LoopError("malformed function");
     }
 
@@ -117,7 +118,7 @@ public class Loop {
         Tracer.complete();
       }
 
-      return new LoopError(e.getCause() != null ? (Exception) e.getCause().getCause() : null);
+      return (e.getCause() == null ? new LoopError(e.getMessage()) : new LoopError((Exception) e.getCause().getCause()));
     } catch (LoopSyntaxException e) {
       throw e;
     } catch (Exception e) {
