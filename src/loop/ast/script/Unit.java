@@ -26,6 +26,9 @@ public class Unit implements Scope {
   }
 
   public void reduceAll() {
+    for (ClassDecl classDecl : classes.values()) {
+      new Reducer(classDecl).reduce();
+    }
     for (FunctionDecl functionDecl : functions.values()) {
       new Reducer(functionDecl).reduce();
     }

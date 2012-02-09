@@ -19,4 +19,8 @@ public class LoopClass {
 
     return object;
   }
+
+  @Override public String toString() {
+    return name;
+  }
 }

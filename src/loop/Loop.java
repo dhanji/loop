@@ -63,6 +63,7 @@ public class Loop {
     try {
       executable.compileExpression(shellScope);
     } catch (Exception e) {
+      e.printStackTrace();
       return new LoopError("malformed expression '" + expression + "'");
     }
 

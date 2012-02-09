@@ -2,10 +2,7 @@ package loop.lang;
 
 import loop.LoopExecutionException;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * The root object of all immutable object instances in loop. Actually this is the
@@ -35,17 +32,5 @@ public class ImmutableLoopObject extends LoopObject {
 
   @Override public Object remove(Object o) {
     throw new LoopExecutionException(IMMUTABILITY_ERROR);
-  }
-
-  @Override public Set<Object> keySet() {
-    return Collections.unmodifiableSet(super.keySet());
-  }
-
-  @Override public Collection<Object> values() {
-    return Collections.unmodifiableCollection(super.values());
-  }
-
-  @Override public Set<Map.Entry<Object, Object>> entrySet() {
-    return Collections.unmodifiableSet(super.entrySet());
   }
 }

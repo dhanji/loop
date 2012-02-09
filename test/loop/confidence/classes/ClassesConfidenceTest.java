@@ -18,7 +18,7 @@ import static org.junit.Assert.assertTrue;
  */
 public class ClassesConfidenceTest {
   @Test
-  public final void reverseListPatternMatching() {
+  public final void simpleClassDeclAndInstantiation() {
     Object run = Loop.run("test/loop/confidence/classes/classes_1.loop");
     assertTrue(run instanceof LoopObject);
 
@@ -28,6 +28,35 @@ public class ClassesConfidenceTest {
     Map<Object, Object> map = new HashMap<Object, Object>();
     map.put("name", "Proxima Centauri");
     map.put("mass", 123);
+
+    assertEquals(map, object);
+  }
+
+  @Test
+  public final void instantiateClassWithDefaults() {
+    Object run = Loop.run("test/loop/confidence/classes/classes_2.loop");
+    assertTrue(run instanceof LoopObject);
+
+    LoopObject object = (LoopObject) run;
+    assertEquals("Star", object.getType().name);
+
+    Map<Object, Object> map = new HashMap<Object, Object>();
+    map.put("name", "Proxima Centauri");
+    map.put("mass", 123);
+
+    assertEquals(map, object);
+  }
+
+  @Test
+  public final void instantiateClassWithOneDefault() {
+    Object run = Loop.run("test/loop/confidence/classes/classes_3.loop");
+    assertTrue(run instanceof LoopObject);
+
+    LoopObject object = (LoopObject) run;
+    assertEquals("Star", object.getType().name);
+
+    Map<Object, Object> map = new HashMap<Object, Object>();
+    map.put("name", "Proxima Centauri");
 
     assertEquals(map, object);
   }

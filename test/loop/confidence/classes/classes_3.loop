@@ -1,0 +1,7 @@
+# A simple type declaration and instantiation.
+
+class Star ->
+  name: 'Proxima Centauri'
+
+main ->
+  new Star()

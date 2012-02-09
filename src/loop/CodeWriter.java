@@ -281,18 +281,42 @@ import java.util.concurrent.atomic.AtomicInteger;
 
         // If arguments are not positional, reorder and emit them correctly.
         append("', ");
+
+        Map<String, Node> fields = new HashMap<String, Node>();
+        for (Node nodeAssign : classDecl.children()) {
+          if (nodeAssign instanceof Assignment) {
+            Assignment assignment = (Assignment) nodeAssign;
+            fields.put(((Variable)assignment.lhs()).name, assignment.rhs());
+          }
+        }
         List<Node> children = call.args().children();
-        if (!children.isEmpty()) {
+        if (!children.isEmpty() || !fields.isEmpty()) {
           append('[');
+
+          // First emit named-args as overrides of defaults.
           for (int i = 0, childrenSize = children.size(); i < childrenSize; i++) {
             CallArguments.NamedArg arg = (CallArguments.NamedArg) children.get(i);
 
             append("'").append(arg.name).append("':");
             emit(arg.arg);
 
+            fields.remove(arg.name);
             if (i < childrenSize - 1)
               append(", ");
           }
+
+          // Now emit any remaining defaults.
+          int i = 0, fieldSize = fields.size();
+          for (Map.Entry<String, Node> field : fields.entrySet()) {
+            append("'").append(field.getKey()).append("':");
+            emit(field.getValue());
+
+            if (i < fieldSize - 1)
+              append(", ");
+
+            i++;
+          }
+
           append(']');
         } else
           append("null");
