@@ -5,12 +5,12 @@ x Parsing Classes
 x class declaration
 x object instantiation
 x 'where' scoping
-- Pattern matching methods
+x Pattern matching methods
   x match lists, empty, mixed with literals, regexes
   x match strings, regexes
   x match against single literals
   x match patterns against multiple arguments
-  - match map and object patterns
+  x match map and object patterns
 
 x Fix List comprehensions parsing in pattern matching methods
 x guards for pattern matching methods
