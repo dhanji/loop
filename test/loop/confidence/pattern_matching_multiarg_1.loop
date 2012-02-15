@@ -1,0 +1,8 @@
+# Pattern Matching of literal integers against multiple args
+
+details(x, y, z) =>
+  1, 2, 3                 : [:]
+  *, *, *                 : [ 'count' : '10' ]
+
+main ->
+  details(1, 1, 3)

@@ -23,7 +23,7 @@ import static org.junit.Assert.assertTrue;
 public class BasicFunctionsConfidenceTest {
   @Test
   public final void reverseListPatternMatching() {
-    assertEquals(Arrays.asList(3, 2, 1), Loop.run("test/loop/confidence/reverse.loop", true));
+    assertEquals(Arrays.asList(3, 2, 1), Loop.run("test/loop/confidence/reverse.loop"));
   }
 
   @Test
@@ -49,7 +49,7 @@ public class BasicFunctionsConfidenceTest {
 
   @Test
   public final void listStructurePatternMatchingGuarded3() {
-    assertEquals(Arrays.asList(55), Loop.run("test/loop/confidence/list_pattern_guarded_3.loop", true));
+    assertEquals(Arrays.asList(55), Loop.run("test/loop/confidence/list_pattern_guarded_3.loop"));
   }
 
   @Test
@@ -74,7 +74,7 @@ public class BasicFunctionsConfidenceTest {
 
   @Test
   public final void splitLinesStringPatternMatching() {
-    assertEquals("hellotheredude", Loop.run("test/loop/confidence/split_lines_string.loop"));
+    assertEquals("hellotheredude", Loop.run("test/loop/confidence/split_lines_string.loop", true));
   }
 
   @Test
@@ -192,6 +192,14 @@ public class BasicFunctionsConfidenceTest {
     map.put("age", "-1");
 
     assertEquals(map, Loop.run("test/loop/confidence/regex_pattern_matching_guarded_3.loop"));
+  }
+
+  @Test
+  public final void patternMatchingMultipleArg1() {
+    Map<String, String> map = new HashMap<String, String>();
+    map.put("count", "10");
+
+    assertEquals(map, Loop.run("test/loop/confidence/pattern_matching_multiarg_1.loop", true));
   }
 
   @Test

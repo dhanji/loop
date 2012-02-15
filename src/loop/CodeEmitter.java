@@ -51,7 +51,7 @@ import java.util.concurrent.atomic.AtomicInteger;
     BINARY_OP_TRANSLATIONS.put("not", "!=");
   }
 
-  private final StringBuilder out = new StringBuilder();
+  private StringBuilder out = new StringBuilder();
   private final Stack<Context> functionStack = new Stack<Context>();
 
   // MVEL line and column to map back to our Loop AST.
@@ -201,6 +201,13 @@ import java.util.concurrent.atomic.AtomicInteger;
     if (!EMITTERS.containsKey(node.getClass()))
       throw new RuntimeException("Missing emitter for " + node.getClass().getSimpleName());
     EMITTERS.get(node.getClass()).emitCode(node);
+  }
+
+  public void emitTo(Node node, StringBuilder alt) {
+    StringBuilder tmp = out;
+    out = alt;
+    emit(node);
+    out = tmp;
   }
 
   public TreeMap<SourceLocation, Node> getEmittedNodeMap() {
@@ -650,39 +657,56 @@ import java.util.concurrent.atomic.AtomicInteger;
       if (context.arguments.isEmpty())
         throw new RuntimeException("Incorrect number of arguments for pattern matching");
 
+      EmittedWrapping emitIntoBody = null;
+      int mark = out.length(), emittedArgs = 0;
+      append("if (");
       for (int i = 0, argumentsSize = context.arguments.size(); i < argumentsSize; i++) {
+
+        boolean wasArgumentEmitted = true;
+        emittedArgs++;
         Node pattern = rule.patterns.get(i);
         if (pattern instanceof ListDestructuringPattern) {
-          emitListDestructuringPatternRule(rule, context, i);
+          emitIntoBody = emitListDestructuringPatternRule(rule, context, i);
         } else if (pattern instanceof ListStructurePattern) {
-          emitListStructurePatternRule(rule, context, i);
+          emitIntoBody = emitListStructurePatternRule(rule, context, i);
         } else if (pattern instanceof StringLiteral
             || pattern instanceof IntLiteral) {
           String argument = context.arguments.get(i);
-          append("if (").append(argument).append(" == ");
+          append(argument).append(" == ");
 
           emit(pattern);
-          append(") {\n return ");
-
-          emit(rule.rhs);
-          append(";\n}\n");
-
         } else if (pattern instanceof RegexLiteral) {
           String argument = context.arguments.get(i);
-          append("if (").append(argument).append(" ~= ");
+          append(argument).append(" ~= ");
           emit(pattern);
-          append(") {\n");
-
-          emitPatternClauses(rule);
-
-          append(";\n}\n");
         } else if (pattern instanceof StringPattern) {
-          emitStringPatternRule(rule, context, i);
+          emitIntoBody = emitStringPatternRule(rule, context, i);
         } else if (pattern instanceof WildcardPattern) {
-          emitPatternClauses(rule);
-          append(";\n");
+          wasArgumentEmitted = false;
+          emittedArgs--;
         }
+
+        if (wasArgumentEmitted && i < context.arguments.size() - 1)
+          append(" && ");
       }
+
+      if (emittedArgs == 0) {
+        out.delete(mark, mark + "if (".length());
+      } else
+        append(") {\n ");
+
+      if (emitIntoBody != null)
+        append(emitIntoBody.inbody);
+
+      emitPatternClauses(rule);
+
+      if (emitIntoBody != null)
+        append(emitIntoBody.after);
+
+      if (emittedArgs == 0)
+        append(";\n");
+      else
+        append(";\n}\n");
     }
   };
 
@@ -721,15 +745,16 @@ import java.util.concurrent.atomic.AtomicInteger;
     }
   }
 
-  private void emitStringPatternRule(PatternRule rule, Context context, int argIndex) {
+  private EmittedWrapping emitStringPatternRule(PatternRule rule, Context context, int argIndex) {
     String argument = context.arguments.get(argIndex);
-    append("if (").append(argument).append(" is String) {\n");
+    append(argument).append(" is String");
     List<Node> children = rule.patterns.get(argIndex).children();
     int i = 0, childrenSize = children.size();
 
+    StringBuilder inbody = new StringBuilder();
     boolean splittable = false;
     String lastIndex = newLocalVariable();      // The last index of split (i.e. pattern delimiter).
-    append(lastIndex).append(" = -1;\n");
+    inbody.append(lastIndex).append(" = -1;\n");
 
     int ifCount = 0;
     for (int j = 0; j < childrenSize; j++) {
@@ -743,19 +768,19 @@ import java.util.concurrent.atomic.AtomicInteger;
             // If the next node is a string literal, then we must split this
             // string across occurrences of the given literal.
             String thisIndex = newLocalVariable();
-            append(thisIndex).append(" = ");
-            append(argument).append(".indexOf(");
-            emit(next);
+            inbody.append(thisIndex).append(" = ");
+            inbody.append(argument).append(".indexOf(");
+            emitTo(next, inbody);
 
             // If this is the second or greater pattern matcher, seek from the last location.
             if (splittable) {
-              append(", ").append(lastIndex);
+              inbody.append(", ").append(lastIndex);
             }
 
-            append(");\n");
-            append("if (").append(thisIndex).append(" > -1) {\n");
-            emit(child);
-            append(" = ")
+            inbody.append(");\n");
+            inbody.append("if (").append(thisIndex).append(" > -1) {\n");
+            emitTo(child, inbody);
+            inbody.append(" = ")
                 .append(argument)
                 .append(".substring(")
                 .append(lastIndex)
@@ -765,20 +790,20 @@ import java.util.concurrent.atomic.AtomicInteger;
                 .append(thisIndex)
                 .append(");\n");
             // Advance the index by the length of this match.
-            append(lastIndex).append(" = ").append(thisIndex).append(" + ");
-            emit(next);
-            append(".length();\n");
+            inbody.append(lastIndex).append(" = ").append(thisIndex).append(" + ");
+            emitTo(next, inbody);
+            inbody.append(".length();\n");
 
             ifCount++;
             splittable = true;
           } else {
-            emit(child);
-            append(" = ").append(argument).append(".charAt(").append(i).append(");\n");
+            emitTo(child, inbody);
+            inbody.append(" = ").append(argument).append(".charAt(").append(i).append(");\n");
           }
         } else {
-          emit(child);
-          append(" = ").append(argument).append(".length() == 1 ? '' : ").append(argument);
-          append(".substring(").append(lastIndex).append(" > -1 ? ")
+          emitTo(child, inbody);
+          inbody.append(" = ").append(argument).append(".length() == 1 ? '' : ").append(argument);
+          inbody.append(".substring(").append(lastIndex).append(" > -1 ? ")
               .append(lastIndex).append(": ").append(i).append(");\n");
         }
         i++;
@@ -787,93 +812,89 @@ import java.util.concurrent.atomic.AtomicInteger;
 
     // Close If statements in reverse order.
     for (int j = 0; j < ifCount; j++) {
-      append("} else { ").append(lastIndex).append(" = -1\n }\n");
+      inbody.append("} else {\n ").append(lastIndex).append(" = -1\n }\n");
     }
 
     // Only process the return rule if patterns matched.
     if (splittable) {
-      append("if (").append(lastIndex).append(" > -1) {\n");
+      inbody.append("if (").append(lastIndex).append(" > -1) {\n");
     }
-    append("return ");
-    emit(rule.rhs);
-    append(';');
-    if (splittable) {
-      append("\n}\n");
-    }
-    append("\n}\n");
+
+    return new EmittedWrapping(inbody.toString(), splittable ? "\n}\n" : null);
   }
 
   private String newLocalVariable() {
     return "$__" + functionNameSequence.incrementAndGet();
   }
 
-  private void emitListStructurePatternRule(PatternRule rule, Context context, int argIndex) {
+  private EmittedWrapping emitListStructurePatternRule(PatternRule rule,
+                                                       Context context,
+                                                       int argIndex) {
     ListStructurePattern listPattern = (ListStructurePattern) rule.patterns.get(argIndex);
     String arg0 = context.arguments.get(argIndex);
-    append("if (");
     append(arg0);
-    append(" is java.util.List) {\n");
+    append(" is java.util.List");
 
     // Slice the list by terminals in the pattern list.
     List<Node> children = listPattern.children();
+    StringBuilder inbody = new StringBuilder();
     for (int j = 0, childrenSize = children.size(); j < childrenSize; j++) {
       Node child = children.get(j);
       if (child instanceof Variable) {
-        emit(child);
-        append(" = ");
-        append(arg0);
-        append('[').append(j).append("];\n");
+        trackLineAndColumn(child);
+        inbody.append(((Variable)child).name);
+
+        inbody.append(" = ");
+        inbody.append(arg0);
+        inbody.append('[').append(j).append("];\n");
       }
     }
 
-    emitPatternClauses(rule);
-    append(";\n}\n");
+    return new EmittedWrapping(inbody.toString(), null);
   }
 
-  private void emitListDestructuringPatternRule(PatternRule rule, Context context, int argIndex) {
+  private EmittedWrapping emitListDestructuringPatternRule(PatternRule rule,
+                                                           Context context,
+                                                           int argIndex) {
     ListDestructuringPattern listPattern = (ListDestructuringPattern) rule.patterns.get(argIndex);
     String arg0 = context.arguments.get(argIndex);
-    append("if (");
     append(arg0);
-    append(" is java.util.List) {\n");
+    append(" is java.util.List");
 
     int size = listPattern.children().size();
     if (size == 0) {
-      append("if (");
+      append(" && (");
       append(arg0);
-      append(" == empty) {\n return ");
-      emit(rule.rhs);
-      append(";\n}\n");
+      append(" == empty) ");
     } else if (size == 1) {
-      append("if (");
+      append(" && (");
       append(arg0);
-      append(".size() == 1) {\n return ");
-      emit(rule.rhs);
-      append(";\n}\n");
+      append(".size() == 1) ");
     } else {
       // Slice the list by terminals in the pattern list.
       int i = 0;
+      StringBuilder inbody = new StringBuilder();
       List<Node> children = listPattern.children();
       for (int j = 0, childrenSize = children.size(); j < childrenSize; j++) {
         Node child = children.get(j);
         if (child instanceof Variable) {
-          emit(child);
-          append(" = ");
-          append(arg0);
+          trackLineAndColumn(child);
+          inbody.append(((Variable) child).name);
+          inbody.append(" = ");
+          inbody.append(arg0);
 
           if (j < childrenSize - 1)
-            append('[').append(i).append("];\n");
+            inbody.append('[').append(i).append("];\n");
           else {
-            append(".size() == 1 ? [] : ").append(arg0);
-            append(".subList(").append(i).append(',').append(arg0).append(".size());\n");
+            inbody.append(".size() == 1 ? [] : ").append(arg0);
+            inbody.append(".subList(").append(i).append(',').append(arg0).append(".size());\n");
           }
           i++;
         }
       }
 
-      emitPatternClauses(rule);
-      append(';');
+      return new EmittedWrapping(inbody.toString(), null);
     }
-    append("}\n");
+    return null;
   }
 }
