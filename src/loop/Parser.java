@@ -277,6 +277,7 @@ public class Parser {
 
   private FunctionDecl patternMatchingFunctionDecl(FunctionDecl functionDecl) {
     chewEols();
+    PatternRule rule = new PatternRule();
     do {
       withIndent();
 
@@ -315,8 +316,7 @@ public class Parser {
         return null;
       }
 
-      PatternRule rule = new PatternRule();
-      rule.pattern = pattern;
+      rule.patterns.add(pattern);
 
       boolean guarded = false;
       while (match(Token.Kind.PIPE) != null) {
@@ -339,14 +339,19 @@ public class Parser {
       }
 
       if (!guarded) {
-        if (match(Token.Kind.ASSIGN) == null)
-          addError("Expected ':' after pattern", tokens.get(i));
+        if (match(Kind.COMMA) == null) {
+          if (match(Token.Kind.ASSIGN) == null)
+            addError("Expected ':' after pattern", tokens.get(i));
+        } else
+          continue;
 
         rule.rhs = line();
         chewEols();
       }
 
       functionDecl.add(rule);
+      rule = new PatternRule();
+
       if (endOfInput() || match(Token.Kind.RBRACE) != null)
         break;
     } while (true);
@@ -405,12 +410,13 @@ public class Parser {
   }
 
   private Node emptyMapPattern() {
-    return match(Token.Kind.LBRACKET, Token.Kind.ASSIGN, Token.Kind.RBRACKET) !=
-        null ? new MapPattern() : null;
+    return match(Token.Kind.LBRACKET, Token.Kind.ASSIGN, Token.Kind.RBRACKET) != null
+        ? new MapPattern() : null;
   }
 
   private Node emptyListPattern() {
-    return match(Token.Kind.LBRACKET, Token.Kind.RBRACKET) != null ? new ListDestructuringPattern() : null;
+    return match(Token.Kind.LBRACKET, Token.Kind.RBRACKET) != null
+        ? new ListDestructuringPattern() : null;
   }
 
   /**
@@ -1375,6 +1381,18 @@ public class Parser {
 
   private static boolean isRightAssociative(Token token) {
     return null != token && RIGHT_ASSOCIATIVE.contains(token.kind);
+  }
+
+  public static String stringify(List<Node> list) {
+    StringBuilder builder = new StringBuilder();
+    for (int i = 0, listSize = list.size(); i < listSize; i++) {
+      builder.append(stringify(list.get(i)));
+
+      if (i < listSize - 1)
+        builder.append(' ');
+    }
+
+    return builder.toString();
   }
 
   /**

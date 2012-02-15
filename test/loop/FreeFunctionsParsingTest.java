@@ -55,6 +55,39 @@ public class FreeFunctionsParsingTest {
   }
 
   @Test
+  public final void multipleArgPatternFunctionDecl() {
+    compareFunction("func",
+        "(func: (()= x y z) -> \n" +
+        "  => 1 2 3 : (comput (. 'one')) \n" +
+        "  => wildcard wildcard wildcard : (comput (. 'ok')))",
+
+        "func (x, y, z) =>\n"
+            + "1, 2, 3  : 'one'\n"
+            + "*, *, *  : 'ok'\n"
+    );
+
+    compareFunction("func",
+        "(func: (()= x y z) -> \n" +
+        "  => [] ([] x xs) 3 : (comput (. 'one')) \n" +
+        "  => wildcard 3 ('' x xs) : (comput (. 'ok')))",
+
+        "func (x, y, z) =>\n"
+            + "[], [x:xs], 3  : 'one'\n"
+            + "*, 3, (x:xs)  : 'ok'\n"
+    );
+
+    compareFunction("func",
+        "(func: (()= x y z) -> \n" +
+        "  => ([::] q <- (. x y)) ([] x xs) 3 : (comput (. 'one')) \n" +
+        "  => wildcard String ('' x '/' xs) : (comput (. 'ok')))",
+
+        "func (x, y, z) =>\n"
+            + "[q <- x.y], [x:xs], 3  : 'one'\n"
+            + "*, String, (x: '/' :xs)  : 'ok'\n"
+    );
+  }
+
+  @Test
   public final void functionWithAnonymousFunctionsInside() {
     compareFunction("main",
         "(main: () -> (comput (. func(()= (comput (<anonymous>: () -> (comput (. 4))))))))",

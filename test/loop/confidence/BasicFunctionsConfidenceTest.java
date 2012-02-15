@@ -23,7 +23,7 @@ import static org.junit.Assert.assertTrue;
 public class BasicFunctionsConfidenceTest {
   @Test
   public final void reverseListPatternMatching() {
-    assertEquals(Arrays.asList(3, 2, 1), Loop.run("test/loop/confidence/reverse.loop"));
+    assertEquals(Arrays.asList(3, 2, 1), Loop.run("test/loop/confidence/reverse.loop", true));
   }
 
   @Test

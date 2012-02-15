@@ -43,7 +43,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * @author dhanji@gmail.com (Dhanji R. Prasanna)
  */
-@SuppressWarnings({"FieldCanBeLocal"}) class CodeWriter {
+@SuppressWarnings({"FieldCanBeLocal"}) class CodeEmitter {
   private static final AtomicInteger functionNameSequence = new AtomicInteger();
   private static final Map<String, String> BINARY_OP_TRANSLATIONS = new HashMap<String, String>();
 
@@ -103,7 +103,7 @@ import java.util.concurrent.atomic.AtomicInteger;
    */
   private static final Map<Class<?>, Emitter> EMITTERS = new HashMap<Class<?>, Emitter>();
 
-  CodeWriter(Scope scope) {
+  CodeEmitter(Scope scope) {
     this.scope = scope;
 
     EMITTERS.put(Call.class, callEmitter);
@@ -149,11 +149,11 @@ import java.util.concurrent.atomic.AtomicInteger;
     return out.toString();
   }
 
-  private CodeWriter append(Object obj) {
+  private CodeEmitter append(Object obj) {
     return append(obj.toString());
   }
 
-  private CodeWriter append(String str) {
+  private CodeEmitter append(String str) {
     if (null == str)
       return this;
     out.append(str);
@@ -166,7 +166,7 @@ import java.util.concurrent.atomic.AtomicInteger;
     return this;
   }
 
-  private CodeWriter append(char c) {
+  private CodeEmitter append(char c) {
     out.append(c);
     if (c == '\n') {
       line++;
@@ -177,7 +177,7 @@ import java.util.concurrent.atomic.AtomicInteger;
     return this;
   }
 
-  private CodeWriter append(int n) {
+  private CodeEmitter append(int n) {
     out.append(n);
     column++;
     return this;
@@ -286,7 +286,7 @@ import java.util.concurrent.atomic.AtomicInteger;
         for (Node nodeAssign : classDecl.children()) {
           if (nodeAssign instanceof Assignment) {
             Assignment assignment = (Assignment) nodeAssign;
-            fields.put(((Variable)assignment.lhs()).name, assignment.rhs());
+            fields.put(((Variable) assignment.lhs()).name, assignment.rhs());
           }
         }
         List<Node> children = call.args().children();
@@ -325,7 +325,7 @@ import java.util.concurrent.atomic.AtomicInteger;
       } else {
         // Emit Java constructor call.
         append("new ");
-        if(call.modulePart != null)
+        if (call.modulePart != null)
           append(call.modulePart);
         append(call.name);
 
@@ -650,34 +650,38 @@ import java.util.concurrent.atomic.AtomicInteger;
       if (context.arguments.isEmpty())
         throw new RuntimeException("Incorrect number of arguments for pattern matching");
 
-      if (rule.pattern instanceof ListDestructuringPattern) {
-        emitListDestructuringPatternRule(rule, context);
-      } else if (rule.pattern instanceof ListStructurePattern) {
-        emitListStructurePatternRule(rule, context);
-      } else if (rule.pattern instanceof StringLiteral
-          || rule.pattern instanceof IntLiteral) {
-        String arg0 = context.arguments.get(0);
-        append("if (").append(arg0).append(" == ");
-        emit(rule.pattern);
-        append(") {\n return ");
+      for (int i = 0, argumentsSize = context.arguments.size(); i < argumentsSize; i++) {
+        Node pattern = rule.patterns.get(i);
+        if (pattern instanceof ListDestructuringPattern) {
+          emitListDestructuringPatternRule(rule, context, i);
+        } else if (pattern instanceof ListStructurePattern) {
+          emitListStructurePatternRule(rule, context, i);
+        } else if (pattern instanceof StringLiteral
+            || pattern instanceof IntLiteral) {
+          String argument = context.arguments.get(i);
+          append("if (").append(argument).append(" == ");
 
-        emit(rule.rhs);
-        append(";\n}\n");
+          emit(pattern);
+          append(") {\n return ");
 
-      } else if (rule.pattern instanceof RegexLiteral) {
-        String arg0 = context.arguments.get(0);
-        append("if (").append(arg0).append(" ~= ");
-        emit(rule.pattern);
-        append(") {\n");
+          emit(rule.rhs);
+          append(";\n}\n");
 
-        emitPatternClauses(rule);
+        } else if (pattern instanceof RegexLiteral) {
+          String argument = context.arguments.get(i);
+          append("if (").append(argument).append(" ~= ");
+          emit(pattern);
+          append(") {\n");
 
-        append(";\n}\n");
-      } else if (rule.pattern instanceof StringPattern) {
-        emitStringPatternRule(rule, context);
-      } else if (rule.pattern instanceof WildcardPattern) {
-        emitPatternClauses(rule);
-        append(";\n");
+          emitPatternClauses(rule);
+
+          append(";\n}\n");
+        } else if (pattern instanceof StringPattern) {
+          emitStringPatternRule(rule, context, i);
+        } else if (pattern instanceof WildcardPattern) {
+          emitPatternClauses(rule);
+          append(";\n");
+        }
       }
     }
   };
@@ -717,10 +721,10 @@ import java.util.concurrent.atomic.AtomicInteger;
     }
   }
 
-  private void emitStringPatternRule(PatternRule rule, Context context) {
-    String arg0 = context.arguments.get(0);
-    append("if (").append(arg0).append(" is String) {\n");
-    List<Node> children = rule.pattern.children();
+  private void emitStringPatternRule(PatternRule rule, Context context, int argIndex) {
+    String argument = context.arguments.get(argIndex);
+    append("if (").append(argument).append(" is String) {\n");
+    List<Node> children = rule.patterns.get(argIndex).children();
     int i = 0, childrenSize = children.size();
 
     boolean splittable = false;
@@ -740,7 +744,7 @@ import java.util.concurrent.atomic.AtomicInteger;
             // string across occurrences of the given literal.
             String thisIndex = newLocalVariable();
             append(thisIndex).append(" = ");
-            append(arg0).append(".indexOf(");
+            append(argument).append(".indexOf(");
             emit(next);
 
             // If this is the second or greater pattern matcher, seek from the last location.
@@ -752,7 +756,7 @@ import java.util.concurrent.atomic.AtomicInteger;
             append("if (").append(thisIndex).append(" > -1) {\n");
             emit(child);
             append(" = ")
-                .append(arg0)
+                .append(argument)
                 .append(".substring(")
                 .append(lastIndex)
                 .append(" == -1 ? 0 : ")
@@ -769,11 +773,11 @@ import java.util.concurrent.atomic.AtomicInteger;
             splittable = true;
           } else {
             emit(child);
-            append(" = ").append(arg0).append(".charAt(").append(i).append(");\n");
+            append(" = ").append(argument).append(".charAt(").append(i).append(");\n");
           }
         } else {
           emit(child);
-          append(" = ").append(arg0).append(".length() == 1 ? '' : ").append(arg0);
+          append(" = ").append(argument).append(".length() == 1 ? '' : ").append(argument);
           append(".substring(").append(lastIndex).append(" > -1 ? ")
               .append(lastIndex).append(": ").append(i).append(");\n");
         }
@@ -803,9 +807,9 @@ import java.util.concurrent.atomic.AtomicInteger;
     return "$__" + functionNameSequence.incrementAndGet();
   }
 
-  private void emitListStructurePatternRule(PatternRule rule, Context context) {
-    ListStructurePattern listPattern = (ListStructurePattern) rule.pattern;
-    String arg0 = context.arguments.get(0);
+  private void emitListStructurePatternRule(PatternRule rule, Context context, int argIndex) {
+    ListStructurePattern listPattern = (ListStructurePattern) rule.patterns.get(argIndex);
+    String arg0 = context.arguments.get(argIndex);
     append("if (");
     append(arg0);
     append(" is java.util.List) {\n");
@@ -826,9 +830,9 @@ import java.util.concurrent.atomic.AtomicInteger;
     append(";\n}\n");
   }
 
-  private void emitListDestructuringPatternRule(PatternRule rule, Context context) {
-    ListDestructuringPattern listPattern = (ListDestructuringPattern) rule.pattern;
-    String arg0 = context.arguments.get(0);
+  private void emitListDestructuringPatternRule(PatternRule rule, Context context, int argIndex) {
+    ListDestructuringPattern listPattern = (ListDestructuringPattern) rule.patterns.get(argIndex);
+    String arg0 = context.arguments.get(argIndex);
     append("if (");
     append(arg0);
     append(" is java.util.List) {\n");

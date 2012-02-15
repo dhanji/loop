@@ -1,6 +1,6 @@
 package loop;
 
-import loop.CodeWriter.SourceLocation;
+import loop.CodeEmitter.SourceLocation;
 import loop.ast.ClassDecl;
 import loop.ast.Node;
 import loop.ast.script.FunctionDecl;
@@ -116,10 +116,10 @@ public class Executable {
     if (hasParseErrors())
       return;
 
-    CodeWriter codeWriter = new CodeWriter(unit);
+    CodeEmitter codeEmitter = new CodeEmitter(unit);
     this.scope = unit;
-    this.emittedNodes = codeWriter.getEmittedNodeMap();
-    this.compiled = codeWriter.write(unit);
+    this.emittedNodes = codeEmitter.getEmittedNodeMap();
+    this.compiled = codeEmitter.write(unit);
     this.source = null;
   }
 
@@ -132,9 +132,9 @@ public class Executable {
 
     this.node = new Reducer(line).reduce();
 
-    CodeWriter codeWriter = new CodeWriter(scope);
-    this.emittedNodes = codeWriter.getEmittedNodeMap();
-    this.compiled = codeWriter.write(node);
+    CodeEmitter codeEmitter = new CodeEmitter(scope);
+    this.emittedNodes = codeEmitter.getEmittedNodeMap();
+    this.compiled = codeEmitter.write(node);
     this.source = null;
   }
 
@@ -153,9 +153,9 @@ public class Executable {
       return;
 
     this.node = new Reducer(node).reduce();
-    CodeWriter codeWriter = new CodeWriter(scope);
-    this.emittedNodes = codeWriter.getEmittedNodeMap();
-    this.compiled = codeWriter.write(node);
+    CodeEmitter codeEmitter = new CodeEmitter(scope);
+    this.emittedNodes = codeEmitter.getEmittedNodeMap();
+    this.compiled = codeEmitter.write(node);
     this.source = null;
 
     if (functionDecl != null)

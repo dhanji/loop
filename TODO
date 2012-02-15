@@ -10,6 +10,7 @@ x 'where' scoping
   x match strings, regexes
   x match against single literals
   - match patterns against multiple arguments
+  - match map and object patterns
 
 x Fix List comprehensions parsing in pattern matching methods
 x guards for pattern matching methods
@@ -21,6 +22,7 @@ x Closures
 x Interactive interpreter/shell
 - Basic scope verification with symbol table
 - Modules/packaging/import
+- do block
 x Value typing example
 x Where block multiple var assigns
 
