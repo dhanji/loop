@@ -1,0 +1,11 @@
+# Pattern Matching against objects
+
+gran(person, num) =>
+  [ grandad <- parent.parent, o <- ko ], 1    : 'wrong'
+  [ grandad <- parent.parent, o <- fo ], 1    : grandad.name + o
+  *, *                                                      : ''
+
+main ->
+  gran(guy, 1)
+  where
+    guy: [ 'fo' : 'pa', 'parent': ['parent': [ 'name': 'Stephen' ] ] ]

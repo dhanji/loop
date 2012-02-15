@@ -1,8 +1,8 @@
 # Pattern Matching against objects
 
 gran(person) =>
-  [ grandad <- person.parent.parent ]  : grandad.name
-  *                                    : ''
+  [ grandad <- parent.parent ]      : grandad.name
+  *                                 : ''
 
 main ->
   gran(guy)

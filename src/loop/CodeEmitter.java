@@ -758,6 +758,7 @@ import java.util.concurrent.atomic.AtomicInteger;
     for (int i = 0, childrenSize = children.size(); i < childrenSize; i++) {
       Node destructuring = children.get(i);
       DestructuringPair pair = (DestructuringPair) destructuring;
+      append(argument).append(".?");
       emit(pair.rhs);
 
       append(" != null");
@@ -765,7 +766,7 @@ import java.util.concurrent.atomic.AtomicInteger;
         append(" && ");
 
       emitTo(pair.lhs, inbody);
-      inbody.append(" = ");
+      inbody.append(" = ").append(argument).append('.');
       emitTo(pair.rhs, inbody);
       inbody.append(";\n");
     }
