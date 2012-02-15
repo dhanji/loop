@@ -9,6 +9,7 @@ import loop.ast.ClassDecl;
 import loop.ast.Comprehension;
 import loop.ast.Computation;
 import loop.ast.ConstructorCall;
+import loop.ast.DestructuringPair;
 import loop.ast.Guard;
 import loop.ast.IndexIntoList;
 import loop.ast.InlineListDef;
@@ -17,6 +18,7 @@ import loop.ast.IntLiteral;
 import loop.ast.JavaLiteral;
 import loop.ast.ListDestructuringPattern;
 import loop.ast.ListStructurePattern;
+import loop.ast.MapPattern;
 import loop.ast.Node;
 import loop.ast.OtherwiseGuard;
 import loop.ast.PatternRule;
@@ -681,6 +683,8 @@ import java.util.concurrent.atomic.AtomicInteger;
           emit(pattern);
         } else if (pattern instanceof StringPattern) {
           emitIntoBody = emitStringPatternRule(rule, context, i);
+        } else if (pattern instanceof MapPattern) {
+          emitIntoBody = emitMapPatternRule(rule, context, i);
         } else if (pattern instanceof WildcardPattern) {
           wasArgumentEmitted = false;
           emittedArgs--;
@@ -743,6 +747,29 @@ import java.util.concurrent.atomic.AtomicInteger;
       // If this is not the last guard.
       append(";\n} ");
     }
+  }
+
+  private EmittedWrapping emitMapPatternRule(PatternRule rule, Context context, int argIndex) {
+    String argument = context.arguments.get(argIndex);
+    MapPattern pattern = (MapPattern) rule.patterns.get(argIndex);
+
+    StringBuilder inbody = new StringBuilder();
+    List<Node> children = pattern.children();
+    for (int i = 0, childrenSize = children.size(); i < childrenSize; i++) {
+      Node destructuring = children.get(i);
+      DestructuringPair pair = (DestructuringPair) destructuring;
+      emit(pair.rhs);
+
+      append(" != null");
+      if (i < childrenSize - 1)
+        append(" && ");
+
+      emitTo(pair.lhs, inbody);
+      inbody.append(" = ");
+      emitTo(pair.rhs, inbody);
+      inbody.append(";\n");
+    }
+    return new EmittedWrapping(inbody.toString(), null);
   }
 
   private EmittedWrapping emitStringPatternRule(PatternRule rule, Context context, int argIndex) {

@@ -6,8 +6,8 @@ import loop.Parser;
  * @author dhanji@gmail.com (Dhanji R. Prasanna)
  */
 public class DestructuringPair extends Node {
-  private final Node lhs;
-  private final Node rhs;
+  public final Node lhs;
+  public final Node rhs;
 
   public DestructuringPair(Node lhs, Node rhs) {
     this.lhs = lhs;

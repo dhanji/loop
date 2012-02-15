@@ -68,6 +68,11 @@ public class BasicFunctionsConfidenceTest {
   }
 
   @Test
+  public final void objectPatternMatch1() {
+    assertEquals("Stephen", Loop.run("test/loop/confidence/pattern_matching_objects_1.loop", true));
+  }
+
+  @Test
   public final void reverseStringPatternMatching() {
     assertEquals("olleh", Loop.run("test/loop/confidence/reverse_string.loop"));
   }
@@ -92,10 +97,12 @@ public class BasicFunctionsConfidenceTest {
     assertEquals("3", Loop.run("test/loop/confidence/split_various_selective.loop"));
   }
 
+  @Test
   public final void splitVariousStringsPatternMatchingNotAllMatches() {
     assertTrue(Loop.run("test/loop/confidence/split_various_string_error.loop") instanceof LoopError);
   }
 
+  @Test
   public final void reverseLoopPatternMissingError() {
     assertTrue(Loop.run("test/loop/confidence/reverse_error.loop") instanceof LoopError);
   }
