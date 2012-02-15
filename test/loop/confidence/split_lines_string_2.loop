@@ -1,0 +1,9 @@
+# Pattern Matching split lines in a string
+
+unline(input, num) =>
+  (first: '\n' : rest), 1   : ''
+  (first: '\n' : rest), 2   : first + unline(rest)
+  *, *                      : input
+
+main ->
+  unline("hello\nthere\ndude", 2)

@@ -74,7 +74,12 @@ public class BasicFunctionsConfidenceTest {
 
   @Test
   public final void splitLinesStringPatternMatching() {
-    assertEquals("hellotheredude", Loop.run("test/loop/confidence/split_lines_string.loop", true));
+    assertEquals("hellotheredude", Loop.run("test/loop/confidence/split_lines_string.loop"));
+  }
+
+  @Test
+  public final void splitLinesStringMultiargPatternMatching() {
+    assertEquals("hellotheredude", Loop.run("test/loop/confidence/split_lines_string_2.loop"));
   }
 
   @Test
