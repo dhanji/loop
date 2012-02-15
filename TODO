@@ -9,7 +9,7 @@ x 'where' scoping
   x match lists, empty, mixed with literals, regexes
   x match strings, regexes
   x match against single literals
-  - match patterns against multiple arguments
+  x match patterns against multiple arguments
   - match map and object patterns
 
 x Fix List comprehensions parsing in pattern matching methods
