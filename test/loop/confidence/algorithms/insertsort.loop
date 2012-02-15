@@ -1,8 +1,8 @@
 # Recursive functional insertsort
 
 insert(i, ls) =>
-  []        : []
-  [x:xs]    : if i <= x then [i, x] + xs else insert(i, xs)
+  *, []        : []
+  *, [x:xs]    : if i <= x then [i, x] + xs else insert(i, xs)
 
 
 main ->
