@@ -58,6 +58,12 @@ public class LoopShell {
         if (line.isEmpty())
           continue;
 
+        // Add a require import.
+        if (line.startsWith("require ")) {
+          shellScope.declare(new Parser(new Tokenizer(line).tokenize()).require());
+          continue;
+        }
+
         if (line.startsWith(":q") || line.startsWith(":quit")) {
           quit();
         }

@@ -116,7 +116,7 @@ public class Parser {
       chewEols();
 
       if (null != require) {
-        unit.add(require);
+        unit.declare(require);
       }
     } while (require != null);
 
@@ -610,7 +610,7 @@ public class Parser {
   /**
    * require := REQUIRE IDENT (DOT IDENT)* EOL
    */
-  private RequireDecl require() {
+  public RequireDecl require() {
     if (match(Token.Kind.REQUIRE) == null) {
       return null;
     }

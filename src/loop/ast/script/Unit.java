@@ -38,6 +38,10 @@ public class Unit implements Scope {
     return classes.get(fullyQualifiedName);
   }
 
+  @Override public void declare(RequireDecl require) {
+    imports.add(require);
+  }
+
   public FunctionDecl get(String name) {
     return functions.get(name);
   }
@@ -50,12 +54,12 @@ public class Unit implements Scope {
     functions.put(node.name(), node);
   }
 
-  public void declare(ClassDecl classDecl) {
-    classes.put(classDecl.name, classDecl);
+  @Override public Set<RequireDecl> requires() {
+    return imports;
   }
 
-  public void add(RequireDecl node) {
-    imports.add(node);
+  public void declare(ClassDecl classDecl) {
+    classes.put(classDecl.name, classDecl);
   }
 
   public Collection<FunctionDecl> functions() {

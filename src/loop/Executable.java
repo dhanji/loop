@@ -15,6 +15,7 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -126,8 +127,15 @@ public class Executable {
     this.scope = unit;
     this.emittedNodes = codeEmitter.getEmittedNodeMap();
     this.compiled = codeEmitter.write(unit);
+
+    requireImports(unit.imports());
+
+    this.source = null;
+  }
+
+  private void requireImports(Set<RequireDecl> imports) {
     this.parserContext = new ParserContext();
-    for (RequireDecl requireDecl : unit.imports()) {
+    for (RequireDecl requireDecl : imports) {
       if (requireDecl.javaLiteral != null)
         try {
           parserContext.addImport(Class.forName(requireDecl.javaLiteral));
@@ -139,8 +147,6 @@ public class Executable {
               + requireDecl.javaLiteral, requireDecl.sourceLine, requireDecl.sourceColumn));
         }
     }
-
-    this.source = null;
   }
 
   public void compileExpression(Scope scope) {
@@ -156,6 +162,8 @@ public class Executable {
     this.emittedNodes = codeEmitter.getEmittedNodeMap();
     this.compiled = codeEmitter.write(node);
     this.source = null;
+
+    requireImports(scope.requires());
   }
 
   public void compileClassOrFunction(Scope scope) {
@@ -177,6 +185,8 @@ public class Executable {
     this.emittedNodes = codeEmitter.getEmittedNodeMap();
     this.compiled = codeEmitter.write(node);
     this.source = null;
+
+    requireImports(scope.requires());
 
     if (functionDecl != null)
       scope.declare(functionDecl);
