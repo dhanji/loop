@@ -1,0 +1,8 @@
+require `java.util.Date`
+
+date(num) ->
+  new Date(num)
+
+
+main ->
+  date(10)

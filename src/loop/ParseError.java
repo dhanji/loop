@@ -5,11 +5,19 @@ package loop;
  */
 public class ParseError implements AnnotatedError {
   private final String message;
-  private final Token token;
+  private final int line;
+  private final int column;
 
   public ParseError(String message, Token token) {
     this.message = message;
-    this.token = token;
+    this.line = token.line;
+    this.column = token.column;
+  }
+
+  public ParseError(String message, int line, int column) {
+    this.message = message;
+    this.line = line;
+    this.column = column;
   }
 
   public String getMessage() {
@@ -17,10 +25,10 @@ public class ParseError implements AnnotatedError {
   }
 
   public int line() {
-    return token.line;
+    return line;
   }
 
   public int column() {
-    return token.column;
+    return column;
   }
 }

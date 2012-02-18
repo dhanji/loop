@@ -4,8 +4,10 @@ import loop.CodeEmitter.SourceLocation;
 import loop.ast.ClassDecl;
 import loop.ast.Node;
 import loop.ast.script.FunctionDecl;
+import loop.ast.script.RequireDecl;
 import loop.ast.script.Unit;
 import loop.runtime.Scope;
+import org.mvel2.ParserContext;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -28,8 +30,8 @@ public class Executable {
   private Node node;
       // If a fragment and not a whole unit (mutually exclusive with unit)
 
-
-  private String compiled;  // Compiled MVEL script.
+  private ParserContext parserContext;
+  private String compiled;  // Uncompiled MVEL script.
   private List<ParseError> parseErrors;
   private TreeMap<SourceLocation, Node> emittedNodes;     // Lookup map of MVEL script -> Loop AST
 
@@ -58,6 +60,10 @@ public class Executable {
     this.lines = lines;
   }
 
+  public ParserContext getParserContext() {
+    return parserContext;
+  }
+
   public String getCompiled() {
     return compiled;
   }
@@ -68,7 +74,7 @@ public class Executable {
     try {
       unit = parser.script();
       unit.reduceAll();
-    } catch (LoopSyntaxException e) {
+    } catch (LoopCompileException e) {
       // Ignored.
     }
     if (!parser.getErrors().isEmpty())
@@ -120,6 +126,20 @@ public class Executable {
     this.scope = unit;
     this.emittedNodes = codeEmitter.getEmittedNodeMap();
     this.compiled = codeEmitter.write(unit);
+    this.parserContext = new ParserContext();
+    for (RequireDecl requireDecl : unit.imports()) {
+      if (requireDecl.javaLiteral != null)
+        try {
+          parserContext.addImport(Class.forName(requireDecl.javaLiteral));
+        } catch (ClassNotFoundException e) {
+          if (parseErrors == null)
+            parseErrors = new ArrayList<ParseError>();
+
+          parseErrors.add(new ParseError("Unable to find Java type for import: "
+              + requireDecl.javaLiteral, requireDecl.sourceLine, requireDecl.sourceColumn));
+        }
+    }
+
     this.source = null;
   }
 

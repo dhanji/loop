@@ -5,16 +5,16 @@ import java.util.List;
 /**
  * @author dhanji@gmail.com (Dhanji R. Prasanna)
  */
-public class LoopSyntaxException extends RuntimeException {
+public class LoopCompileException extends RuntimeException {
   private final Executable executable;
 
-  public LoopSyntaxException(String message, Executable executable) {
+  public LoopCompileException(String message, Executable executable) {
     super(message);
 
     this.executable = executable;
   }
 
-  public LoopSyntaxException() {
+  public LoopCompileException() {
     super("Syntax errors exist");
     this.executable = null;
   }

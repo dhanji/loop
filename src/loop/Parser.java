@@ -159,12 +159,12 @@ public class Parser {
     List<Token> className = match(Kind.TYPE_IDENT);
     if (null == className) {
       addError("Expected type identifier (Hint: Types must be upper CamelCase)", tokens.get(i));
-      throw new LoopSyntaxException();
+      throw new LoopCompileException();
     }
 
     if (null == match(Kind.ARROW, Kind.LBRACE)) {
       addError("Expected '->' after type identifier", tokens.get(i));
-      throw new LoopSyntaxException();
+      throw new LoopCompileException();
     }
 
     ClassDecl classDecl = new ClassDecl(className.iterator().next().value);
@@ -184,7 +184,7 @@ public class Parser {
 
     if (!endOfInput() && match(Token.Kind.RBRACE) == null) {
       addError("Expected end of type, additional statements found", tokens.get(i));
-      throw new LoopSyntaxException();
+      throw new LoopCompileException();
     }
 
     return classDecl;
@@ -265,7 +265,7 @@ public class Parser {
       // A function body must be terminated by } (this is ensured by the token-stream rewriter)
       if (!endOfInput() && match(Token.Kind.RBRACE) == null) {
         addError("Expected end of function, additional statements found", tokens.get(i));
-        throw new LoopSyntaxException();
+        throw new LoopCompileException();
       } else
         shouldContinue = false;
 
@@ -403,7 +403,7 @@ public class Parser {
 
     if (match(Token.Kind.RPAREN) == null) {
       addError("Expected ')' at end of string group pattern rule.", tokens.get(i - 1));
-      throw new LoopSyntaxException();
+      throw new LoopCompileException();
     }
 
     return pattern;
@@ -439,7 +439,7 @@ public class Parser {
     Node term = term();
     if (term == null) {
       addError("Expected term after '[' in pattern rule", tokens.get(i));
-      throw new LoopSyntaxException();
+      throw new LoopCompileException();
     }
 
     // This is a list denaturing rule.
@@ -449,7 +449,7 @@ public class Parser {
       term = term();
       if (term == null) {
         addError("Expected term after ':' in list pattern rule", tokens.get(i - 1));
-        throw new LoopSyntaxException();
+        throw new LoopCompileException();
       }
       pattern.add(term);
 
@@ -475,7 +475,7 @@ public class Parser {
       term = term();
       if (null == term) {
         addError("Expected term after ',' in list pattern rule", tokens.get(i - 1));
-        throw new LoopSyntaxException();
+        throw new LoopCompileException();
       }
       pattern.add(term);
 
@@ -483,7 +483,7 @@ public class Parser {
         term = term();
         if (null == term) {
           addError("Expected term after ',' in list pattern rule", tokens.get(i - 1));
-          throw new LoopSyntaxException();
+          throw new LoopCompileException();
         }
 
         pattern.add(term);
@@ -491,7 +491,7 @@ public class Parser {
 
       if (match(Token.Kind.RBRACKET) == null) {
         addError("Expected ']' at end of list pattern rule", tokens.get(i - 1));
-        throw new LoopSyntaxException();
+        throw new LoopCompileException();
       }
 
       return pattern;
@@ -576,7 +576,7 @@ public class Parser {
     if (null == first) {
       if (null == match(Token.Kind.RPAREN)) {
         addError("Expected ')' or identifier in function argument list", tokens.get(i - 1));
-        throw new LoopSyntaxException();
+        throw new LoopCompileException();
       }
       return new ArgDeclList().sourceLocation(lparenTokens);
     }
@@ -591,7 +591,7 @@ public class Parser {
       List<Token> nextArg = match(Token.Kind.IDENT);
       if (null == nextArg) {
         addError("Expected identifier after ',' in function arguments", tokens.get(i - 1));
-        throw new LoopSyntaxException();
+        throw new LoopCompileException();
       }
       optionalType = match(Token.Kind.ASSIGN, Token.Kind.TYPE_IDENT);
       firstTypeName = optionalType == null ? null : optionalType.get(1).value;
@@ -601,7 +601,7 @@ public class Parser {
 
     if (match(Token.Kind.RPAREN) == null) {
       addError("Expected ')' at end of function arguments", tokens.get(i - 1));
-      throw new LoopSyntaxException();
+      throw new LoopCompileException();
     }
 
     return arguments;
@@ -615,10 +615,15 @@ public class Parser {
       return null;
     }
 
-    List<Token> module = match(Token.Kind.IDENT);
+    List<Token> module = match(Kind.JAVA_LITERAL);
+    if (null == module)
+      module = match(Token.Kind.IDENT);
+    else
+      return new RequireDecl(module.get(0).value).sourceLocation(module);
+
     if (null == module) {
       addError("Expected module identifier", tokens.get(i - 1));
-      throw new LoopSyntaxException();
+      throw new LoopCompileException();
     }
 
     List<String> requires = new ArrayList<String>();
@@ -628,7 +633,7 @@ public class Parser {
       module = match(Token.Kind.IDENT);
       if (null == module) {
         addError("Expected module identifier part after '.'", tokens.get(i - 1));
-        throw new LoopSyntaxException();
+        throw new LoopCompileException();
       }
 
       requires.add(module.get(0).value);
@@ -636,7 +641,7 @@ public class Parser {
 
     if (match(Token.Kind.EOL) == null) {
       addError("Expected newline after require declaration", tokens.get(i - 1));
-      throw new LoopSyntaxException();
+      throw new LoopCompileException();
     }
 
     return new RequireDecl(requires).sourceLocation(module);
@@ -653,7 +658,7 @@ public class Parser {
     List<Token> module = match(Token.Kind.IDENT);
     if (null == module) {
       addError("Expected module identifier after 'module' keyword", tokens.get(i - 1));
-      throw new LoopSyntaxException();
+      throw new LoopCompileException();
     }
 
     List<String> modules = new ArrayList<String>();
@@ -663,7 +668,7 @@ public class Parser {
       module = match(Token.Kind.IDENT);
       if (null == module) {
         addError("Expected module identifier part after '.'", tokens.get(i - 1));
-        throw new LoopSyntaxException();
+        throw new LoopCompileException();
       }
 
       modules.add(module.get(0).value);
@@ -671,7 +676,7 @@ public class Parser {
 
     if (match(Token.Kind.EOL) == null) {
       addError("Expected newline after module declaration", tokens.get(i - 1));
-      throw new LoopSyntaxException();
+      throw new LoopCompileException();
     }
 
     return new ModuleDecl(modules).sourceLocation(module);
@@ -701,7 +706,7 @@ public class Parser {
     Node right = computation();
     if (right == null) {
       addError("Expected expression after ':' in assignment", tokens.get(i - 1));
-      throw new LoopSyntaxException();
+      throw new LoopCompileException();
     }
 
     Token start = startTokens.iterator().next();
@@ -766,13 +771,13 @@ public class Parser {
       Node ifPart = computation();
       if (match(Token.Kind.THEN) == null) {
         addError("IF expression missing THEN clause", tokens.get(i - 1));
-        throw new LoopSyntaxException();
+        throw new LoopCompileException();
       }
 
       Node thenPart = computation();
       if (match(Token.Kind.ELSE) == null) {
         addError("IF expression missing ELSE clause", tokens.get(i - 1));
-        throw new LoopSyntaxException();
+        throw new LoopCompileException();
       }
 
       Node elsePart = computation();
@@ -800,18 +805,18 @@ public class Parser {
     Node variable = variable();
     if (null == variable) {
       addError("Expected variable identifier after 'for' in list comprehension", tokens.get(i - 1));
-      throw new LoopSyntaxException();
+      throw new LoopCompileException();
     }
 
     if (match(Token.Kind.IN) == null) {
       addError("Expected 'in' after identifier in list comprehension", tokens.get(i - 1));
-      throw new LoopSyntaxException();
+      throw new LoopCompileException();
     }
 
     Node inList = computation();
     if (null == inList) {
       addError("Expected list clause after 'in' in list comprehension", tokens.get(i - 1));
-      throw new LoopSyntaxException();
+      throw new LoopCompileException();
     }
 
     if (match(Token.Kind.IF) == null) {
@@ -821,7 +826,7 @@ public class Parser {
     Node filter = computation();
     if (filter == null) {
       addError("Expected filter expression after 'if' in list comprehension", tokens.get(i - 1));
-      throw new LoopSyntaxException();
+      throw new LoopCompileException();
     }
 
     return new Comprehension(variable, inList, filter).sourceLocation(forTokens);
@@ -838,12 +843,12 @@ public class Parser {
     Node computation = computation();
     if (null == computation) {
       addError("Expected expression after '(' in group", tokens.get(i - 1));
-      throw new LoopSyntaxException();
+      throw new LoopCompileException();
     }
 
     if (match(Token.Kind.RPAREN) == null) {
       addError("Expected ')' to close group expression", tokens.get(i - 1));
-      throw new LoopSyntaxException();
+      throw new LoopCompileException();
     }
 
     return computation;
@@ -974,14 +979,14 @@ public class Parser {
         named = match(Token.Kind.IDENT, Token.Kind.ASSIGN);
         if (null == named) {
           addError("Cannot mix named and positional arguments in a function call", tokens.get(i - 1));
-          throw new LoopSyntaxException();
+          throw new LoopCompileException();
         }
       }
 
       arg = computation();
       if (null == arg) {
         addError("Expected expression after ',' in function call argument list", tokens.get(i - 1));
-        throw new LoopSyntaxException();
+        throw new LoopCompileException();
       }
 
       if (isPositional) {
@@ -994,7 +999,7 @@ public class Parser {
     // Ensure the method invocation is properly closed.
     if (match(Token.Kind.RPAREN) == null) {
       addError("Expected ')' at end of function call argument list", tokens.get(i - 1));
-      throw new LoopSyntaxException();
+      throw new LoopCompileException();
     }
 
     return callArguments;
@@ -1019,7 +1024,7 @@ public class Parser {
     if (match(Token.Kind.DOT) != null) {
       if (match(Token.Kind.DOT) == null) {
         addError("Syntax error, range specifier incomplete. Expected '..'", tokens.get(i - 1));
-        throw new LoopSyntaxException();
+        throw new LoopCompileException();
       }
 
       slice = true;
@@ -1030,7 +1035,7 @@ public class Parser {
 
     if (match(Token.Kind.RBRACKET) == null) {
       addError("Expected ']' at the end of list index expression", tokens.get(i - 1));
-      throw new LoopSyntaxException();
+      throw new LoopCompileException();
     }
 
     return new IndexIntoList(index, slice, to).sourceLocation(lbracketTokens);
@@ -1067,7 +1072,7 @@ public class Parser {
         Node value = computation();
         if (null == value) {
           addError("Expected expression after ':' in map definition", tokens.get(i - 1));
-          throw new LoopSyntaxException();
+          throw new LoopCompileException();
         }
         list.add(value);
       } else {
@@ -1080,7 +1085,7 @@ public class Parser {
         if (null == listElement) {
           addError("Expected expression after ',' in " + (isMap ? "map" : "list") + " definition",
               tokens.get(i - 1));
-          throw new LoopSyntaxException();
+          throw new LoopCompileException();
         }
 
         list.add(listElement);
@@ -1089,13 +1094,13 @@ public class Parser {
         if (isMap) {
           if (null == match(Token.Kind.ASSIGN)) {
             addError("Expected ':' after map key in map definition", tokens.get(i - 1));
-            throw new LoopSyntaxException();
+            throw new LoopCompileException();
           }
 
           Node value = computation();
           if (null == value) {
             addError("Expected value expression after ':' in map definition", tokens.get(i - 1));
-            throw new LoopSyntaxException();
+            throw new LoopCompileException();
           }
           list.add(value);
         }
@@ -1109,7 +1114,7 @@ public class Parser {
       if (match(Token.Kind.DOT) != null) {
         if (match(Token.Kind.DOT) == null) {
           addError("Syntax error, range specifier incomplete. Expected '..'", tokens.get(i - 1));
-          throw new LoopSyntaxException();
+          throw new LoopCompileException();
         }
 
         slice = true;
@@ -1176,13 +1181,13 @@ public class Parser {
     List<Token> typeName = match(Kind.TYPE_IDENT);
     if (null == typeName) {
       addError("Expected type identifer after 'new'", tokens.get(i - 1));
-      throw new LoopSyntaxException();
+      throw new LoopCompileException();
     }
 
     CallArguments arglist = arglist();
     if (null == arglist) {
       addError("Expected '(' after constructor call", tokens.get(i - 1));
-      throw new LoopSyntaxException();
+      throw new LoopCompileException();
     }
 
     return new ConstructorCall(modulePart, typeName.iterator().next().value, arglist);

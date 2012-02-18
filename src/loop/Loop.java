@@ -89,19 +89,20 @@ public class Loop {
       if (enableStackTraces)
         Tracer.startTrace();
 
-      return MVEL.eval(executable.getCompiled(), context);
+      return MVEL.executeExpression(MVEL.compileExpression(executable.getCompiled(),
+          executable.getParserContext()), context);
     } catch (PropertyAccessException e) {
       String message = e.getMessage();
       String loopError;
       boolean printStackTrace = false;
 
-      if (message.contains("unresolvable property")) {
+      if (message.contains("unresolvable property"))
         loopError = "I don't know that identifier =(";
-      } else if (message.contains("unable to resolve method"))
+      else if (message.contains("unable to resolve method"))
         loopError = "I don't know that method =(";
-      else if (message.contains("null pointer exception")) {
+      else if (message.contains("null pointer exception"))
         loopError = "Oh noes, you can't dereference a null value returned from Java code!";
-      } else {
+      else {
         if (e.getCause() != null)
           loopError = e.getCause().getClass().getSimpleName() + ": " + e.getCause().getMessage();
         else
@@ -120,7 +121,7 @@ public class Loop {
       }
 
       return (e.getCause() == null ? new LoopError(e.getMessage()) : new LoopError((Exception) e.getCause().getCause()));
-    } catch (LoopSyntaxException e) {
+    } catch (LoopCompileException e) {
       throw e;
     } catch (Exception e) {
       if (enableStackTraces) {
@@ -137,7 +138,7 @@ public class Loop {
   public static Serializable compile(String file) {
     Executable unit = loopCompile(file);
 
-    return MVEL.compileExpression(unit.getCompiled(), new HashMap<String, Object>());
+    return MVEL.compileExpression(unit.getCompiled(), unit.getParserContext());
   }
 
   private static Executable loopCompile(String file) {
@@ -148,7 +149,7 @@ public class Loop {
       if (executable.hasParseErrors()) {
         executable.printParseErrorsIfNecessary();
 
-        throw new LoopSyntaxException("Syntax errors exist", executable);
+        throw new LoopCompileException("Syntax errors exist", executable);
       }
     } catch (FileNotFoundException e) {
       throw new RuntimeException(e);

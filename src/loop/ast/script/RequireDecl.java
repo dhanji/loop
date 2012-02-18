@@ -8,14 +8,21 @@ import java.util.List;
  * Import declaration at the top of a script.
  */
 public class RequireDecl extends Node {
-  private final List<String> moduleChain;
+  public final List<String> moduleChain;
+  public final String javaLiteral;
 
   public RequireDecl(List<String> moduleChain) {
     this.moduleChain = moduleChain;
+    this.javaLiteral = null;
+  }
+
+  public RequireDecl(String javaLiteral) {
+    this.javaLiteral = javaLiteral.substring(1, javaLiteral.length() - 1);
+    this.moduleChain = null;
   }
 
   @Override
   public String toSymbol() {
-    return "require " + moduleChain;
+    return "require " + (moduleChain == null ? '`' + javaLiteral + '`' : moduleChain);
   }
 }

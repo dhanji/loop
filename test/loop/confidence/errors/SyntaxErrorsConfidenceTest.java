@@ -2,7 +2,7 @@ package loop.confidence.errors;
 
 import loop.AnnotatedError;
 import loop.Loop;
-import loop.LoopSyntaxException;
+import loop.LoopCompileException;
 import org.junit.Test;
 
 import java.util.List;
@@ -22,7 +22,7 @@ public class SyntaxErrorsConfidenceTest {
     List<AnnotatedError> errorList = null;
     try {
       Loop.run("test/loop/confidence/errors/pattern_errors_1.loop");
-    } catch (LoopSyntaxException e) {
+    } catch (LoopCompileException e) {
       errorList = e.getErrors();
     }
 
@@ -36,7 +36,7 @@ public class SyntaxErrorsConfidenceTest {
     List<AnnotatedError> errorList = null;
     try {
       Loop.run("test/loop/confidence/errors/pattern_errors_2.loop");
-    } catch (LoopSyntaxException e) {
+    } catch (LoopCompileException e) {
       errorList = e.getErrors();
     }
 
@@ -50,7 +50,7 @@ public class SyntaxErrorsConfidenceTest {
     List<AnnotatedError> errorList = null;
     try {
       Loop.run("test/loop/confidence/errors/pattern_errors_3.loop");
-    } catch (LoopSyntaxException e) {
+    } catch (LoopCompileException e) {
       errorList = e.getErrors();
     }
 
@@ -64,7 +64,7 @@ public class SyntaxErrorsConfidenceTest {
     List<AnnotatedError> errorList = null;
     try {
       Loop.run("test/loop/confidence/errors/pattern_errors_4.loop");
-    } catch (LoopSyntaxException e) {
+    } catch (LoopCompileException e) {
       errorList = e.getErrors();
     }
 
@@ -78,7 +78,7 @@ public class SyntaxErrorsConfidenceTest {
     List<AnnotatedError> errorList = null;
     try {
       Loop.run("test/loop/confidence/errors/pattern_errors_5.loop");
-    } catch (LoopSyntaxException e) {
+    } catch (LoopCompileException e) {
       errorList = e.getErrors();
     }
 
@@ -92,7 +92,7 @@ public class SyntaxErrorsConfidenceTest {
     List<AnnotatedError> errorList = null;
     try {
       Loop.run("test/loop/confidence/errors/pattern_errors_6.loop");
-    } catch (LoopSyntaxException e) {
+    } catch (LoopCompileException e) {
       errorList = e.getErrors();
     }
 
@@ -106,7 +106,7 @@ public class SyntaxErrorsConfidenceTest {
     List<AnnotatedError> errorList = null;
     try {
       Loop.run("test/loop/confidence/errors/pattern_errors_7.loop");
-    } catch (LoopSyntaxException e) {
+    } catch (LoopCompileException e) {
       errorList = e.getErrors();
     }
 
@@ -120,7 +120,7 @@ public class SyntaxErrorsConfidenceTest {
     List<AnnotatedError> errorList = null;
     try {
       Loop.run("test/loop/confidence/errors/pattern_errors_8.loop");
-    } catch (LoopSyntaxException e) {
+    } catch (LoopCompileException e) {
       errorList = e.getErrors();
     }
 
@@ -134,7 +134,7 @@ public class SyntaxErrorsConfidenceTest {
     List<AnnotatedError> errorList = null;
     try {
       Loop.run("test/loop/confidence/errors/list_errors_1.loop");
-    } catch (LoopSyntaxException e) {
+    } catch (LoopCompileException e) {
       errorList = e.getErrors();
     }
 
@@ -148,7 +148,7 @@ public class SyntaxErrorsConfidenceTest {
     List<AnnotatedError> errorList = null;
     try {
       Loop.run("test/loop/confidence/errors/list_errors_2.loop");
-    } catch (LoopSyntaxException e) {
+    } catch (LoopCompileException e) {
       errorList = e.getErrors();
     }
 
@@ -162,7 +162,7 @@ public class SyntaxErrorsConfidenceTest {
     List<AnnotatedError> errorList = null;
     try {
       Loop.run("test/loop/confidence/errors/list_errors_3.loop");
-    } catch (LoopSyntaxException e) {
+    } catch (LoopCompileException e) {
       errorList = e.getErrors();
     }
 
@@ -176,7 +176,7 @@ public class SyntaxErrorsConfidenceTest {
     List<AnnotatedError> errorList = null;
     try {
       Loop.run("test/loop/confidence/errors/list_errors_4.loop");
-    } catch (LoopSyntaxException e) {
+    } catch (LoopCompileException e) {
       errorList = e.getErrors();
     }
 
@@ -190,7 +190,7 @@ public class SyntaxErrorsConfidenceTest {
     List<AnnotatedError> errorList = null;
     try {
       Loop.run("test/loop/confidence/errors/list_errors_5.loop");
-    } catch (LoopSyntaxException e) {
+    } catch (LoopCompileException e) {
       errorList = e.getErrors();
     }
 
@@ -204,7 +204,7 @@ public class SyntaxErrorsConfidenceTest {
     List<AnnotatedError> errorList = null;
     try {
       Loop.run("test/loop/confidence/errors/func_errors_1.loop");
-    } catch (LoopSyntaxException e) {
+    } catch (LoopCompileException e) {
       errorList = e.getErrors();
     }
 
@@ -218,7 +218,7 @@ public class SyntaxErrorsConfidenceTest {
     List<AnnotatedError> errorList = null;
     try {
       Loop.run("test/loop/confidence/errors/func_errors_2.loop");
-    } catch (LoopSyntaxException e) {
+    } catch (LoopCompileException e) {
       errorList = e.getErrors();
     }
 
@@ -232,7 +232,7 @@ public class SyntaxErrorsConfidenceTest {
     List<AnnotatedError> errorList = null;
     try {
       Loop.run("test/loop/confidence/errors/func_errors_3.loop");
-    } catch (LoopSyntaxException e) {
+    } catch (LoopCompileException e) {
       errorList = e.getErrors();
     }
 
@@ -246,7 +246,7 @@ public class SyntaxErrorsConfidenceTest {
     List<AnnotatedError> errorList = null;
     try {
       Loop.run("test/loop/confidence/errors/module_errors_1.loop");
-    } catch (LoopSyntaxException e) {
+    } catch (LoopCompileException e) {
       errorList = e.getErrors();
     }
 
@@ -260,7 +260,7 @@ public class SyntaxErrorsConfidenceTest {
     List<AnnotatedError> errorList = null;
     try {
       Loop.run("test/loop/confidence/errors/module_errors_2.loop");
-    } catch (LoopSyntaxException e) {
+    } catch (LoopCompileException e) {
       errorList = e.getErrors();
     }
 
@@ -274,7 +274,7 @@ public class SyntaxErrorsConfidenceTest {
     List<AnnotatedError> errorList = null;
     try {
       Loop.run("test/loop/confidence/errors/module_errors_3.loop");
-    } catch (LoopSyntaxException e) {
+    } catch (LoopCompileException e) {
       errorList = e.getErrors();
     }
 
@@ -288,7 +288,7 @@ public class SyntaxErrorsConfidenceTest {
     List<AnnotatedError> errorList = null;
     try {
       Loop.run("test/loop/confidence/errors/module_errors_4.loop");
-    } catch (LoopSyntaxException e) {
+    } catch (LoopCompileException e) {
       errorList = e.getErrors();
     }
 
@@ -302,7 +302,7 @@ public class SyntaxErrorsConfidenceTest {
     List<AnnotatedError> errorList = null;
     try {
       Loop.run("test/loop/confidence/errors/module_errors_5.loop");
-    } catch (LoopSyntaxException e) {
+    } catch (LoopCompileException e) {
       errorList = e.getErrors();
     }
 
@@ -316,7 +316,7 @@ public class SyntaxErrorsConfidenceTest {
     List<AnnotatedError> errorList = null;
     try {
       Loop.run("test/loop/confidence/errors/module_errors_6.loop");
-    } catch (LoopSyntaxException e) {
+    } catch (LoopCompileException e) {
       errorList = e.getErrors();
     }
 
@@ -330,7 +330,7 @@ public class SyntaxErrorsConfidenceTest {
     List<AnnotatedError> errorList = null;
     try {
       Loop.run("test/loop/confidence/errors/assign_errors_1.loop");
-    } catch (LoopSyntaxException e) {
+    } catch (LoopCompileException e) {
       errorList = e.getErrors();
     }
 
@@ -344,7 +344,7 @@ public class SyntaxErrorsConfidenceTest {
     List<AnnotatedError> errorList = null;
     try {
       Loop.run("test/loop/confidence/errors/ifthen_errors_1.loop");
-    } catch (LoopSyntaxException e) {
+    } catch (LoopCompileException e) {
       errorList = e.getErrors();
     }
 
@@ -358,7 +358,7 @@ public class SyntaxErrorsConfidenceTest {
     List<AnnotatedError> errorList = null;
     try {
       Loop.run("test/loop/confidence/errors/ifthen_errors_2.loop");
-    } catch (LoopSyntaxException e) {
+    } catch (LoopCompileException e) {
       errorList = e.getErrors();
     }
 
@@ -372,7 +372,7 @@ public class SyntaxErrorsConfidenceTest {
     List<AnnotatedError> errorList = null;
     try {
       Loop.run("test/loop/confidence/errors/comp_errors_1.loop");
-    } catch (LoopSyntaxException e) {
+    } catch (LoopCompileException e) {
       errorList = e.getErrors();
     }
 
@@ -386,7 +386,7 @@ public class SyntaxErrorsConfidenceTest {
     List<AnnotatedError> errorList = null;
     try {
       Loop.run("test/loop/confidence/errors/comp_errors_2.loop");
-    } catch (LoopSyntaxException e) {
+    } catch (LoopCompileException e) {
       errorList = e.getErrors();
     }
 
@@ -400,7 +400,7 @@ public class SyntaxErrorsConfidenceTest {
     List<AnnotatedError> errorList = null;
     try {
       Loop.run("test/loop/confidence/errors/comp_errors_3.loop");
-    } catch (LoopSyntaxException e) {
+    } catch (LoopCompileException e) {
       errorList = e.getErrors();
     }
 
@@ -414,7 +414,7 @@ public class SyntaxErrorsConfidenceTest {
     List<AnnotatedError> errorList = null;
     try {
       Loop.run("test/loop/confidence/errors/comp_errors_4.loop");
-    } catch (LoopSyntaxException e) {
+    } catch (LoopCompileException e) {
       errorList = e.getErrors();
     }
 
@@ -428,7 +428,7 @@ public class SyntaxErrorsConfidenceTest {
     List<AnnotatedError> errorList = null;
     try {
       Loop.run("test/loop/confidence/errors/group_errors_1.loop");
-    } catch (LoopSyntaxException e) {
+    } catch (LoopCompileException e) {
       errorList = e.getErrors();
     }
 
@@ -442,7 +442,7 @@ public class SyntaxErrorsConfidenceTest {
     List<AnnotatedError> errorList = null;
     try {
       Loop.run("test/loop/confidence/errors/group_errors_2.loop");
-    } catch (LoopSyntaxException e) {
+    } catch (LoopCompileException e) {
       errorList = e.getErrors();
     }
 
@@ -456,7 +456,7 @@ public class SyntaxErrorsConfidenceTest {
     List<AnnotatedError> errorList = null;
     try {
       Loop.run("test/loop/confidence/errors/func_call_errors_1.loop");
-    } catch (LoopSyntaxException e) {
+    } catch (LoopCompileException e) {
       errorList = e.getErrors();
     }
 
@@ -470,7 +470,7 @@ public class SyntaxErrorsConfidenceTest {
     List<AnnotatedError> errorList = null;
     try {
       Loop.run("test/loop/confidence/errors/func_call_errors_2.loop");
-    } catch (LoopSyntaxException e) {
+    } catch (LoopCompileException e) {
       errorList = e.getErrors();
     }
 
@@ -484,7 +484,7 @@ public class SyntaxErrorsConfidenceTest {
     List<AnnotatedError> errorList = null;
     try {
       Loop.run("test/loop/confidence/errors/func_call_errors_3.loop");
-    } catch (LoopSyntaxException e) {
+    } catch (LoopCompileException e) {
       errorList = e.getErrors();
     }
 
@@ -498,7 +498,7 @@ public class SyntaxErrorsConfidenceTest {
     List<AnnotatedError> errorList = null;
     try {
       Loop.run("test/loop/confidence/errors/index_errors_1.loop");
-    } catch (LoopSyntaxException e) {
+    } catch (LoopCompileException e) {
       errorList = e.getErrors();
     }
 
@@ -512,7 +512,7 @@ public class SyntaxErrorsConfidenceTest {
     List<AnnotatedError> errorList = null;
     try {
       Loop.run("test/loop/confidence/errors/index_errors_2.loop");
-    } catch (LoopSyntaxException e) {
+    } catch (LoopCompileException e) {
       errorList = e.getErrors();
     }
 

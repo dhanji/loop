@@ -6,8 +6,8 @@ import loop.runtime.Scope;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -17,7 +17,7 @@ import java.util.Set;
 public class Unit implements Scope {
   private final ModuleDecl module;
 
-  private final Set<RequireDecl> imports = new HashSet<RequireDecl>();
+  private final Set<RequireDecl> imports = new LinkedHashSet<RequireDecl>();
   private final Map<String, FunctionDecl> functions = new LinkedHashMap<String, FunctionDecl>();
   private final Map<String, ClassDecl> classes = new HashMap<String, ClassDecl>();
 
@@ -60,5 +60,9 @@ public class Unit implements Scope {
 
   public Collection<FunctionDecl> functions() {
     return functions.values();
+  }
+
+  public Set<RequireDecl> imports() {
+    return imports;
   }
 }
