@@ -10,17 +10,6 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="module-library" scope="TEST">
-      <library>
-        <CLASSES>
-          <root url="jar://$APPLICATION_HOME_DIR$/lib/junit-4.8.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="library" name="Maven: org.mvel:mvel2:2.1.Beta8" level="project" />
-    <orderEntry type="library" name="Maven: org.sonatype.jline:jline:2.5" level="project" />
     <orderEntry type="library" name="Maven: org.mvel:mvel2:2.1.Beta8" level="project" />
     <orderEntry type="library" name="Maven: commons-io:commons-io:1.4" level="project" />
     <orderEntry type="library" name="Maven: org.sonatype.jline:jline:2.5" level="project" />

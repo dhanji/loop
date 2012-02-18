@@ -659,6 +659,11 @@ import java.util.concurrent.atomic.AtomicInteger;
       if (context.arguments.isEmpty())
         throw new RuntimeException("Incorrect number of arguments for pattern matching");
 
+      if (context.arguments.size() != rule.patterns.size())
+        throw new RuntimeException("Incorrect number of pattern rules. Expected pattern rules for "
+            + context.arguments + " but found only " + rule.patterns.size() + " rule(s): "
+            + Parser.stringify(rule.patterns));
+
       EmittedWrapping emitIntoBody = null;
       int mark = out.length(), emittedArgs = 0;
       append("if (");
