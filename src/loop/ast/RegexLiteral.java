@@ -12,7 +12,7 @@ public class RegexLiteral extends Node {
 
   @Override
   public String toSymbol() {
-    return value;
+    return '/' + value + '/';
   }
 
   @Override
