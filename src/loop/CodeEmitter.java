@@ -368,9 +368,9 @@ import java.util.concurrent.atomic.AtomicInteger;
   private final Emitter assignmentEmitter = new Emitter() {
     @Override public void emitCode(Node node) {
       Assignment assignment = (Assignment) node;
-      if (!(assignment.lhs() instanceof Variable))
-        throw new RuntimeException("Expected a variable on the LHS of assignment: "
-            + Parser.stringify(assignment));
+//      if (!(assignment.lhs() instanceof Variable))
+//        throw new RuntimeException("Expected a variable on the LHS of assignment: "
+//            + Parser.stringify(assignment));
 
       trackLineAndColumn(assignment);
       emit(assignment.lhs());

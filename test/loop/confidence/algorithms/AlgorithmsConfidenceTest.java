@@ -4,6 +4,7 @@ import loop.Loop;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.HashMap;
 
 import static org.junit.Assert.assertEquals;
 
@@ -23,5 +24,11 @@ public class AlgorithmsConfidenceTest {
   public final void quicksort() {
     assertEquals(Arrays.asList(0, 1, 2, 5, 6, 19, 92, 144),
         Loop.run("test/loop/confidence/algorithms/quicksort.loop"));
+  }
+
+//  @Test DISABLED WHILE MVEL FIX GOES IN TO 2.1.Final
+  public final void ransomNote() {
+    assertEquals(new HashMap<Character, Integer>(),
+        Loop.run("test/loop/confidence/algorithms/ransom_note.loop", true));
   }
 }

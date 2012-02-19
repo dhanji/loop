@@ -1,0 +1,11 @@
+# Recursive functional ransom note computaation
+
+ransom(str, map) =>
+  '', *        : map
+  (c:cs), *    : ransom(cs, count(c, map))
+  where
+    count(c, map) ->
+      map[c]: map[c] + 1
+
+main ->
+  ransom('Now is the winter of our discontent made glorious summer by this son of York.', [:])
