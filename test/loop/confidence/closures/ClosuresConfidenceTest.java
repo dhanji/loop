@@ -27,7 +27,7 @@ public class ClosuresConfidenceTest {
     assertEquals(4, Loop.run("test/loop/confidence/closures/simple_closures_3.loop"));
   }
 
-//  @Test
+  @Test
   public final void whereblock() {
     assertEquals(26208, Loop.run("test/loop/confidence/closures/whereblock.loop"));
   }
