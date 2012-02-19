@@ -39,12 +39,12 @@ public class BasicFunctionsConfidenceTest {
 
   @Test
   public final void listStructurePatternMatchingGuarded1() {
-    assertEquals(Arrays.asList(10), Loop.run("test/loop/confidence/list_pattern_guarded_1.loop"));
+    assertEquals(Arrays.asList(2, 3, 10), Loop.run("test/loop/confidence/list_pattern_guarded_1.loop"));
   }
 
   @Test
   public final void listStructurePatternMatchingGuarded2() {
-    assertEquals(Arrays.asList(5), Loop.run("test/loop/confidence/list_pattern_guarded_2.loop"));
+    assertEquals(Arrays.asList(5, 2, 3), Loop.run("test/loop/confidence/list_pattern_guarded_2.loop"));
   }
 
   @Test

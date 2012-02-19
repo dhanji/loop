@@ -4,7 +4,7 @@ scan(ls) =>
   []                    : []
   [x]       | x < 10    : [x]
             | x > 10    : [10]
-  [x:xs]                : scan(xs) + x
+  [x:xs]                : [x] + scan(xs)
 
 main ->
-  scan([100,2,3])
+  scan([2,3, 100])

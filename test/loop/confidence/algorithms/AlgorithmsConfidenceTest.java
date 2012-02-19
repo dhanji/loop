@@ -26,6 +26,12 @@ public class AlgorithmsConfidenceTest {
         Loop.run("test/loop/confidence/algorithms/quicksort.loop"));
   }
 
+//  @Test
+  public final void mergesort() {
+    assertEquals(Arrays.asList(0, 1, 2, 5, 6, 19, 92, 144),
+        Loop.run("test/loop/confidence/algorithms/mergesort.loop", true));
+  }
+
 //  @Test DISABLED WHILE MVEL FIX GOES IN TO 2.1.Final
   public final void ransomNote() {
     assertEquals(new HashMap<Character, Integer>(),

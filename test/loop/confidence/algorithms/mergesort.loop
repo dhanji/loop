@@ -1,0 +1,18 @@
+# Recursive functional mergesort
+
+merge(one, two) =>
+  *, []           : one
+  [], *           : two
+  [x:xs], [y:ys]  : if x > y then merge(xs, [y] + ys) else merge([x] + xs, ys)
+
+mergesort(ls) =>
+  []              : []
+  [x]             : [x]
+  *               : merge(mergesort(left), mergesort(right))
+  where
+    half:  ls.size() / 2
+    left:  ls.subList(0, half)
+    right: ls.subList(half, ls.size())
+
+main ->
+  mergesort([5, 2, 6, 19, 0, 92, 144, 1])

@@ -35,6 +35,7 @@ import loop.ast.script.FunctionDecl;
 import loop.ast.script.Unit;
 import loop.runtime.Scope;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -665,7 +666,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
   private final Emitter patternRuleEmitter = new Emitter() {
     @Override public void emitCode(Node node) {
-      // TODO for now we only handle one argument.
       PatternRule rule = (PatternRule) node;
       Context context = functionStack.peek();
 
@@ -677,7 +677,7 @@ import java.util.concurrent.atomic.AtomicInteger;
             + context.arguments + " but found " + rule.patterns.size() + " rule(s): "
             + Parser.stringify(rule.patterns));
 
-      EmittedWrapping emitIntoBody = null;
+      List<EmittedWrapping> emitIntoBody = new ArrayList<EmittedWrapping>();
       int mark = out.length(), emittedArgs = 0;
       append("if (");
       for (int i = 0, argumentsSize = context.arguments.size(); i < argumentsSize; i++) {
@@ -686,9 +686,9 @@ import java.util.concurrent.atomic.AtomicInteger;
         emittedArgs++;
         Node pattern = rule.patterns.get(i);
         if (pattern instanceof ListDestructuringPattern) {
-          emitIntoBody = emitListDestructuringPatternRule(rule, context, i);
+          emitIntoBody.add(emitListDestructuringPatternRule(rule, context, i));
         } else if (pattern instanceof ListStructurePattern) {
-          emitIntoBody = emitListStructurePatternRule(rule, context, i);
+          emitIntoBody.add(emitListStructurePatternRule(rule, context, i));
         } else if (pattern instanceof StringLiteral
             || pattern instanceof IntLiteral) {
           String argument = context.arguments.get(i);
@@ -700,9 +700,9 @@ import java.util.concurrent.atomic.AtomicInteger;
           append(argument).append(" ~= ");
           emit(pattern);
         } else if (pattern instanceof StringPattern) {
-          emitIntoBody = emitStringPatternRule(rule, context, i);
+          emitIntoBody.add(emitStringPatternRule(rule, context, i));
         } else if (pattern instanceof MapPattern) {
-          emitIntoBody = emitMapPatternRule(rule, context, i);
+          emitIntoBody.add(emitMapPatternRule(rule, context, i));
         } else if (pattern instanceof WildcardPattern) {
 
           // If this is the last argument, then we don't need the preceding &&.
@@ -724,13 +724,17 @@ import java.util.concurrent.atomic.AtomicInteger;
       } else
         append(") {\n ");
 
-      if (emitIntoBody != null)
-        append(emitIntoBody.inbody);
+      for (EmittedWrapping emittedWrapping : emitIntoBody) {
+        if (null != emittedWrapping)
+          append(emittedWrapping.inbody);
+      }
 
       emitPatternClauses(rule);
 
-      if (emitIntoBody != null)
-        append(emitIntoBody.after);
+      for (EmittedWrapping emittedWrapping : emitIntoBody) {
+        if (null != emittedWrapping)
+          append(emittedWrapping.after);
+      }
 
       if (emittedArgs == 0)
         append(";\n");
@@ -887,6 +891,9 @@ import java.util.concurrent.atomic.AtomicInteger;
     String arg0 = context.arguments.get(argIndex);
     append(arg0);
     append(" is java.util.List");
+
+    if (listPattern.children().size() > 0)
+      append(" && ").append(arg0).append(".size() == ").append(listPattern.children().size());
 
     // Slice the list by terminals in the pattern list.
     List<Node> children = listPattern.children();
