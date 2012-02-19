@@ -12,6 +12,8 @@ import java.io.StringReader;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Converts parsed, type-solved, emitted code to Java classes.
@@ -19,6 +21,8 @@ import java.util.Map;
 public class Loop {
   // Global config options for the runtime.
   static volatile boolean enableStackTraces = true;
+  private static final Pattern UNKNOWN_MVEL_PATTERN =
+      Pattern.compile("\\[Error: unresolvable property or identifier: \\?(.*)\\]");
 
   public static void main(String[] args) {
     if (args.length == 0) {
@@ -96,9 +100,11 @@ public class Loop {
       String loopError;
       boolean printStackTrace = false;
 
-      if (message.contains("unresolvable property"))
-        loopError = "I don't know that identifier =(";
-      else if (message.contains("unable to resolve method"))
+      if (message.contains("unresolvable property")) {
+        Matcher matcher = UNKNOWN_MVEL_PATTERN.matcher(message);
+        matcher.find();
+        loopError = "I don't know the identifier: '" + matcher.group(1) + "'   =(";
+      } else if (message.contains("unable to resolve method"))
         loopError = "I don't know that method =(";
       else if (message.contains("null pointer exception"))
         loopError = "Oh noes, you can't dereference a null value returned from Java code!";
