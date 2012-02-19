@@ -22,7 +22,7 @@ public class Loop {
   // Global config options for the runtime.
   static volatile boolean enableStackTraces = true;
   private static final Pattern UNKNOWN_MVEL_PATTERN =
-      Pattern.compile("\\[Error: unresolvable property or identifier: \\?(.*)\\]");
+      Pattern.compile("\\[Error: unresolvable property or identifier: \\??(.*)\\]");
 
   public static void main(String[] args) {
     if (args.length == 0) {
@@ -102,8 +102,10 @@ public class Loop {
 
       if (message.contains("unresolvable property")) {
         Matcher matcher = UNKNOWN_MVEL_PATTERN.matcher(message);
-        matcher.find();
-        loopError = "I don't know the identifier: '" + matcher.group(1) + "'   =(";
+        String ident = "<unknown>";
+        if (matcher.find())
+          ident = matcher.group(1);
+        loopError = "I don't know the identifier: '" + ident + "'   =(";
       } else if (message.contains("unable to resolve method"))
         loopError = "I don't know that method =(";
       else if (message.contains("null pointer exception"))

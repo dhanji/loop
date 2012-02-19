@@ -48,7 +48,7 @@ Algorithms
 
 x Quicksort
 - MergeSort
-- Insert Sort
+x Insert Sort
 - Skyline (range sorting)
 - Djikstra's algroithm
 - A* pathfinding

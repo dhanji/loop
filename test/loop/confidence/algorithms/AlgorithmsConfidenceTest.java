@@ -14,14 +14,14 @@ import static org.junit.Assert.assertEquals;
  * @author dhanji@gmail.com (Dhanji R. Prasanna)
  */
 public class AlgorithmsConfidenceTest {
-//  @Test
+  @Test
   public final void insertsort() {
-    assertEquals(Arrays.asList(3, 2, 1), Loop.run("test/loop/confidence/algorithms/insertsort.loop", true));
+    assertEquals(Arrays.asList(1, 2, 3), Loop.run("test/loop/confidence/algorithms/insertsort.loop"));
   }
 
   @Test
   public final void quicksort() {
     assertEquals(Arrays.asList(0, 1, 2, 5, 6, 19, 92, 144),
-        Loop.run("test/loop/confidence/algorithms/quicksort.loop", true));
+        Loop.run("test/loop/confidence/algorithms/quicksort.loop"));
   }
 }

@@ -1,9 +1,13 @@
 # Recursive functional insertsort
 
 insert(i, ls) =>
-  *, []        : []
-  *, [x:xs]    : if i <= x then [i, x] + xs else insert(i, xs)
+  *, []        : [i]
+  *, [x:xs]    : if i <= x then [i, x] + xs else [x] + insert(i, xs)
 
+
+sort(ls) =>
+  []        : []
+  [x:xs]    : insert(x, sort(xs))
 
 main ->
-  insert(2, [1, 3, 4])
+  sort([3, 2, 1])

@@ -674,7 +674,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
       if (context.arguments.size() != rule.patterns.size())
         throw new RuntimeException("Incorrect number of pattern rules. Expected pattern rules for "
-            + context.arguments + " but found only " + rule.patterns.size() + " rule(s): "
+            + context.arguments + " but found " + rule.patterns.size() + " rule(s): "
             + Parser.stringify(rule.patterns));
 
       EmittedWrapping emitIntoBody = null;
