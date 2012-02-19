@@ -515,6 +515,7 @@ public class Parser {
     if (rhs instanceof Variable) {
       // See if we can keep slurping a dot-chain.
       CallChain callChain = new CallChain();
+      callChain.nullSafe(false);
       callChain.add(rhs);
       while (match(Token.Kind.DOT) != null) {
         Node variable = variable();

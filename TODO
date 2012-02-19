@@ -30,7 +30,7 @@ x Where block multiple var assigns
 Stretch
 -------
 
-- Null-safety (is this possible?)
+x Null-safety (is this possible?)
 - Tail call optimization
 x String interpolation
 x Exception unrolling

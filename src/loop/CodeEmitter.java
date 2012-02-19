@@ -581,8 +581,16 @@ import java.util.concurrent.atomic.AtomicInteger;
     @Override public void emitCode(Node node) {
       CallChain callChain = (CallChain) node;
       List<Node> children = callChain.children();
+
       for (int i = 0, childrenSize = children.size(); i < childrenSize; i++) {
         Node child = children.get(i);
+
+        if (i == 0
+            && callChain.nullSafe
+            && child instanceof Variable
+            && childrenSize > 1)
+          append('?');
+
         trackLineAndColumn(child);
         emit(child);
 
@@ -591,7 +599,11 @@ import java.util.concurrent.atomic.AtomicInteger;
           Node next = children.get(i + 1);
           if (next instanceof IndexIntoList)
             continue;
-          append('.');
+
+          if (i == childrenSize - 2 || !callChain.nullSafe)
+            append('.');
+          else
+            append(".?");
         }
       }
     }

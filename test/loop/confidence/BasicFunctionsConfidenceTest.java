@@ -69,7 +69,7 @@ public class BasicFunctionsConfidenceTest {
 
   @Test
   public final void objectPatternMatch1() {
-    assertEquals("Stephen", Loop.run("test/loop/confidence/pattern_matching_objects_1.loop"));
+    assertEquals("Stephen", Loop.run("test/loop/confidence/pattern_matching_objects_1.loop", true));
   }
 
   @Test
@@ -122,9 +122,9 @@ public class BasicFunctionsConfidenceTest {
     assertEquals("dhanji", Loop.run("test/loop/confidence/nullsafe_1.loop"));
   }
 
-//  @Test
+  @Test
   public final void nullSafeCallChain2() {
-    assertEquals("dhanji", Loop.run("test/loop/confidence/nullsafe_2.loop", true));
+    assertEquals(null, Loop.run("test/loop/confidence/nullsafe_2.loop"));
   }
 
   @Test
