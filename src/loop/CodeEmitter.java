@@ -48,6 +48,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @SuppressWarnings({"FieldCanBeLocal"}) class CodeEmitter {
   private static final AtomicInteger functionNameSequence = new AtomicInteger();
   private static final Map<String, String> BINARY_OP_TRANSLATIONS = new HashMap<String, String>();
+  private static final String AND = " && ";
 
   static {
     BINARY_OP_TRANSLATIONS.put("not", "!=");
@@ -691,12 +692,19 @@ import java.util.concurrent.atomic.AtomicInteger;
         } else if (pattern instanceof MapPattern) {
           emitIntoBody = emitMapPatternRule(rule, context, i);
         } else if (pattern instanceof WildcardPattern) {
+
+          // If this is the last argument, then we don't need the preceding &&.
+          if (i == argumentsSize - 1) {
+            if (AND.equals(out.substring(out.length() - AND.length())))
+              out.delete(out.length() - AND.length(), out.length());
+          }
+
           wasArgumentEmitted = false;
           emittedArgs--;
         }
 
         if (wasArgumentEmitted && i < context.arguments.size() - 1)
-          append(" && ");
+          append(AND);
       }
 
       if (emittedArgs == 0) {
