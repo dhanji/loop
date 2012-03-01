@@ -1,4 +1,4 @@
-# Recursive functional ransom note computaation
+# Recursive functional 'ransom note' algorithm
 
 ransom(str, map) =>
   '', *        : map

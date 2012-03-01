@@ -47,12 +47,12 @@ Algorithms
 ----------
 
 x Quicksort
-- MergeSort
+z MergeSort
 x Insert Sort
 - Skyline (range sorting)
 - Djikstra's algroithm
 - A* pathfinding
 - Djikstra's Shunting Yard
 - Sieve of Eratosthenes
-- Ransom Note
+x Ransom Note
 x Naive Factorial

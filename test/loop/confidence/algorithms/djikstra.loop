@@ -1,0 +1,12 @@
+# Recursive functional Djikstra's BFS graph search algorithm.
+
+find(node, goal, path) =>
+  [ linked <- node.adjacent ], *  : (if linked.contains(goal)
+                                     then path
+                                     else (find(i, goal, path + [node]) for i in linked))
+
+main ->
+  find(root, goal, [])
+  where
+    goal: 'goal'
+    root: [:]
