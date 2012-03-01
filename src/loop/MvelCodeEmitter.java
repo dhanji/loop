@@ -46,7 +46,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * @author dhanji@gmail.com (Dhanji R. Prasanna)
  */
-@SuppressWarnings({"FieldCanBeLocal"}) class CodeEmitter {
+@SuppressWarnings({"FieldCanBeLocal"}) class MvelCodeEmitter {
   private static final AtomicInteger functionNameSequence = new AtomicInteger();
   private static final Map<String, String> BINARY_OP_TRANSLATIONS = new HashMap<String, String>();
   private static final String AND = " && ";
@@ -63,10 +63,6 @@ import java.util.concurrent.atomic.AtomicInteger;
   private int column;
   private final TreeMap<SourceLocation, Node> emittedNodeMap = new TreeMap<SourceLocation, Node>();
   private final Scope scope;
-
-  private static interface Emitter {
-    void emitCode(Node node);
-  }
 
   public static class SourceLocation implements Comparable<SourceLocation> {
     public final int line;
@@ -107,7 +103,7 @@ import java.util.concurrent.atomic.AtomicInteger;
    */
   private static final Map<Class<?>, Emitter> EMITTERS = new HashMap<Class<?>, Emitter>();
 
-  CodeEmitter(Scope scope) {
+  MvelCodeEmitter(Scope scope) {
     this.scope = scope;
 
     EMITTERS.put(Call.class, callEmitter);
@@ -153,11 +149,11 @@ import java.util.concurrent.atomic.AtomicInteger;
     return out.toString();
   }
 
-  private CodeEmitter append(Object obj) {
+  private MvelCodeEmitter append(Object obj) {
     return append(obj.toString());
   }
 
-  private CodeEmitter append(String str) {
+  private MvelCodeEmitter append(String str) {
     if (null == str)
       return this;
     out.append(str);
@@ -170,7 +166,7 @@ import java.util.concurrent.atomic.AtomicInteger;
     return this;
   }
 
-  private CodeEmitter append(char c) {
+  private MvelCodeEmitter append(char c) {
     out.append(c);
     if (c == '\n') {
       line++;
@@ -181,7 +177,7 @@ import java.util.concurrent.atomic.AtomicInteger;
     return this;
   }
 
-  private CodeEmitter append(int n) {
+  private MvelCodeEmitter append(int n) {
     out.append(n);
     column++;
     return this;

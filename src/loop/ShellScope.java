@@ -39,4 +39,9 @@ class ShellScope implements Scope {
   @Override public ClassDecl resolve(String fullyQualifiedName) {
     return classes.get(fullyQualifiedName);
   }
+
+  @Override
+  public FunctionDecl resolveFunction(String fullyQualifiedName) {
+    return functions.get(fullyQualifiedName);
+  }
 }

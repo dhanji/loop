@@ -9,14 +9,10 @@ import java.util.List;
  * Represents a declaration of arguments of a function.
  */
 public class ArgDeclList extends Node {
-
-  // Memo field
-  private List<Type> types;
-
   public static class Argument extends Node {
     private final String name;
     private final String type;
-    
+
     public Argument(String name, String type) {
       this.name = name;
       this.type = type;
