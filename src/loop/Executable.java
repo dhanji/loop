@@ -1,6 +1,6 @@
 package loop;
 
-import loop.CodeEmitter.SourceLocation;
+import loop.MvelCodeEmitter.SourceLocation;
 import loop.ast.ClassDecl;
 import loop.ast.Node;
 import loop.ast.script.FunctionDecl;
@@ -123,7 +123,7 @@ public class Executable {
     if (hasParseErrors())
       return;
 
-    CodeEmitter codeEmitter = new CodeEmitter(unit);
+    MvelCodeEmitter codeEmitter = new MvelCodeEmitter(unit);
     this.scope = unit;
     this.emittedNodes = codeEmitter.getEmittedNodeMap();
     this.compiled = codeEmitter.write(unit);
@@ -158,7 +158,7 @@ public class Executable {
 
     this.node = new Reducer(line).reduce();
 
-    CodeEmitter codeEmitter = new CodeEmitter(scope);
+    MvelCodeEmitter codeEmitter = new MvelCodeEmitter(scope);
     this.emittedNodes = codeEmitter.getEmittedNodeMap();
     this.compiled = codeEmitter.write(node);
     this.source = null;
@@ -181,7 +181,7 @@ public class Executable {
       return;
 
     this.node = new Reducer(node).reduce();
-    CodeEmitter codeEmitter = new CodeEmitter(scope);
+    MvelCodeEmitter codeEmitter = new MvelCodeEmitter(scope);
     this.emittedNodes = codeEmitter.getEmittedNodeMap();
     this.compiled = codeEmitter.write(node);
     this.source = null;

@@ -107,6 +107,9 @@ public class Parser {
     chewEols();
 
     ModuleDecl module = module();
+    if (null == module)
+      module = ModuleDecl.DEFAULT;
+
     chewEols();
 
     Unit unit = new Unit(module);

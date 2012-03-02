@@ -34,8 +34,21 @@ public class Unit implements Scope {
     }
   }
 
+  public String name() {
+    StringBuilder name = new StringBuilder();
+    for (String part : module.moduleChain) {
+      name.append(part).append("_");
+    }
+    return name.toString();
+  }
+
   @Override public ClassDecl resolve(String fullyQualifiedName) {
     return classes.get(fullyQualifiedName);
+  }
+
+  @Override
+  public FunctionDecl resolveFunction(String fullyQualifiedName) {
+    return functions.get(fullyQualifiedName);
   }
 
   @Override public void declare(RequireDecl require) {

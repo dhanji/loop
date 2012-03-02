@@ -12,6 +12,8 @@ import java.util.Set;
 public interface Scope {
   ClassDecl resolve(String fullyQualifiedName);
 
+  FunctionDecl resolveFunction(String fullyQualifiedName);
+
   void declare(RequireDecl require);
 
   void declare(ClassDecl clazz);
