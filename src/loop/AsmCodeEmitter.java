@@ -58,17 +58,12 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 @SuppressWarnings({"FieldCanBeLocal"}) class AsmCodeEmitter implements Opcodes {
   private static final AtomicInteger functionNameSequence = new AtomicInteger();
-  private static final Map<String, String> BINARY_OP_TRANSLATIONS = new HashMap<String, String>();
   private static final String AND = " && ";
-
-  static {
-    BINARY_OP_TRANSLATIONS.put("not", "!=");
-  }
 
   private StringBuilder out = new StringBuilder();
   private final Stack<Context> functionStack = new Stack<Context>();
 
-  // MVEL line and column to map back to our Loop AST.
+  // Java line and column to map back to our Loop AST.
   private int line;
   private int column;
   private final TreeMap<SourceLocation, Node> emittedNodeMap = new TreeMap<SourceLocation, Node>();
@@ -189,10 +184,6 @@ import java.util.concurrent.atomic.AtomicInteger;
     return out.toString();
   }
 
-  private AsmCodeEmitter append(Object obj) {
-    return append(obj.toString());
-  }
-
   private AsmCodeEmitter append(String str) {
     if (null == str)
       return this;
@@ -262,17 +253,23 @@ import java.util.concurrent.atomic.AtomicInteger;
     @Override
     public void emitCode(Node node) {
       TernaryExpression expression = (TernaryExpression) node;
+      MethodVisitor methodVisitor = methodStack.peek();
 
-      trackLineAndColumn(expression);
-      // IF test
-      append('(');
+      Label elseBranch = new Label();
+      Label end = new Label();
+
+      // If condition
       emit(expression.children().get(0));
+      methodVisitor.visitTypeInsn(CHECKCAST, "java/lang/Boolean");
+      methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Boolean", "booleanValue", "()Z");
+      methodVisitor.visitJumpInsn(IFNE, elseBranch);
 
-      append(" ? ");
       emit(expression.children().get(1));
-      append(" : ");
+      methodVisitor.visitJumpInsn(GOTO, end);
+
+      methodVisitor.visitLabel(elseBranch);
       emit(expression.children().get(2));
-      append(")\n");
+      methodVisitor.visitLabel(end);
     }
   };
 

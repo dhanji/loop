@@ -280,6 +280,22 @@ public class AsmCodeEmitterTest {
         .invoke(null, Arrays.asList(10, 20, 30, 40)));
   }
 
+
+  @Test
+  public final void emitIfStatement() throws Exception {
+    Parser parser = new Parser(new Tokenizer("sum(cond) ->\n  if cond then 1 else 2\n").tokenize());
+    Unit unit = parser.script();
+    unit.reduceAll();
+
+    Class<?> generated = new AsmCodeEmitter(unit).write(unit, true);
+
+    // Inspect.
+    inspect(generated);
+
+    assertEquals(2, generated.getDeclaredMethod("sum", Object.class)
+        .invoke(null, true));
+  }
+
   private static void inspect(Class<?> generated) {
     System.out.println(generated);
     System.out.println("Fields:");
