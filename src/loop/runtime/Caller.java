@@ -20,6 +20,10 @@ public class Caller {
     return call(target, method, new Object[0]);
   }
 
+  public static void print(Object thing) {
+    System.out.println(thing);
+  }
+
   public static Object call(Object target, String method, Object... args) {
     Method toCall = null;
     for (Method candidate : target.getClass().getMethods()) {

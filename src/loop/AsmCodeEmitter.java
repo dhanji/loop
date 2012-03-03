@@ -36,6 +36,7 @@ import loop.ast.script.Unit;
 import loop.runtime.Scope;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.util.TraceClassVisitor;
@@ -320,12 +321,7 @@ class AsmCodeEmitter implements Opcodes {
         methodVisitor.visitTypeInsn(ANEWARRAY, "java/lang/Object");
         methodVisitor.visitVarInsn(ASTORE, arrayIndex);
         if (!call.args().children().isEmpty()) {
-
-          List<Node> children1 = call.args().children();
-          for (int argNumber = 0, children1Size =
-              children1.size(); argNumber < children1Size; argNumber++) {
-            Node arg = children1.get(argNumber);
-
+          for (Node arg : call.args().children()) {
             methodVisitor.visitVarInsn(ALOAD, arrayIndex);    // array
             methodVisitor.visitIntInsn(BIPUSH, 0);            // index
             emit(arg);                                        // value
@@ -453,6 +449,33 @@ class AsmCodeEmitter implements Opcodes {
           methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/runtime/Operations", "remainder",
               "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
           break;
+        case LESSER:
+          methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/runtime/Operations", "lesserThan",
+              "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Boolean;");
+          break;
+        case GREATER:
+          methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/runtime/Operations", "greaterThan",
+              "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Boolean;");
+          break;
+        case GEQ:
+          methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/runtime/Operations", "greaterThanOrEqual",
+              "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Boolean;");
+          break;
+        case EQUALS:
+          methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/runtime/Operations", "equal",
+              "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Boolean;");
+          break;
+        case AND:
+          methodVisitor.visitInsn(IAND);
+          break;
+        case OR:
+          methodVisitor.visitInsn(IOR);
+          break;
+        case NOT:
+          methodVisitor.visitInsn(INEG);
+          break;
+        default:
+          throw new UnsupportedOperationException("Unsupported binary operator " + binaryOp.toSymbol());
       }
     }
   };
@@ -474,7 +497,11 @@ class AsmCodeEmitter implements Opcodes {
     public void emitCode(Node node) {
       Variable var = (Variable) node;
 
-      methodStack.peek().visitVarInsn(ALOAD, functionStack.peek().argumentIndex.get(var.name));
+      Context context = functionStack.peek();
+      Integer index = context.argumentIndex.get(var.name);
+      if (index == null)
+        index = context.localVarIndex(var.name);
+      methodStack.peek().visitVarInsn(ALOAD, index);
     }
   };
 
@@ -728,30 +755,62 @@ class AsmCodeEmitter implements Opcodes {
     public void emitCode(Node node) {
       Comprehension comprehension = (Comprehension) node;
 
-      // First create our output list.
+      Context context = functionStack.peek();
       MethodVisitor methodVisitor = methodStack.peek();
+
+      // First create our output list.
+      int outVarIndex = context.localVarIndex(context.newLocalVariable());
+
       methodVisitor.visitTypeInsn(NEW, "java/util/ArrayList");
       methodVisitor.visitInsn(DUP);
       methodVisitor.visitMethodInsn(INVOKESPECIAL, "java/util/ArrayList", "<init>", "()V");
+      methodVisitor.visitVarInsn(ASTORE, outVarIndex);
 
-      Context context = functionStack.peek();
 
       // Now loop through the target variable.
-      String sizeVar = context.newLocalVariable();
-      int sizeVarIndex = context.localVarIndex(sizeVar);
-      String iVar = context.newLocalVariable();
-      int iVarIndex = context.localVarIndex(iVar);
+      int iVarIndex = context.localVarIndex(context.newLocalVariable());
 
-      // for int i = 0, size = collection.size()
+      // iterator = collection.iterator()
       emit(comprehension.inList());
       methodVisitor.visitTypeInsn(CHECKCAST, "java/util/Collection");
-      methodVisitor.visitMethodInsn(INVOKEINTERFACE, "java/util/Collection", "size",
-          "()I");
-      methodVisitor.visitVarInsn(ISTORE, sizeVarIndex);
-      methodVisitor.visitIntInsn(BIPUSH, 0);
-      methodVisitor.visitVarInsn(ISTORE, iVarIndex);
+      methodVisitor.visitMethodInsn(INVOKEINTERFACE, "java/util/Collection", "iterator",
+          "()Ljava/util/Iterator;");
+      methodVisitor.visitVarInsn(ASTORE, iVarIndex);
 
+      Label start = new Label();
+      Label end = new Label();
+      // {
+      // if !iterator.hasNext() jump to end
+      methodVisitor.visitLabel(start);
+      methodVisitor.visitVarInsn(ALOAD, iVarIndex);
+      methodVisitor.visitMethodInsn(INVOKEINTERFACE, "java/util/Iterator", "hasNext", "()Z");
+      methodVisitor.visitJumpInsn(IFEQ, end);
 
+      // var = iterator.next()
+      methodVisitor.visitVarInsn(ALOAD, iVarIndex);
+      methodVisitor.visitMethodInsn(INVOKEINTERFACE, "java/util/Iterator", "next",
+          "()Ljava/lang/Object;");
+      int nextIndex = context.localVarIndex(context.newLocalVariable(comprehension.var()));
+      methodVisitor.visitVarInsn(ASTORE, nextIndex);
+
+      // if (filter_expression)
+      emit(comprehension.filter());
+      methodVisitor.visitJumpInsn(IFEQ, start);
+
+      // Dump this value into the out list.
+      // out.add(iterator.next())
+      methodVisitor.visitVarInsn(ALOAD, outVarIndex);
+      methodVisitor.visitVarInsn(ALOAD, nextIndex);
+      methodVisitor.visitMethodInsn(INVOKEINTERFACE, "java/util/List", "add",
+          "(Ljava/lang/Object;)Z");
+
+      methodVisitor.visitInsn(POP);   // Discard result of add()
+      methodVisitor.visitJumpInsn(GOTO, start);
+      // }
+      methodVisitor.visitLabel(end);
+
+      // Finally.
+      methodVisitor.visitVarInsn(ALOAD, outVarIndex);
     }
   };
 

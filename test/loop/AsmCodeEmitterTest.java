@@ -125,6 +125,21 @@ public class AsmCodeEmitterTest {
 
 
   @Test
+  public final void emitEquals() throws Exception {
+    Parser parser = new Parser(new Tokenizer("sub(x, y) ->\n  x == y\n").tokenize());
+    Unit unit = parser.script();
+    unit.reduceAll();
+
+    Class<?> generated = new AsmCodeEmitter(unit).write(unit);
+
+    // Inspect.
+    inspect(generated);
+
+    assertEquals(true, generated.getDeclaredMethod("sub", Object.class, Object.class).invoke(null, "hi", "hi"));
+  }
+
+
+  @Test
   public final void emitListAddition() throws Exception {
     Parser parser = new Parser(new Tokenizer("add(x, y) ->\n  x + y\n").tokenize());
     Unit unit = parser.script();
@@ -137,6 +152,22 @@ public class AsmCodeEmitterTest {
 
     assertEquals(Arrays.asList(10, 20), generated.getDeclaredMethod("add", Object.class, Object.class)
         .invoke(null, Arrays.asList(10), Arrays.asList(20)));
+  }
+
+
+  @Test
+  public final void emitListComprehension() throws Exception {
+    Parser parser = new Parser(new Tokenizer("sum(ls) ->\n  i for i in ls if i < 25\n").tokenize());
+    Unit unit = parser.script();
+    unit.reduceAll();
+
+    Class<?> generated = new AsmCodeEmitter(unit).write(unit);
+
+    // Inspect.
+    inspect(generated);
+
+    assertEquals(Arrays.asList(10, 20), generated.getDeclaredMethod("sum", Object.class)
+        .invoke(null, Arrays.asList(10, 20, 30, 40)));
   }
 
   private static void inspect(Class<?> generated) {

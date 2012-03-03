@@ -96,4 +96,60 @@ public class Operations {
 
     throw new IllegalArgumentException("Cannot subtract objects of type " + arg0.getClass() + " and " + arg1.getClass());
   }
+
+  public static Boolean lesserThan(Object arg0, Object arg1) {
+    if (arg0 instanceof Integer) {
+      return (Integer)arg0 < (Integer)arg1;
+    } else if (arg0 instanceof Double) {
+      return (Double)arg0 < (Double)arg1;
+    } else if (arg0 instanceof Long) {
+      return (Long)arg0 < (Long)arg1;
+    }
+
+    throw new IllegalArgumentException("Cannot compare objects of type " + arg0.getClass() + " and " + arg1.getClass());
+  }
+
+  public static Boolean greaterThan(Object arg0, Object arg1) {
+    if (arg0 instanceof Integer) {
+      return (Integer)arg0 > (Integer)arg1;
+    } else if (arg0 instanceof Double) {
+      return (Double)arg0 > (Double)arg1;
+    } else if (arg0 instanceof Long) {
+      return (Long)arg0 > (Long)arg1;
+    }
+
+    throw new IllegalArgumentException("Cannot compare objects of type " + arg0.getClass() + " and " + arg1.getClass());
+  }
+
+  public static Boolean greaterThanOrEqual(Object arg0, Object arg1) {
+    if (arg0 instanceof Integer) {
+      return (Integer)arg0 >= (Integer)arg1;
+    } else if (arg0 instanceof Double) {
+      return (Double)arg0 >= (Double)arg1;
+    } else if (arg0 instanceof Long) {
+      return (Long)arg0 >= (Long)arg1;
+    }
+
+    throw new IllegalArgumentException("Cannot compare objects of type " + arg0.getClass() + " and " + arg1.getClass());
+  }
+
+  public static Boolean lesserThanOrEqual(Object arg0, Object arg1) {
+    if (arg0 instanceof Integer) {
+      return (Integer)arg0 <= (Integer)arg1;
+    } else if (arg0 instanceof Double) {
+      return (Double)arg0 <= (Double)arg1;
+    } else if (arg0 instanceof Long) {
+      return (Long)arg0 <= (Long)arg1;
+    }
+
+    throw new IllegalArgumentException("Cannot compare objects of type " + arg0.getClass() + " and " + arg1.getClass());
+  }
+
+  public static Boolean equal(Object arg0, Object arg1) {
+    if (arg0 == null) {
+      return arg1 == null;
+    }
+
+    return arg0.equals(arg1);
+  }
 }

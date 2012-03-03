@@ -1,5 +1,7 @@
 package loop;
 
+import loop.ast.Variable;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -28,6 +30,12 @@ class Context {
     localVarIndex.put(var, localVars.size());
 
     return var;
+  }
+
+  public String newLocalVariable(Variable var) {
+    localVars.add(var.name);
+    localVarIndex.put(var.name, localVars.size());
+    return var.name;
   }
 
   public int localVarIndex(String name) {

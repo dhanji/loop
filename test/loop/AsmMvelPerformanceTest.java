@@ -28,6 +28,22 @@ public class AsmMvelPerformanceTest {
   }
 
   @Test
+  public final void valueTypedEquals() throws Exception {
+    Callable callable = new Callable() {
+
+      @Override public Method lookup(Class target) throws Exception {
+        return target.getDeclaredMethod("eq", Object.class, Object.class);
+      }
+
+      @Override public Object call(Method target) throws Exception {
+        return target.invoke(null, "mynameisinigomontoya", "mynameisinigomontoya");
+      }
+    };
+
+    time("eq(m1, m2) ->\n  m1 == m2", callable, "eq(\"mynameisinigomontoya\", \"mynameisinigomontoya\");");
+  }
+
+  @Test
   public final void loopFunctionCalling() throws Exception {
     Callable callable = new Callable() {
 
