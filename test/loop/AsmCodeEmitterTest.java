@@ -8,6 +8,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
@@ -136,6 +139,113 @@ public class AsmCodeEmitterTest {
     inspect(generated);
 
     assertEquals(true, generated.getDeclaredMethod("sub", Object.class, Object.class).invoke(null, "hi", "hi"));
+  }
+
+
+  @Test
+  public final void emitInlineListDef() throws Exception {
+    Parser parser = new Parser(new Tokenizer("fun() ->\n  [1, 2, 3]\n").tokenize());
+    Unit unit = parser.script();
+    unit.reduceAll();
+
+    Class<?> generated = new AsmCodeEmitter(unit).write(unit);
+
+    // Inspect.
+    inspect(generated);
+
+    assertEquals(Arrays.asList(1,2,3), generated.getDeclaredMethod("fun").invoke(null));
+  }
+
+  @Test
+  public final void emitInlineSetDef() throws Exception {
+    Parser parser = new Parser(new Tokenizer("fun() ->\n  {1, 2, 3}\n").tokenize());
+    Unit unit = parser.script();
+    unit.reduceAll();
+
+    Class<?> generated = new AsmCodeEmitter(unit).write(unit);
+
+    // Inspect.
+    inspect(generated);
+
+    assertEquals(new HashSet<Integer>(Arrays.asList(1,2,3)), generated.getDeclaredMethod("fun").invoke(null));
+  }
+
+
+  @Test
+  public final void emitIndexIntoList() throws Exception {
+    Parser parser = new Parser(new Tokenizer("fun(ls) ->\n  ls[1]\n").tokenize());
+    Unit unit = parser.script();
+    unit.reduceAll();
+
+    Class<?> generated = new AsmCodeEmitter(unit).write(unit, true);
+
+    // Inspect.
+    inspect(generated);
+
+    assertEquals(2, generated.getDeclaredMethod("fun", Object.class).invoke(null, Arrays.asList(1, 2, 3)));
+  }
+
+
+  @Test
+  public final void emitIndexIntoList2() throws Exception {
+    Parser parser = new Parser(new Tokenizer("fun(ls) ->\n  ls[1..3]\n").tokenize());
+    Unit unit = parser.script();
+    unit.reduceAll();
+
+    Class<?> generated = new AsmCodeEmitter(unit).write(unit, true);
+
+    // Inspect.
+    inspect(generated);
+
+    assertEquals(Arrays.asList(2, 3), generated.getDeclaredMethod("fun", Object.class).invoke(null, Arrays.asList(1, 2, 3)));
+  }
+
+  @Test
+  public final void emitIndexIntoList3() throws Exception {
+    Parser parser = new Parser(new Tokenizer("fun(ls) ->\n  ls[1..]\n").tokenize());
+    Unit unit = parser.script();
+    unit.reduceAll();
+
+    Class<?> generated = new AsmCodeEmitter(unit).write(unit, true);
+
+    // Inspect.
+    inspect(generated);
+
+    assertEquals(Arrays.asList(2, 3), generated.getDeclaredMethod("fun", Object.class).invoke(null, Arrays.asList(1, 2, 3)));
+  }
+
+
+  @Test
+  public final void emitIndexIntoList4() throws Exception {
+    Parser parser = new Parser(new Tokenizer("fun(ls) ->\n  ls[..2]\n").tokenize());
+    Unit unit = parser.script();
+    unit.reduceAll();
+
+    Class<?> generated = new AsmCodeEmitter(unit).write(unit, true);
+
+    // Inspect.
+    inspect(generated);
+
+    assertEquals(Arrays.asList(1, 2), generated.getDeclaredMethod("fun", Object.class).invoke(null, Arrays.asList(1, 2, 3)));
+  }
+
+
+  @Test
+  public final void emitInlineMapDef() throws Exception {
+    Parser parser = new Parser(new Tokenizer("fun() ->\n  [1: 'a', 2: 'b', 3: 'c']\n").tokenize());
+    Unit unit = parser.script();
+    unit.reduceAll();
+
+    Class<?> generated = new AsmCodeEmitter(unit).write(unit);
+
+    // Inspect.
+    inspect(generated);
+
+    Map<Integer, String> map = new HashMap<Integer, String>();
+    map.put(1, "a");
+    map.put(2, "b");
+    map.put(3, "c");
+    assertEquals(map, generated.getDeclaredMethod("fun").invoke(null));
   }
 
 

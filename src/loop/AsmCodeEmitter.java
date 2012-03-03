@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
@@ -55,8 +56,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * @author dhanji@gmail.com (Dhanji R. Prasanna)
  */
-@SuppressWarnings({"FieldCanBeLocal"})
-class AsmCodeEmitter implements Opcodes {
+@SuppressWarnings({"FieldCanBeLocal"}) class AsmCodeEmitter implements Opcodes {
   private static final AtomicInteger functionNameSequence = new AtomicInteger();
   private static final Map<String, String> BINARY_OP_TRANSLATIONS = new HashMap<String, String>();
   private static final String AND = " && ";
@@ -458,7 +458,8 @@ class AsmCodeEmitter implements Opcodes {
               "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Boolean;");
           break;
         case GEQ:
-          methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/runtime/Operations", "greaterThanOrEqual",
+          methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/runtime/Operations",
+              "greaterThanOrEqual",
               "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Boolean;");
           break;
         case EQUALS:
@@ -475,7 +476,8 @@ class AsmCodeEmitter implements Opcodes {
           methodVisitor.visitInsn(INEG);
           break;
         default:
-          throw new UnsupportedOperationException("Unsupported binary operator " + binaryOp.toSymbol());
+          throw new UnsupportedOperationException(
+              "Unsupported binary operator " + binaryOp.toSymbol());
       }
     }
   };
@@ -516,7 +518,7 @@ class AsmCodeEmitter implements Opcodes {
 
       // Emit int wrappers.
       MethodVisitor methodVisitor = methodStack.peek();
-      methodVisitor.visitLdcInsn(intLiteral.value);
+      methodVisitor.visitIntInsn(BIPUSH, intLiteral.value);
       methodVisitor.visitMethodInsn(INVOKESTATIC, "java/lang/Integer", "valueOf",
           "(I)Ljava/lang/Integer;");
 
@@ -655,21 +657,27 @@ class AsmCodeEmitter implements Opcodes {
     public void emitCode(Node node) {
       InlineListDef inlineListDef = (InlineListDef) node;
 
-      if (inlineListDef.isSet) {
-        append("new java.util.HashSet(");
-      }
-      append('[');
-      trackLineAndColumn(inlineListDef);
-      final List<Node> children = inlineListDef.children();
-      for (int i = 0, childrenSize = children.size(); i < childrenSize; i++) {
-        emit(children.get(i));
-        if (i < childrenSize - 1)
-          append(", ");
-      }
-      append(']');
+      MethodVisitor methodVisitor = methodStack.peek();
+      Context context = functionStack.peek();
 
-      if (inlineListDef.isSet)
-        append(")");
+      String listType = inlineListDef.isSet ? "java/util/HashSet" : "java/util/ArrayList";
+
+      int listVar = context.localVarIndex(context.newLocalVariable());
+      methodVisitor.visitTypeInsn(NEW, listType);
+      methodVisitor.visitInsn(DUP);
+      methodVisitor.visitMethodInsn(INVOKESPECIAL, listType, "<init>", "()V");
+      methodVisitor.visitVarInsn(ASTORE, listVar);
+
+      for (Node child : inlineListDef.children()) {
+        methodVisitor.visitVarInsn(ALOAD, listVar);
+        emit(child);
+
+        methodVisitor.visitMethodInsn(INVOKEINTERFACE, "java/util/Collection", "add",
+            "(Ljava/lang/Object;)Z");
+        methodVisitor.visitInsn(POP); // discard result of add()
+      }
+
+      methodVisitor.visitVarInsn(ALOAD, listVar);
     }
   };
 
@@ -678,29 +686,29 @@ class AsmCodeEmitter implements Opcodes {
     public void emitCode(Node node) {
       InlineMapDef inlineMapDef = (InlineMapDef) node;
 
-      if (inlineMapDef.isTree)
-        append("new java.util.TreeMap(");
-      append('[');
+      MethodVisitor methodVisitor = methodStack.peek();
+      Context context = functionStack.peek();
 
-      trackLineAndColumn(inlineMapDef);
-      final List<Node> children = inlineMapDef.children();
-      if (children.isEmpty())
-        append(':');
-      else
-        for (int i = 0, childrenSize = children.size(); i < childrenSize; i++) {
-          emit(children.get(i));
-          if (i < childrenSize - 1) {
+      String mapType = inlineMapDef.isTree ? "java/util/TreeMap" : "java/util/HashMap";
 
-            // On every other node, emit a ','
-            if (i % 2 != 0)
-              append(", ");
-            else
-              append(": ");
-          }
-        }
-      append(']');
-      if (inlineMapDef.isTree)
-        append(')');
+      int mapVar = context.localVarIndex(context.newLocalVariable());
+      methodVisitor.visitTypeInsn(NEW, mapType);
+      methodVisitor.visitInsn(DUP);
+      methodVisitor.visitMethodInsn(INVOKESPECIAL, mapType, "<init>", "()V");
+      methodVisitor.visitVarInsn(ASTORE, mapVar);
+
+      for (Iterator<Node> iterator = inlineMapDef.children().iterator(); iterator.hasNext(); ) {
+        Node key = iterator.next();
+        methodVisitor.visitVarInsn(ALOAD, mapVar);
+        emit(key);
+        emit(iterator.next()); // value.
+
+        methodVisitor.visitMethodInsn(INVOKEINTERFACE, "java/util/Map", "put",
+            "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
+        methodVisitor.visitInsn(POP);   // disard put() result
+      }
+
+      methodVisitor.visitVarInsn(ALOAD, mapVar);
     }
   };
 
@@ -742,11 +750,30 @@ class AsmCodeEmitter implements Opcodes {
     @Override
     public void emitCode(Node node) {
       IndexIntoList indexIntoList = (IndexIntoList) node;
-      append('[');
 
-      trackLineAndColumn(indexIntoList);
-      emit(indexIntoList.from());
-      append(']');
+      MethodVisitor methodVisitor = methodStack.peek();
+
+      Node from = indexIntoList.from();
+      if (from != null)
+        emit(from);
+      boolean hasTo = indexIntoList.to() != null;
+      if (hasTo) {
+        emit(indexIntoList.to());
+
+        if (indexIntoList.isSlice() && from == null)
+          methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/runtime/Collections", "sliceTo",
+              "(Ljava/lang/Object;Ljava/lang/Integer;)Ljava/lang/Object;");
+        else
+          methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/runtime/Collections", "obtain",
+              "(Ljava/lang/Object;Ljava/lang/Integer;Ljava/lang/Integer;)Ljava/lang/Object;");
+      } else {
+        if (indexIntoList.isSlice())
+          methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/runtime/Collections", "sliceFrom",
+              "(Ljava/lang/Object;Ljava/lang/Integer;)Ljava/lang/Object;");
+        else
+          methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/runtime/Collections", "obtain",
+              "(Ljava/lang/Object;Ljava/lang/Integer;)Ljava/lang/Object;");
+      }
     }
   };
 
@@ -794,8 +821,13 @@ class AsmCodeEmitter implements Opcodes {
       methodVisitor.visitVarInsn(ASTORE, nextIndex);
 
       // if (filter_expression)
-      emit(comprehension.filter());
-      methodVisitor.visitJumpInsn(IFEQ, start);
+      if (comprehension.filter() != null) {
+        emit(comprehension.filter());
+        // Convert to primitive type.
+        methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Boolean", "booleanValue",
+            "()Z");
+        methodVisitor.visitJumpInsn(IFEQ, start);
+      }
 
       // Dump this value into the out list.
       // out.add(iterator.next())
@@ -978,7 +1010,8 @@ class AsmCodeEmitter implements Opcodes {
 
     StringBuilder inbody = new StringBuilder();
     boolean splittable = false;
-    String lastIndex = context.newLocalVariable();      // The last index of split (i.e. pattern delimiter).
+    String lastIndex =
+        context.newLocalVariable();      // The last index of split (i.e. pattern delimiter).
     inbody.append(lastIndex).append(" = -1;\n");
 
     int ifCount = 0;
