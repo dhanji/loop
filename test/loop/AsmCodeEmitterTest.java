@@ -7,6 +7,7 @@ import org.junit.Test;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 
 import static org.junit.Assert.assertEquals;
 
@@ -65,6 +66,21 @@ public class AsmCodeEmitterTest {
 
 
   @Test
+  public final void emitCallLoopFunctionWithPrimitives() throws Exception {
+    Parser parser = new Parser(new Tokenizer("puts(num) ->\n  num\n\nmain() ->\n  puts(20)\n").tokenize());
+    Unit unit = parser.script();
+    unit.reduceAll();
+
+    Class<?> generated = new AsmCodeEmitter(unit).write(unit, true);
+
+    // Inspect.
+    inspect(generated);
+
+    assertEquals(20, generated.getDeclaredMethod("main").invoke(null));
+  }
+
+
+  @Test
   public final void emitNumericAddition() throws Exception {
     Parser parser = new Parser(new Tokenizer("add(x, y) ->\n  x + y\n").tokenize());
     Unit unit = parser.script();
@@ -76,6 +92,51 @@ public class AsmCodeEmitterTest {
     inspect(generated);
 
     assertEquals(30, generated.getDeclaredMethod("add", Object.class, Object.class).invoke(null, 10, 20));
+  }
+
+
+  @Test
+  public final void emitNumericSubtraction() throws Exception {
+    Parser parser = new Parser(new Tokenizer("sub(x, y) ->\n  x - y\n").tokenize());
+    Unit unit = parser.script();
+    unit.reduceAll();
+
+    Class<?> generated = new AsmCodeEmitter(unit).write(unit);
+
+    // Inspect.
+    inspect(generated);
+
+    assertEquals(-10, generated.getDeclaredMethod("sub", Object.class, Object.class).invoke(null, 10, 20));
+  }
+
+  @Test
+  public final void emitNumericArithmetic() throws Exception {
+    Parser parser = new Parser(new Tokenizer("sub(x, y) ->\n  ((100 + x - y) * 10 / 2) % 40\n").tokenize());
+    Unit unit = parser.script();
+    unit.reduceAll();
+
+    Class<?> generated = new AsmCodeEmitter(unit).write(unit);
+
+    // Inspect.
+    inspect(generated);
+
+    assertEquals(10, generated.getDeclaredMethod("sub", Object.class, Object.class).invoke(null, 10, 20));
+  }
+
+
+  @Test
+  public final void emitListAddition() throws Exception {
+    Parser parser = new Parser(new Tokenizer("add(x, y) ->\n  x + y\n").tokenize());
+    Unit unit = parser.script();
+    unit.reduceAll();
+
+    Class<?> generated = new AsmCodeEmitter(unit).write(unit);
+
+    // Inspect.
+    inspect(generated);
+
+    assertEquals(Arrays.asList(10, 20), generated.getDeclaredMethod("add", Object.class, Object.class)
+        .invoke(null, Arrays.asList(10), Arrays.asList(20)));
   }
 
   private static void inspect(Class<?> generated) {

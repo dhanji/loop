@@ -4,8 +4,8 @@ import loop.LoopClassLoader;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * Reflective method caller.
@@ -13,25 +13,8 @@ import java.util.List;
  * @author dhanji@gmail.com (Dhanji R. Prasanna)
  */
 public class Caller {
-  public static Object add(Object arg0, Object arg1) {
-    if (arg0 instanceof Integer) {
-      return (Integer)arg0 + (Integer)arg1;
-    } else if (arg0 instanceof List) {
-      List left = (List) arg0;
-      List right = (List) arg1;
-      List out = new ArrayList(left.size() + right.size());
-      out.addAll(left);
-      out.addAll(right);
-
-      return out;
-    } else if (arg0 instanceof Double) {
-      return (Double)arg0 + (Double)arg1;
-    } else if (arg0 instanceof Long) {
-      return (Long)arg0 + (Long)arg1;
-    }
-
-    throw new IllegalArgumentException("Cannot add objects of type " + arg0.getClass() + " and " + arg1.getClass());
-  }
+  public static volatile ConcurrentMap<String, Method> staticMethodCache =
+      new ConcurrentHashMap<String, Method>();
 
   public static Object call(Object target, String method) {
     return call(target, method, new Object[0]);
@@ -68,23 +51,31 @@ public class Caller {
   }
 
   public static Object callStatic(String target, String method, Object... args) {
-    Method toCall = null;
+    Method toCall;
+
     try {
-      final Class<?> clazz = Class.forName(target, true, LoopClassLoader.CLASS_LOADER);
-      for (Method candidate : clazz.getMethods()) {
-        if (candidate.getName().equals(method)) {
-          toCall = candidate;
-          break;
-        }
-      }
+      final String key = target + method;
+      toCall = staticMethodCache.get(key);
 
       if (toCall == null) {
-        for (Method candidate : clazz.getDeclaredMethods()) {
+        final Class<?> clazz = Class.forName(target, true, LoopClassLoader.CLASS_LOADER);
+        for (Method candidate : clazz.getMethods()) {
           if (candidate.getName().equals(method)) {
             toCall = candidate;
             break;
           }
         }
+
+        if (toCall == null) {
+          for (Method candidate : clazz.getDeclaredMethods()) {
+            if (candidate.getName().equals(method)) {
+              toCall = candidate;
+              break;
+            }
+          }
+        }
+
+        staticMethodCache.put(key, toCall);
       }
 
       return toCall.invoke(target, args);

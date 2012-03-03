@@ -142,6 +142,10 @@ class AsmCodeEmitter implements Opcodes {
   private final Stack<MethodVisitor> methodStack = new Stack<MethodVisitor>();
 
   public Class<?> write(Unit unit) {
+    return write(unit, false);
+  }
+
+  public Class<?> write(Unit unit, boolean print) {
     Thread.currentThread().setContextClassLoader(LoopClassLoader.CLASS_LOADER);
 
     // We always emit functions as static into a containing Java class.
@@ -156,11 +160,13 @@ class AsmCodeEmitter implements Opcodes {
 
     classWriter.visitEnd();
 
-    try {
-      new ClassReader(new ByteArrayInputStream(classWriter.toByteArray())).accept(new TraceClassVisitor(
-          new PrintWriter(System.out)), ClassReader.SKIP_DEBUG);
-    } catch (IOException e) {
-      e.printStackTrace();
+    if (print) {
+      try {
+        new ClassReader(new ByteArrayInputStream(classWriter.toByteArray())).accept(
+            new TraceClassVisitor(new PrintWriter(System.out)), ClassReader.SKIP_DEBUG);
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
     }
 
     LoopClassLoader.CLASS_LOADER.put(javaClass, classWriter.toByteArray());
@@ -320,9 +326,9 @@ class AsmCodeEmitter implements Opcodes {
               children1.size(); argNumber < children1Size; argNumber++) {
             Node arg = children1.get(argNumber);
 
-            methodVisitor.visitVarInsn(ALOAD, arrayIndex);
-            methodVisitor.visitIntInsn(BIPUSH, 0);
-            emit(arg);
+            methodVisitor.visitVarInsn(ALOAD, arrayIndex);    // array
+            methodVisitor.visitIntInsn(BIPUSH, 0);            // index
+            emit(arg);                                        // value
 
             methodVisitor.visitInsn(AASTORE);
           }
@@ -428,7 +434,23 @@ class AsmCodeEmitter implements Opcodes {
       MethodVisitor methodVisitor = methodStack.peek();
       switch (binaryOp.operator.kind) {
         case PLUS:
-          methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/runtime/Caller", "add",
+          methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/runtime/Operations", "plus",
+              "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
+          break;
+        case MINUS:
+          methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/runtime/Operations", "minus",
+              "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
+          break;
+        case STAR:
+          methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/runtime/Operations", "multiply",
+              "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
+          break;
+        case DIVIDE:
+          methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/runtime/Operations", "divide",
+              "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
+          break;
+        case MODULUS:
+          methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/runtime/Operations", "remainder",
               "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
           break;
       }
@@ -464,8 +486,13 @@ class AsmCodeEmitter implements Opcodes {
     @Override
     public void emitCode(Node node) {
       IntLiteral intLiteral = (IntLiteral) node;
-      trackLineAndColumn(intLiteral);
-      append(intLiteral.value);
+
+      // Emit int wrappers.
+      MethodVisitor methodVisitor = methodStack.peek();
+      methodVisitor.visitLdcInsn(intLiteral.value);
+      methodVisitor.visitMethodInsn(INVOKESTATIC, "java/lang/Integer", "valueOf",
+          "(I)Ljava/lang/Integer;");
+
     }
   };
 
@@ -700,26 +727,31 @@ class AsmCodeEmitter implements Opcodes {
     @Override
     public void emitCode(Node node) {
       Comprehension comprehension = (Comprehension) node;
-      append(" (");
-      trackLineAndColumn(comprehension);
 
-      for (Node element : comprehension.projection()) {
-        replaceVarInTree(element, comprehension.var(), "$");
-        emit(element);
-      }
+      // First create our output list.
+      MethodVisitor methodVisitor = methodStack.peek();
+      methodVisitor.visitTypeInsn(NEW, "java/util/ArrayList");
+      methodVisitor.visitInsn(DUP);
+      methodVisitor.visitMethodInsn(INVOKESPECIAL, "java/util/ArrayList", "<init>", "()V");
 
-      append(" in ");
+      Context context = functionStack.peek();
+
+      // Now loop through the target variable.
+      String sizeVar = context.newLocalVariable();
+      int sizeVarIndex = context.localVarIndex(sizeVar);
+      String iVar = context.newLocalVariable();
+      int iVarIndex = context.localVarIndex(iVar);
+
+      // for int i = 0, size = collection.size()
       emit(comprehension.inList());
+      methodVisitor.visitTypeInsn(CHECKCAST, "java/util/Collection");
+      methodVisitor.visitMethodInsn(INVOKEINTERFACE, "java/util/Collection", "size",
+          "()I");
+      methodVisitor.visitVarInsn(ISTORE, sizeVarIndex);
+      methodVisitor.visitIntInsn(BIPUSH, 0);
+      methodVisitor.visitVarInsn(ISTORE, iVarIndex);
 
-      Node filter = comprehension.filter();
-      if (filter != null) {
-        // Replace all occurrences of var in filter with $.
-        replaceVarInTree(filter, comprehension.var(), "$");
 
-        append(" if ");
-        emit(filter);
-      }
-      append(") ");
     }
   };
 
@@ -887,7 +919,7 @@ class AsmCodeEmitter implements Opcodes {
 
     StringBuilder inbody = new StringBuilder();
     boolean splittable = false;
-    String lastIndex = newLocalVariable();      // The last index of split (i.e. pattern delimiter).
+    String lastIndex = context.newLocalVariable();      // The last index of split (i.e. pattern delimiter).
     inbody.append(lastIndex).append(" = -1;\n");
 
     int ifCount = 0;
@@ -901,7 +933,7 @@ class AsmCodeEmitter implements Opcodes {
           if (next instanceof StringLiteral) {
             // If the next node is a string literal, then we must split this
             // string across occurrences of the given literal.
-            String thisIndex = newLocalVariable();
+            String thisIndex = context.newLocalVariable();
             inbody.append(thisIndex).append(" = ");
             inbody.append(argument).append(".indexOf(");
             emitTo(next, inbody);
@@ -955,10 +987,6 @@ class AsmCodeEmitter implements Opcodes {
     }
 
     return new EmittedWrapping(inbody.toString(), splittable ? "\n}\n" : null);
-  }
-
-  private String newLocalVariable() {
-    return "$__" + functionNameSequence.incrementAndGet();
   }
 
   private EmittedWrapping emitListStructurePatternRule(PatternRule rule,
