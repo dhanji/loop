@@ -292,8 +292,7 @@ public class AsmCodeEmitterTest {
     // Inspect.
     inspect(generated);
 
-    assertEquals(2, generated.getDeclaredMethod("sum", Object.class)
-        .invoke(null, true));
+    assertEquals(2, generated.getDeclaredMethod("sum", Object.class).invoke(null));
   }
 
   private static void inspect(Class<?> generated) {

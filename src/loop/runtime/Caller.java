@@ -2,6 +2,7 @@ package loop.runtime;
 
 import loop.LoopClassLoader;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.concurrent.ConcurrentHashMap;
@@ -22,6 +23,49 @@ public class Caller {
 
   public static void print(Object thing) {
     System.out.println(thing);
+  }
+
+  @SuppressWarnings("unchecked")
+  public static Object instantiate(String type, Object... args) {
+    try {
+      Class<?> clazz = Class.forName(type);
+
+      // Choose the appropriate constructor.
+      Constructor ctor = null;
+      for (Constructor constructor : clazz.getConstructors()) {
+        if (constructor.getParameterTypes().length == args.length) {
+          Class[] parameterTypes = constructor.getParameterTypes();
+
+          boolean acceptable = true;
+          for (int i = 0, parameterTypesLength = parameterTypes.length; i < parameterTypesLength; i++) {
+            Class argType = parameterTypes[i];
+            Object arg = args[i];
+
+            if (arg != null && !argType.isAssignableFrom(arg.getClass())) {
+              acceptable = false;
+            }
+          }
+
+          if (acceptable)
+            ctor = constructor;
+        }
+      }
+
+      if (ctor == null)
+        throw new RuntimeException("No suitable constructor matched");
+
+      return ctor.newInstance(args);
+
+    } catch (ClassNotFoundException e) {
+      throw new RuntimeException(e);
+    } catch (InvocationTargetException e) {
+      throw new RuntimeException(e);
+    } catch (InstantiationException e) {
+      throw new RuntimeException(e);
+    } catch (IllegalAccessException e) {
+      throw new RuntimeException(e);
+    }
+
   }
 
   public static Object call(Object target, String method, Object... args) {

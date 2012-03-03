@@ -278,9 +278,7 @@ import java.util.concurrent.atomic.AtomicInteger;
     public void emitCode(Node node) {
       Computation computation = (Computation) node;
       trackLineAndColumn(computation);
-      append('(');
       emitChildren(computation);
-      append(')');
     }
   };
 
@@ -347,7 +345,7 @@ import java.util.concurrent.atomic.AtomicInteger;
     @Override
     public void emitCode(Node node) {
       ConstructorCall call = (ConstructorCall) node;
-      trackLineAndColumn(call);
+      MethodVisitor methodVisitor = methodStack.peek();
 
       // Resolve a loop type internally. Note that this makes dynamic linking
       // of Loop types impossible, but we CAN link Java binaries dynamically.
@@ -400,20 +398,16 @@ import java.util.concurrent.atomic.AtomicInteger;
 
       } else {
         // Emit Java constructor call.
-        append("new ");
-        if (call.modulePart != null)
-          append(call.modulePart);
-        append(call.name);
+        String javaType = (call.modulePart != null ? call.modulePart + '.' : "") + call.name;
 
-        append('(');
-        List<Node> children = call.args().children();
-        for (int i = 0, childrenSize = children.size(); i < childrenSize; i++) {
-          emit(children.get(i));
-
-          if (i < childrenSize - 1)
-            append(", ");
+        // TODO bundle up args into an array..
+        for (Node arg : call.args().children()) {
+          emit(arg);
         }
-        append(')');
+
+        methodVisitor.visitLdcInsn(javaType);
+        methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/runtime/Caller", "instantiate",
+            "(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/Object;");
       }
     }
   };
