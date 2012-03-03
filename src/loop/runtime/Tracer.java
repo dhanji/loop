@@ -21,11 +21,11 @@ public class Tracer {
   }
 
   public static void push(String element) {
-    tracingStack.get().push(element);
+//    tracingStack.get().push(element);
   }
 
   public static void pop() {
-    tracingStack.get().pop();
+//    tracingStack.get().pop();
   }
 
   public static Stack<String> getStackTrace() {

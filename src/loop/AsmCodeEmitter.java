@@ -423,13 +423,15 @@ class AsmCodeEmitter implements Opcodes {
     @Override
     public void emitCode(Node node) {
       BinaryOp binaryOp = (BinaryOp) node;
-      String name = BINARY_OP_TRANSLATIONS.get(binaryOp.name());
-
-      if (null == name)
-        name = binaryOp.name();
-      trackLineAndColumn(binaryOp);
-      append(' ').append(name).append(' ');
       emitOnlyChild(binaryOp);
+
+      MethodVisitor methodVisitor = methodStack.peek();
+      switch (binaryOp.operator.kind) {
+        case PLUS:
+          methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/runtime/Caller", "add",
+              "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
+          break;
+      }
     }
   };
 
@@ -448,7 +450,9 @@ class AsmCodeEmitter implements Opcodes {
   private final Emitter variableEmitter = new Emitter() {
     @Override
     public void emitCode(Node node) {
-      methodStack.peek().visitVarInsn(ALOAD, 0);
+      Variable var = (Variable) node;
+
+      methodStack.peek().visitVarInsn(ALOAD, functionStack.peek().argumentIndex.get(var.name));
     }
   };
 
@@ -528,8 +532,13 @@ class AsmCodeEmitter implements Opcodes {
 
       Context context = new Context(name);
       StringBuilder args = new StringBuilder("(");
-      for (Node arg : functionDecl.arguments().children()) {
-        context.arguments.add(((ArgDeclList.Argument) arg).name());
+      List<Node> children = functionDecl.arguments().children();
+      for (int i = 0, childrenSize = children.size(); i < childrenSize; i++) {
+        Node arg = children.get(i);
+        String argName = ((ArgDeclList.Argument) arg).name();
+        context.arguments.add(argName);
+        context.argumentIndex.put(argName, i);
+
         args.append("Ljava/lang/Object;");
       }
       args.append(")");

@@ -4,6 +4,8 @@ import loop.LoopClassLoader;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Reflective method caller.
@@ -11,6 +13,26 @@ import java.lang.reflect.Method;
  * @author dhanji@gmail.com (Dhanji R. Prasanna)
  */
 public class Caller {
+  public static Object add(Object arg0, Object arg1) {
+    if (arg0 instanceof Integer) {
+      return (Integer)arg0 + (Integer)arg1;
+    } else if (arg0 instanceof List) {
+      List left = (List) arg0;
+      List right = (List) arg1;
+      List out = new ArrayList(left.size() + right.size());
+      out.addAll(left);
+      out.addAll(right);
+
+      return out;
+    } else if (arg0 instanceof Double) {
+      return (Double)arg0 + (Double)arg1;
+    } else if (arg0 instanceof Long) {
+      return (Long)arg0 + (Long)arg1;
+    }
+
+    throw new IllegalArgumentException("Cannot add objects of type " + arg0.getClass() + " and " + arg1.getClass());
+  }
+
   public static Object call(Object target, String method) {
     return call(target, method, new Object[0]);
   }

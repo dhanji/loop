@@ -7,7 +7,6 @@ import org.junit.Test;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 
 import static org.junit.Assert.assertEquals;
 
@@ -51,8 +50,7 @@ public class AsmCodeEmitterTest {
   }
 
   @Test
-  public final void emitCallLoopFunctionWithArgs()
-      throws Exception, InvocationTargetException, IllegalAccessException {
+  public final void emitCallLoopFunctionWithArgs() throws Exception {
     Parser parser = new Parser(new Tokenizer("puts(str) ->\n  str.toLowerCase()\n\nmain() ->\n  puts('HELLO')\n").tokenize());
     Unit unit = parser.script();
     unit.reduceAll();
@@ -65,6 +63,21 @@ public class AsmCodeEmitterTest {
     assertEquals("hello", generated.getDeclaredMethod("main").invoke(null));
   }
 
+
+  @Test
+  public final void emitNumericAddition() throws Exception {
+    Parser parser = new Parser(new Tokenizer("add(x, y) ->\n  x + y\n").tokenize());
+    Unit unit = parser.script();
+    unit.reduceAll();
+
+    Class<?> generated = new AsmCodeEmitter(unit).write(unit);
+
+    // Inspect.
+    inspect(generated);
+
+    assertEquals(30, generated.getDeclaredMethod("add", Object.class, Object.class).invoke(null, 10, 20));
+  }
+
   private static void inspect(Class<?> generated) {
     System.out.println(generated);
     System.out.println("Fields:");
@@ -73,7 +86,7 @@ public class AsmCodeEmitterTest {
     }
     System.out.println("Methods:");
     for (Method method : generated.getDeclaredMethods()) {
-      System.out.println("  " + method + " " + (Modifier.isStatic(method.getModifiers()) ? "static" : ""));
+      System.out.println("  " + method + " ");
     }
   }
 }
