@@ -1,6 +1,7 @@
 package loop;
 
 import loop.ast.script.Unit;
+import loop.lang.LoopObject;
 import org.junit.After;
 import org.junit.Test;
 
@@ -281,6 +282,34 @@ public class AsmCodeEmitterTest {
     Object date = generated.getDeclaredMethod("main").invoke(null);
     assertTrue(date instanceof java.util.Date);
     assertTrue(new Date(1).equals(date));
+  }
+
+  @Test
+  public final void emitLoopConstructor() throws Exception {
+    Parser parser = new Parser(new Tokenizer("class Star ->\n" +
+        "  name\n" +
+        "  galaxy: 'Andromeda'\n" +
+        "  mass\n" +
+        "\nmain() ->\n  new Star(name: 'Proxima', mass: 123)\n").tokenize());
+    Unit unit = parser.script();
+    unit.reduceAll();
+
+    Class<?> generated = new AsmCodeEmitter(unit).write(unit);
+
+    // Inspect.
+    inspect(generated);
+
+    Object starObject = generated.getDeclaredMethod("main").invoke(null);
+    assertTrue(starObject instanceof LoopObject);
+    LoopObject star = (LoopObject) starObject;
+    assertEquals("Star", star.getType().name);
+
+    LoopObject expected = new LoopObject(star.getType());
+    expected.put("name", "Proxima");
+    expected.put("mass", 123);
+    expected.put("galaxy", "Andromeda");
+
+    assertEquals(expected, star);
   }
 
 

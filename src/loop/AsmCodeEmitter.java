@@ -354,10 +354,23 @@ import java.util.concurrent.atomic.AtomicInteger;
       // of Loop types impossible, but we CAN link Java binaries dynamically.
       ClassDecl classDecl = scope.resolve(call.name);
       if (classDecl != null) {
-        append("loop.lang.LoopClass.newInstance('").append(classDecl.name);
 
-        // If arguments are not positional, reorder and emit them correctly.
-        append("', ");
+        // Instatiate the loop object first. With the correct type
+        int objectVar = context.localVarIndex(context.newLocalVariable());
+
+        methodVisitor.visitTypeInsn(NEW, "loop/lang/LoopObject");
+        methodVisitor.visitInsn(DUP);
+
+        methodVisitor.visitTypeInsn(NEW, "loop/lang/LoopClass");
+        methodVisitor.visitInsn(DUP);
+        methodVisitor.visitLdcInsn(classDecl.name);
+        methodVisitor.visitMethodInsn(INVOKESPECIAL, "loop/lang/LoopClass", "<init>",
+            "(Ljava/lang/String;)V");
+
+        methodVisitor.visitMethodInsn(INVOKESPECIAL, "loop/lang/LoopObject", "<init>",
+            "(Lloop/lang/LoopClass;)V");
+        methodVisitor.visitVarInsn(ASTORE, objectVar);
+
 
         Map<String, Node> fields = new HashMap<String, Node>();
         for (Node nodeAssign : classDecl.children()) {
@@ -366,38 +379,33 @@ import java.util.concurrent.atomic.AtomicInteger;
             fields.put(((Variable) assignment.lhs()).name, assignment.rhs());
           }
         }
+
         List<Node> children = call.args().children();
         if (!children.isEmpty() || !fields.isEmpty()) {
-          append('[');
 
           // First emit named-args as overrides of defaults.
-          for (int i = 0, childrenSize = children.size(); i < childrenSize; i++) {
-            CallArguments.NamedArg arg = (CallArguments.NamedArg) children.get(i);
+          for (Node child : children) {
+            CallArguments.NamedArg arg = (CallArguments.NamedArg) child;
 
-            append("'").append(arg.name).append("':");
+            methodVisitor.visitVarInsn(ALOAD, objectVar);
+            methodVisitor.visitLdcInsn(arg.name);
             emit(arg.arg);
-
-            fields.remove(arg.name);
-            if (i < childrenSize - 1)
-              append(", ");
+            methodVisitor.visitMethodInsn(INVOKEINTERFACE, "java/util/Map", "put",
+                "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
           }
 
           // Now emit any remaining defaults.
-          int i = 0, fieldSize = fields.size();
           for (Map.Entry<String, Node> field : fields.entrySet()) {
-            append("'").append(field.getKey()).append("':");
+            methodVisitor.visitVarInsn(ALOAD, objectVar);
+            methodVisitor.visitLdcInsn(field.getKey());
             emit(field.getValue());
-
-            if (i < fieldSize - 1)
-              append(", ");
-
-            i++;
+            methodVisitor.visitMethodInsn(INVOKEINTERFACE, "java/util/Map", "put",
+                "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
           }
+        }
 
-          append(']');
-        } else
-          append("null");
-        append(')');
+        // Leave the object on the stack.
+        methodVisitor.visitVarInsn(ALOAD, objectVar);
 
       } else {
         // Emit Java constructor call.
