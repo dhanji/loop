@@ -347,6 +347,22 @@ public class AsmCodeEmitterTest {
 
 
   @Test
+  public final void emitJavaBeanPropertyCall() throws Exception {
+    Parser parser = new Parser(new Tokenizer("main() ->\n  new java.util.Date(1).time\n").tokenize());
+    Unit unit = parser.script();
+    unit.reduceAll();
+
+    Class<?> generated = new AsmCodeEmitter(unit).write(unit);
+
+    // Inspect.
+    inspect(generated);
+
+    Object out = generated.getDeclaredMethod("main").invoke(null);
+    assertEquals(1L, out);
+  }
+
+
+  @Test
   public final void emitListComprehension() throws Exception {
     Parser parser = new Parser(new Tokenizer("sum(ls) ->\n  i for i in ls if i < 25\n").tokenize());
     Unit unit = parser.script();

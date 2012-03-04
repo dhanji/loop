@@ -293,59 +293,58 @@ import java.util.concurrent.atomic.AtomicInteger;
       } else
         name = normalizeMethodName(call.name());
 
-      if (call.isFunction) {
-        MethodVisitor methodVisitor = methodStack.peek();
+      if (!call.isFunction)
+        name = "get" + Character.toUpperCase(name.charAt(0)) + name.substring(1);
 
-        boolean isStatic = scope.resolveFunction(call.name()) != null;
+      MethodVisitor methodVisitor = methodStack.peek();
 
-        // push name of containing type if this is a static call.
-        if (isStatic)
-          methodVisitor.visitLdcInsn("_default_");
+      boolean isStatic = scope.resolveFunction(call.name()) != null;
+      // push name of containing type if this is a static call.
+      if (isStatic)
+        methodVisitor.visitLdcInsn("_default_");
 
-        // push method name onto stack
-        methodVisitor.visitLdcInsn(name);
+      // push method name onto stack
+      methodVisitor.visitLdcInsn(name);
+
+      if (call.args() != null && !call.args().children().isEmpty()) {
         int arrayIndex = call.args().children().size();
-        boolean isNullary = arrayIndex == 0;
+        // push args as array.
+        methodVisitor.visitIntInsn(BIPUSH, arrayIndex);       // size of array
+        methodVisitor.visitTypeInsn(ANEWARRAY, "java/lang/Object");
+        methodVisitor.visitVarInsn(ASTORE, arrayIndex);
+        if (!call.args().children().isEmpty()) {
+          int i = 0;
+          for (Node arg : call.args().children()) {
+            methodVisitor.visitVarInsn(ALOAD, arrayIndex);    // array
+            methodVisitor.visitIntInsn(BIPUSH, i);            // index
+            emit(arg);                                        // value
 
-        if (!isNullary) {
-          // push args as array.
-          methodVisitor.visitIntInsn(BIPUSH, arrayIndex);       // size of array
-          methodVisitor.visitTypeInsn(ANEWARRAY, "java/lang/Object");
-          methodVisitor.visitVarInsn(ASTORE, arrayIndex);
-          if (!call.args().children().isEmpty()) {
-            int i = 0;
-            for (Node arg : call.args().children()) {
-              methodVisitor.visitVarInsn(ALOAD, arrayIndex);    // array
-              methodVisitor.visitIntInsn(BIPUSH, i);            // index
-              emit(arg);                                        // value
-
-              methodVisitor.visitInsn(AASTORE);
-              i++;
-            }
+            methodVisitor.visitInsn(AASTORE);
+            i++;
           }
+        }
 
-          // Load the array back in.
-          methodVisitor.visitVarInsn(ALOAD, arrayIndex);
+        // Load the array back in.
+        methodVisitor.visitVarInsn(ALOAD, arrayIndex);
 
-          if (isStatic) {
-            // If JDK7, use invokedynamic instead for better performance.
-            methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/runtime/Caller", "callStatic",
-                "(Ljava/lang/String;Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/Object;");
-          } else {
-            // If JDK7, use invokedynamic instead for better performance.
-            methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/runtime/Caller", "call",
-                "(Ljava/lang/Object;Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/Object;");
-          }
+        if (isStatic) {
+          // If JDK7, use invokedynamic instead for better performance.
+          methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/runtime/Caller", "callStatic",
+              "(Ljava/lang/String;Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/Object;");
         } else {
-          if (isStatic) {
-            // If JDK7, use invokedynamic instead for better performance.
-            methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/runtime/Caller", "callStatic",
-                "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/Object;");
-          } else {
-            // If JDK7, use invokedynamic instead for better performance.
-            methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/runtime/Caller", "call",
-                "(Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;");
-          }
+          // If JDK7, use invokedynamic instead for better performance.
+          methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/runtime/Caller", "call",
+              "(Ljava/lang/Object;Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/Object;");
+        }
+      } else {
+        if (isStatic) {
+          // If JDK7, use invokedynamic instead for better performance.
+          methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/runtime/Caller", "callStatic",
+              "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/Object;");
+        } else {
+          // If JDK7, use invokedynamic instead for better performance.
+          methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/runtime/Caller", "call",
+              "(Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;");
         }
       }
     }
