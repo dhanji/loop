@@ -75,6 +75,9 @@ public class Token {
     ELSE,
     WHERE,
 
+    TRUE,
+    FALSE,
+
     WHEN,
 
     // specials
@@ -133,6 +136,12 @@ public class Token {
       TOKEN_MAP.put("and", AND);
       TOKEN_MAP.put("!", NOT);
       TOKEN_MAP.put("not", NOT);
+
+
+      TOKEN_MAP.put("true", TRUE);
+      TOKEN_MAP.put("false", FALSE);
+      TOKEN_MAP.put("yes", TRUE);
+      TOKEN_MAP.put("no", FALSE);
     }
 
     /**

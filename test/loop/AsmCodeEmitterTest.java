@@ -290,6 +290,7 @@ public class AsmCodeEmitterTest {
         "  name\n" +
         "  galaxy: 'Andromeda'\n" +
         "  mass\n" +
+        "  nebula: false\n" +
         "\nmain() ->\n  new Star(name: 'Proxima', mass: 123)\n").tokenize());
     Unit unit = parser.script();
     unit.reduceAll();
@@ -307,6 +308,7 @@ public class AsmCodeEmitterTest {
     LoopObject expected = new LoopObject(star.getType());
     expected.put("name", "Proxima");
     expected.put("mass", 123);
+    expected.put("nebula", false);
     expected.put("galaxy", "Andromeda");
 
     assertEquals(expected, star);

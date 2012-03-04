@@ -1272,7 +1272,8 @@ public class Parser {
    */
   private Node literal() {
     Token token =
-        anyOf(Token.Kind.STRING, Token.Kind.INTEGER, Token.Kind.TYPE_IDENT, Token.Kind.JAVA_LITERAL);
+        anyOf(Token.Kind.STRING, Token.Kind.INTEGER, Token.Kind.TYPE_IDENT,
+            Token.Kind.JAVA_LITERAL, Token.Kind.TRUE, Token.Kind.FALSE);
     if (null == token) {
       List<Token> match = match(Token.Kind.MINUS, Token.Kind.INTEGER);
       if (null != match)
@@ -1281,6 +1282,9 @@ public class Parser {
         return null;
     }
     switch (token.kind) {
+      case TRUE:
+      case FALSE:
+        return new BooleanLiteral(token).sourceLocation(token);
       case INTEGER:
         return new IntLiteral(token.value).sourceLocation(token);
       case STRING:

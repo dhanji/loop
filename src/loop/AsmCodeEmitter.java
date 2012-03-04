@@ -2,6 +2,7 @@ package loop;
 
 import loop.ast.Assignment;
 import loop.ast.BinaryOp;
+import loop.ast.BooleanLiteral;
 import loop.ast.Call;
 import loop.ast.CallArguments;
 import loop.ast.CallChain;
@@ -114,6 +115,7 @@ import java.util.concurrent.atomic.AtomicInteger;
     EMITTERS.put(Call.class, callEmitter);
     EMITTERS.put(Computation.class, computationEmitter);
     EMITTERS.put(IntLiteral.class, intEmitter);
+    EMITTERS.put(BooleanLiteral.class, booleanEmitter);
     EMITTERS.put(TypeLiteral.class, typeLiteralEmitter);
     EMITTERS.put(Variable.class, variableEmitter);
     EMITTERS.put(JavaLiteral.class, javaLiteralEmitter);
@@ -546,6 +548,20 @@ import java.util.concurrent.atomic.AtomicInteger;
       methodVisitor.visitIntInsn(BIPUSH, intLiteral.value);
       methodVisitor.visitMethodInsn(INVOKESTATIC, "java/lang/Integer", "valueOf",
           "(I)Ljava/lang/Integer;");
+
+    }
+  };
+
+  private final Emitter booleanEmitter = new Emitter() {
+    @Override
+    public void emitCode(Node node) {
+      BooleanLiteral booleanLiteral = (BooleanLiteral) node;
+
+      // Emit int wrappers.
+      MethodVisitor methodVisitor = methodStack.peek();
+      methodVisitor.visitIntInsn(BIPUSH, booleanLiteral.value ? 1 : 0);
+      methodVisitor.visitMethodInsn(INVOKESTATIC, "java/lang/Boolean", "valueOf",
+          "(Z)Ljava/lang/Boolean;");
 
     }
   };
