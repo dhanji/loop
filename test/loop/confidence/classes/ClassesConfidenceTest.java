@@ -20,6 +20,7 @@ public class ClassesConfidenceTest {
   @Test
   public final void simpleClassDeclAndInstantiation() {
     Object run = Loop.run("test/loop/confidence/classes/classes_1.loop");
+    System.out.println(run);
     assertTrue(run instanceof LoopObject);
 
     LoopObject object = (LoopObject) run;
