@@ -19,12 +19,29 @@ import static org.junit.Assert.assertNotNull;
  *
  * @author dhanji@gmail.com (Dhanji R. Prasanna)
  */
-public class AsmMvelPerformanceTest {
-  private static final int RUNS = 500000;
+public class AsmMvelPerformanceBenchmark {
+  // Number of cycles for the benchmark, should be > 200000 for anything useful.
+  private static final int RUNS = 50;
 
   @Before
   public final void before() {
     LoopClassLoader.reset();
+  }
+
+  @Test
+  public final void newJavaObject() throws Exception {
+    Callable callable = new Callable() {
+
+      @Override public Method lookup(Class target) throws Exception {
+        return target.getDeclaredMethod("fun");
+      }
+
+      @Override public Object call(Method target) throws Exception {
+        return target.invoke(null);
+      }
+    };
+
+    time("fun() ->\n  new loop.TestObjectWithUnaryCtor(23)", callable, "fun();");
   }
 
   @Test

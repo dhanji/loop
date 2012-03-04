@@ -2,7 +2,6 @@ package loop;
 
 import loop.runtime.Caller;
 
-import java.lang.reflect.Method;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -44,7 +43,7 @@ public class LoopClassLoader extends ClassLoader {
   }
 
   public static void reset() {
-    Caller.staticMethodCache = new ConcurrentHashMap<String, Method>();
+    Caller.reset();
     CLASS_LOADER = new LoopClassLoader();
     Thread.currentThread().setContextClassLoader(CLASS_LOADER);
   }

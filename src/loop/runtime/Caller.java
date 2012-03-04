@@ -5,6 +5,11 @@ import loop.LoopClassLoader;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -13,9 +18,27 @@ import java.util.concurrent.ConcurrentMap;
  *
  * @author dhanji@gmail.com (Dhanji R. Prasanna)
  */
+@SuppressWarnings("unchecked")
 public class Caller {
-  public static volatile ConcurrentMap<String, Method> staticMethodCache =
+  private static final Map<Class, Set<Class>> compatibleTypes = new HashMap<Class, Set<Class>>();
+  static {
+    compatibleTypes.put(long.class, new HashSet<Class>(
+        Arrays.asList(int.class, Short.class, short.class, Integer.class, Long.class, Byte.class,
+            byte.class)));
+    compatibleTypes.put(int.class, new HashSet<Class>(
+        Arrays.asList(short.class, Short.class, Integer.class, Byte.class, byte.class)));
+  }
+
+  // Caches for high performance.
+  private static volatile ConcurrentMap<String, Method> staticMethodCache =
       new ConcurrentHashMap<String, Method>();
+  private static volatile ConcurrentMap<String, Constructor> staticConstructorCache =
+      new ConcurrentHashMap<String, Constructor>();
+
+  public static void reset() {
+    staticConstructorCache = new ConcurrentHashMap<String, Constructor>();
+    staticMethodCache = new ConcurrentHashMap<String, Method>();
+  }
 
   public static Object call(Object target, String method) {
     return call(target, method, new Object[0]);
@@ -30,25 +53,43 @@ public class Caller {
     try {
       Class<?> clazz = Class.forName(type);
 
-      // Choose the appropriate constructor.
-      Constructor ctor = null;
-      for (Constructor constructor : clazz.getConstructors()) {
-        if (constructor.getParameterTypes().length == args.length) {
-          Class[] parameterTypes = constructor.getParameterTypes();
+      String key = type + ':' + args.length;
+      Constructor ctor = staticConstructorCache.get(key);
 
-          boolean acceptable = true;
-          for (int i = 0, parameterTypesLength = parameterTypes.length; i < parameterTypesLength; i++) {
-            Class argType = parameterTypes[i];
-            Object arg = args[i];
+      if (null == ctor) {
 
-            if (arg != null && !argType.isAssignableFrom(arg.getClass())) {
-              acceptable = false;
+        boolean cache = true;
+
+        // Choose the appropriate constructor.
+        for (Constructor constructor : clazz.getConstructors()) {
+          if (constructor.getParameterTypes().length == args.length) {
+            Class[] parameterTypes = constructor.getParameterTypes();
+
+            // Don't cache constructors if there are other ctors of the same length, as
+            // they need to be resolved each time.
+            if (ctor != null && ctor.getParameterTypes().length == parameterTypes.length)
+              cache = false;
+
+            boolean acceptable = true;
+            for (int i = 0, parameterTypesLength = parameterTypes.length;
+                 i < parameterTypesLength;
+                 i++) {
+              Class argType = parameterTypes[i];
+              Object arg = args[i];
+
+              if (arg != null && !isAssignable(argType, arg)) {
+                acceptable = false;
+              }
+            }
+
+            if (acceptable) {
+              ctor = constructor;
             }
           }
-
-          if (acceptable)
-            ctor = constructor;
         }
+
+        if (ctor != null && cache)
+          staticConstructorCache.put(key, ctor);
       }
 
       if (ctor == null)
@@ -65,7 +106,16 @@ public class Caller {
     } catch (IllegalAccessException e) {
       throw new RuntimeException(e);
     }
+  }
 
+  private static boolean isAssignable(Class argType, Object arg) {
+    Set<Class> compatible = compatibleTypes.get(argType);
+    if (compatible != null) {
+      return compatible.contains(arg.getClass());
+    }
+
+    return (Number.class.isAssignableFrom(argType) && Number.class.isAssignableFrom(arg.getClass()))
+        || argType.isAssignableFrom(arg.getClass());
   }
 
   public static Object call(Object target, String method, Object... args) {
@@ -89,8 +139,9 @@ public class Caller {
     try {
       return toCall.invoke(target, args);
     } catch (NullPointerException e) {
-      throw new RuntimeException("No such method could be resolved: " + method + " on type " + target
-          .getClass());
+      throw new RuntimeException(
+          "No such method could be resolved: " + method + " on type " + target
+              .getClass());
     } catch (IllegalAccessException e) {
       throw new RuntimeException(e.getCause());
     } catch (InvocationTargetException e) {
@@ -128,7 +179,8 @@ public class Caller {
 
       return toCall.invoke(target, args);
     } catch (NullPointerException e) {
-      throw new RuntimeException("No such method could be resolved: " + method + " on type " + target);
+      throw new RuntimeException(
+          "No such method could be resolved: " + method + " on type " + target);
     } catch (IllegalAccessException e) {
       throw new RuntimeException(e.getCause());
     } catch (InvocationTargetException e) {

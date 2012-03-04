@@ -262,7 +262,7 @@ import java.util.concurrent.atomic.AtomicInteger;
       emit(expression.children().get(0));
       methodVisitor.visitTypeInsn(CHECKCAST, "java/lang/Boolean");
       methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Boolean", "booleanValue", "()Z");
-      methodVisitor.visitJumpInsn(IFNE, elseBranch);
+      methodVisitor.visitJumpInsn(IFEQ, elseBranch);
 
       emit(expression.children().get(1));
       methodVisitor.visitJumpInsn(GOTO, end);
@@ -316,12 +316,14 @@ import java.util.concurrent.atomic.AtomicInteger;
         methodVisitor.visitTypeInsn(ANEWARRAY, "java/lang/Object");
         methodVisitor.visitVarInsn(ASTORE, arrayIndex);
         if (!call.args().children().isEmpty()) {
+          int i = 0;
           for (Node arg : call.args().children()) {
             methodVisitor.visitVarInsn(ALOAD, arrayIndex);    // array
-            methodVisitor.visitIntInsn(BIPUSH, 0);            // index
+            methodVisitor.visitIntInsn(BIPUSH, i);            // index
             emit(arg);                                        // value
 
             methodVisitor.visitInsn(AASTORE);
+            i++;
           }
         }
 
@@ -346,6 +348,7 @@ import java.util.concurrent.atomic.AtomicInteger;
     public void emitCode(Node node) {
       ConstructorCall call = (ConstructorCall) node;
       MethodVisitor methodVisitor = methodStack.peek();
+      Context context = functionStack.peek();
 
       // Resolve a loop type internally. Note that this makes dynamic linking
       // of Loop types impossible, but we CAN link Java binaries dynamically.
@@ -398,16 +401,39 @@ import java.util.concurrent.atomic.AtomicInteger;
 
       } else {
         // Emit Java constructor call.
-        String javaType = (call.modulePart != null ? call.modulePart + '.' : "") + call.name;
+        String javaType = (call.modulePart != null ? call.modulePart : "") + call.name;
 
-        // TODO bundle up args into an array..
-        for (Node arg : call.args().children()) {
-          emit(arg);
+        boolean isNullary = call.args().children().isEmpty();
+        if (!isNullary) {
+          int arrayIndex = context.localVarIndex(context.newLocalVariable());
+          methodVisitor.visitIntInsn(BIPUSH, arrayIndex);       // size of array
+          methodVisitor.visitTypeInsn(ANEWARRAY, "java/lang/Object");
+          methodVisitor.visitVarInsn(ASTORE, arrayIndex);
+
+          int i = 0;
+          for (Node arg : call.args().children()) {
+            methodVisitor.visitVarInsn(ALOAD, arrayIndex);    // array
+            methodVisitor.visitIntInsn(BIPUSH, i);            // index
+            emit(arg);                                        // value
+
+            methodVisitor.visitInsn(AASTORE);
+            i++;
+          }
+
+          // push type and constructor arg array.
+          methodVisitor.visitLdcInsn(javaType);
+          methodVisitor.visitVarInsn(ALOAD, arrayIndex);
+
+          methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/runtime/Caller", "instantiate",
+              "(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/Object;");
+        } else {
+          // Otherwise invoke the Java constructor directly. We don't need to resolve it.
+          // This is an optimization.
+          javaType = javaType.replace('.', '/');
+          methodVisitor.visitTypeInsn(NEW, javaType);
+          methodVisitor.visitInsn(DUP);
+          methodVisitor.visitMethodInsn(INVOKESPECIAL, javaType, "<init>", "()V");
         }
-
-        methodVisitor.visitLdcInsn(javaType);
-        methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/runtime/Caller", "instantiate",
-            "(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/Object;");
       }
     }
   };

@@ -8,11 +8,13 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author dhanji@gmail.com (Dhanji R. Prasanna)
@@ -266,6 +268,39 @@ public class AsmCodeEmitterTest {
 
 
   @Test
+  public final void emitJavaConstructor() throws Exception {
+    Parser parser = new Parser(new Tokenizer("main() ->\n  new java.util.Date(1)\n").tokenize());
+    Unit unit = parser.script();
+    unit.reduceAll();
+
+    Class<?> generated = new AsmCodeEmitter(unit).write(unit);
+
+    // Inspect.
+    inspect(generated);
+
+    Object date = generated.getDeclaredMethod("main").invoke(null);
+    assertTrue(date instanceof java.util.Date);
+    assertTrue(new Date(1).equals(date));
+  }
+
+
+  @Test
+  public final void emitJavaNullaryConstructor() throws Exception {
+    Parser parser = new Parser(new Tokenizer("main() ->\n  new java.util.Date()\n").tokenize());
+    Unit unit = parser.script();
+    unit.reduceAll();
+
+    Class<?> generated = new AsmCodeEmitter(unit).write(unit);
+
+    // Inspect.
+    inspect(generated);
+
+    Object date = generated.getDeclaredMethod("main").invoke(null);
+    assertTrue(date instanceof java.util.Date);
+  }
+
+
+  @Test
   public final void emitListComprehension() throws Exception {
     Parser parser = new Parser(new Tokenizer("sum(ls) ->\n  i for i in ls if i < 25\n").tokenize());
     Unit unit = parser.script();
@@ -287,12 +322,12 @@ public class AsmCodeEmitterTest {
     Unit unit = parser.script();
     unit.reduceAll();
 
-    Class<?> generated = new AsmCodeEmitter(unit).write(unit, true);
+    Class<?> generated = new AsmCodeEmitter(unit).write(unit);
 
     // Inspect.
     inspect(generated);
 
-    assertEquals(2, generated.getDeclaredMethod("sum", Object.class).invoke(null));
+    assertEquals(2, generated.getDeclaredMethod("sum", Object.class).invoke(null, false));
   }
 
   private static void inspect(Class<?> generated) {
