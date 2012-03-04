@@ -21,7 +21,8 @@ import static org.junit.Assert.assertNotNull;
  */
 public class AsmMvelPerformanceBenchmark {
   // Number of cycles for the benchmark, should be > 200000 for anything useful.
-  private static final int RUNS = 50;
+  private static final int RUNS = 500000;
+  private static final int WARMUP_RUNS = 15000;
 
   @Before
   public final void before() {
@@ -154,8 +155,7 @@ public class AsmMvelPerformanceBenchmark {
 
     // Compile MVEL.
     String mvel = new MvelCodeEmitter(unit).write(unit);
-    mvel += "; " + mvelCallable;
-    Serializable compiledMvel = MVEL.compileExpression(mvel);
+    Serializable compiledMvel = MVEL.compileExpression(mvel + "; " + mvelCallable);
 
     // Assert validity.
     Object javaGen = javaCallable.call(asmCallable);
@@ -171,15 +171,15 @@ public class AsmMvelPerformanceBenchmark {
     assertEquals(javaGen, mvelGen);
 
     // Warm up JVM.
-    for (int i = 0; i < 15000; i++) {
+    for (int i = 0; i < WARMUP_RUNS; i++) {
        javaCallable.call(asmCallable);
        MVEL.executeExpression(compiledMvel, new HashMap());
     }
 
+    compiledMvel = MVEL.compileExpression(mvel + ";\n for(i = 0; i < " + RUNS + "; i++) {\n "
+        + mvelCallable + "\n}\n");
     long start = System.currentTimeMillis();
-    for (int i = 0; i < RUNS; i++) {
-      MVEL.executeExpression(compiledMvel, new HashMap());
-    }
+    MVEL.executeExpression(compiledMvel, new HashMap());
     System.out.println("Mvel runtime: " + (System.currentTimeMillis() - start));
 
     start = System.currentTimeMillis();
