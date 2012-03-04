@@ -101,12 +101,6 @@ import java.util.concurrent.atomic.AtomicInteger;
     }
   }
 
-  /**
-   * Call : 'emitCall', Computation : 'emitComputation', IntLiteral : 'emitLiteral', Variable :
-   * 'emitVariable', BinaryOp : 'emitBinaryOp', StringLiteral : 'emitString', Assignment :
-   * 'emitAssignment', InlineMapDef : 'emitMap', InlineListDef : 'emitList', IndexIntoList :
-   * 'emitIndexInto', CallChain : 'emitCallChain', PatternRule : 'emitPatternRule',
-   */
   private static final Map<Class<?>, Emitter> EMITTERS = new HashMap<Class<?>, Emitter>();
 
   AsmCodeEmitter(Scope scope) {
@@ -278,9 +272,8 @@ import java.util.concurrent.atomic.AtomicInteger;
   private final Emitter computationEmitter = new Emitter() {
     @Override
     public void emitCode(Node node) {
-      Computation computation = (Computation) node;
-      trackLineAndColumn(computation);
-      emitChildren(computation);
+      trackLineAndColumn(node);
+      emitChildren(node);
     }
   };
 
@@ -312,34 +305,47 @@ import java.util.concurrent.atomic.AtomicInteger;
         // push method name onto stack
         methodVisitor.visitLdcInsn(name);
         int arrayIndex = call.args().children().size();
+        boolean isNullary = arrayIndex == 0;
 
-        // push args as array.
-        methodVisitor.visitIntInsn(BIPUSH, arrayIndex);       // size of array
-        methodVisitor.visitTypeInsn(ANEWARRAY, "java/lang/Object");
-        methodVisitor.visitVarInsn(ASTORE, arrayIndex);
-        if (!call.args().children().isEmpty()) {
-          int i = 0;
-          for (Node arg : call.args().children()) {
-            methodVisitor.visitVarInsn(ALOAD, arrayIndex);    // array
-            methodVisitor.visitIntInsn(BIPUSH, i);            // index
-            emit(arg);                                        // value
+        if (!isNullary) {
+          // push args as array.
+          methodVisitor.visitIntInsn(BIPUSH, arrayIndex);       // size of array
+          methodVisitor.visitTypeInsn(ANEWARRAY, "java/lang/Object");
+          methodVisitor.visitVarInsn(ASTORE, arrayIndex);
+          if (!call.args().children().isEmpty()) {
+            int i = 0;
+            for (Node arg : call.args().children()) {
+              methodVisitor.visitVarInsn(ALOAD, arrayIndex);    // array
+              methodVisitor.visitIntInsn(BIPUSH, i);            // index
+              emit(arg);                                        // value
 
-            methodVisitor.visitInsn(AASTORE);
-            i++;
+              methodVisitor.visitInsn(AASTORE);
+              i++;
+            }
           }
-        }
 
-        // Load the array back in.
-        methodVisitor.visitVarInsn(ALOAD, arrayIndex);
+          // Load the array back in.
+          methodVisitor.visitVarInsn(ALOAD, arrayIndex);
 
-        if (isStatic) {
-          // If JDK7, use invokedynamic instead for better performance.
-          methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/runtime/Caller", "callStatic",
-              "(Ljava/lang/String;Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/Object;");
+          if (isStatic) {
+            // If JDK7, use invokedynamic instead for better performance.
+            methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/runtime/Caller", "callStatic",
+                "(Ljava/lang/String;Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/Object;");
+          } else {
+            // If JDK7, use invokedynamic instead for better performance.
+            methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/runtime/Caller", "call",
+                "(Ljava/lang/Object;Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/Object;");
+          }
         } else {
-          // If JDK7, use invokedynamic instead for better performance.
-          methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/runtime/Caller", "call",
-              "(Ljava/lang/Object;Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/Object;");
+          if (isStatic) {
+            // If JDK7, use invokedynamic instead for better performance.
+            methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/runtime/Caller", "callStatic",
+                "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/Object;");
+          } else {
+            // If JDK7, use invokedynamic instead for better performance.
+            methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/runtime/Caller", "call",
+                "(Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;");
+          }
         }
       }
     }
@@ -515,9 +521,8 @@ import java.util.concurrent.atomic.AtomicInteger;
       Assignment assignment = (Assignment) node;
       trackLineAndColumn(assignment);
       emit(assignment.lhs());
-      append(" = ");
+
       emit(assignment.rhs());
-      append(";\n");
     }
   };
 
@@ -588,21 +593,29 @@ import java.util.concurrent.atomic.AtomicInteger;
     @Override
     public void emitCode(Node node) {
       StringLiteral string = (StringLiteral) node;
-
       trackLineAndColumn(string);
+
       if (string.parts != null) {
-        List<Node> parts = string.parts;
-        for (int i = 0, partSize = parts.size(); i < partSize; i++) {
-          Node part = parts.get(i);
+        MethodVisitor methodVisitor = methodStack.peek();
+
+        // Emit stringbuilder for string interpolation.
+        methodVisitor.visitTypeInsn(NEW, "java/lang/StringBuilder");
+        methodVisitor.visitInsn(DUP);
+        methodVisitor.visitMethodInsn(INVOKESPECIAL, "java/lang/StringBuilder", "<init>", "()V");
+
+        for (Node part : string.parts) {
           if (part instanceof StringLiteral)
-            append('"').append(((StringLiteral) part).value).append('"');
+            methodVisitor.visitLdcInsn(((StringLiteral) part).value);
           else
             emit(part);
 
-          // Concatenate string expression.
-          if (i < partSize - 1)
-            append(" + ");
+          methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "java/lang/StringBuilder", "append",
+              "(Ljava/lang/Object;)Ljava/lang/StringBuilder;");
         }
+
+        methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "java/lang/StringBuilder", "toString",
+            "()Ljava/lang/String;");
+
       } else {
         methodStack.peek().visitLdcInsn(string.value.substring(1, string.value.length() - 1));
       }

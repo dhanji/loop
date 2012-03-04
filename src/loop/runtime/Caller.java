@@ -34,14 +34,18 @@ public class Caller {
       new ConcurrentHashMap<String, Method>();
   private static volatile ConcurrentMap<String, Constructor> staticConstructorCache =
       new ConcurrentHashMap<String, Constructor>();
+  private static volatile ConcurrentMap<String, Method> dynamicMethodCache =
+      new ConcurrentHashMap<String, Method>();
+  private static final Object[] EMPTY_ARRAY = new Object[0];
 
   public static void reset() {
     staticConstructorCache = new ConcurrentHashMap<String, Constructor>();
     staticMethodCache = new ConcurrentHashMap<String, Method>();
+    dynamicMethodCache = new ConcurrentHashMap<String, Method>();
   }
 
   public static Object call(Object target, String method) {
-    return call(target, method, new Object[0]);
+    return call(target, method, EMPTY_ARRAY);
   }
 
   public static void print(Object thing) {
@@ -89,7 +93,7 @@ public class Caller {
         }
 
         if (ctor != null && cache)
-          staticConstructorCache.put(key, ctor);
+          staticConstructorCache.putIfAbsent(key, ctor);
       }
 
       if (ctor == null)
@@ -119,21 +123,35 @@ public class Caller {
   }
 
   public static Object call(Object target, String method, Object... args) {
-    Method toCall = null;
-    for (Method candidate : target.getClass().getMethods()) {
-      if (candidate.getName().equals(method)) {
-        toCall = candidate;
-        break;
-      }
-    }
+    // This key can be improved to use a bitvector, for example.
+    String name = target.getClass().getName();
+    String key = new StringBuilder(name.length() + method.length() + 5).append(name)
+        .append(':')
+        .append(method)
+        .append(':')
+        .append(args.length)
+        .toString();
+
+    Method toCall = dynamicMethodCache.get(key);
 
     if (toCall == null) {
-      for (Method candidate : target.getClass().getDeclaredMethods()) {
-        if (candidate.getName().equals(method)) {
+      for (Method candidate : target.getClass().getMethods()) {
+        if (candidate.getName().equals(method) && candidate.getParameterTypes().length == args.length) {
           toCall = candidate;
           break;
         }
       }
+
+      if (toCall == null) {
+        for (Method candidate : target.getClass().getDeclaredMethods()) {
+          if (candidate.getName().equals(method) && candidate.getParameterTypes().length == args.length) {
+            toCall = candidate;
+            break;
+          }
+        }
+      }
+
+      dynamicMethodCache.putIfAbsent(key, toCall);
     }
 
     try {
@@ -147,6 +165,10 @@ public class Caller {
     } catch (InvocationTargetException e) {
       throw new RuntimeException(e.getCause());
     }
+  }
+
+  public static Object callStatic(String target, String method) {
+    return callStatic(target, method, EMPTY_ARRAY);
   }
 
   public static Object callStatic(String target, String method, Object... args) {

@@ -21,12 +21,28 @@ import static org.junit.Assert.assertNotNull;
  */
 public class AsmMvelPerformanceBenchmark {
   // Number of cycles for the benchmark, should be > 200000 for anything useful.
-  private static final int RUNS = 50;
+  private static final int RUNS = 500000;
   private static final int WARMUP_RUNS = 15000;
 
   @Before
   public final void before() {
     LoopClassLoader.reset();
+  }
+
+  @Test
+  public final void interpolatedStrings() throws Exception {
+    Callable callable = new Callable() {
+
+      @Override public Method lookup(Class target) throws Exception {
+        return target.getDeclaredMethod("fun", Object.class);
+      }
+
+      @Override public Object call(Method target) throws Exception {
+        return target.invoke(null, "yo");
+      }
+    };
+
+    time("fun(name) ->\n  \"hhi @{name.toLowerCase()} - @{1 + 2} >>@{5 * 4}<< @{name} @{name} \"", callable, "fun('yo');");
   }
 
   @Test

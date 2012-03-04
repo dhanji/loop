@@ -269,6 +269,21 @@ public class AsmCodeEmitterTest {
 
 
   @Test
+  public final void emitInterpolatedString() throws Exception {
+    Parser parser = new Parser(new Tokenizer("fun(name) ->\n  \"Hi, @{name.toUpperCase()}! @{name.toLowerCase()}\"\n").tokenize());
+    Unit unit = parser.script();
+    unit.reduceAll();
+
+    Class<?> generated = new AsmCodeEmitter(unit).write(unit, true);
+
+    // Inspect.
+    inspect(generated);
+
+    assertEquals("Hi, DHANJI! dhanji", generated.getDeclaredMethod("fun", Object.class).invoke(null, "Dhanji"));
+
+  }
+
+  @Test
   public final void emitJavaConstructor() throws Exception {
     Parser parser = new Parser(new Tokenizer("main() ->\n  new java.util.Date(1)\n").tokenize());
     Unit unit = parser.script();
