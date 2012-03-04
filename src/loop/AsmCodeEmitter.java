@@ -545,7 +545,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
       // Emit int wrappers.
       MethodVisitor methodVisitor = methodStack.peek();
-      methodVisitor.visitIntInsn(BIPUSH, intLiteral.value);
+      methodVisitor.visitLdcInsn(intLiteral.value);
       methodVisitor.visitMethodInsn(INVOKESTATIC, "java/lang/Integer", "valueOf",
           "(I)Ljava/lang/Integer;");
 
