@@ -519,9 +519,12 @@ import java.util.concurrent.atomic.AtomicInteger;
     public void emitCode(Node node) {
       Assignment assignment = (Assignment) node;
       trackLineAndColumn(assignment);
-      emit(assignment.lhs());
+      Variable var = (Variable) assignment.lhs();
+      Context context = functionStack.peek();
+      int lhsVar = context.localVarIndex(context.newLocalVariable(var));
 
       emit(assignment.rhs());
+      methodStack.peek().visitVarInsn(ASTORE, lhsVar);
     }
   };
 

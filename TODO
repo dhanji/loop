@@ -6,6 +6,7 @@ ASM
 x index into string
 - Basic scope verification with symbol table
 - Modules/packaging/import
+- where block
 
 - do block
 

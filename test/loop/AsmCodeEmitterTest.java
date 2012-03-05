@@ -284,6 +284,28 @@ public class AsmCodeEmitterTest {
   }
 
 
+
+  @Test
+  public final void emitWhereBlock() throws Exception {
+    Parser parser = new Parser(new Tokenizer("compute() ->\n" +
+        "  3 * year\n" +
+        "  where\n" +
+        "    day: 24\n" +
+        "    week: 7 * day\n" +
+        "    year: 52 * week\n").tokenize());
+    Unit unit = parser.script();
+    unit.reduceAll();
+
+    Class<?> generated = new AsmCodeEmitter(unit).write(unit);
+
+    // Inspect.
+    inspect(generated);
+
+    assertEquals(26208, generated.getDeclaredMethod("compute")
+        .invoke(null));
+  }
+
+
   @Test
   public final void emitMapIndexInto() throws Exception {
     Parser parser = new Parser(new Tokenizer("slice(map) ->\n  map['num']\n").tokenize());
