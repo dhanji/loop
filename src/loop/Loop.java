@@ -20,7 +20,7 @@ import java.util.regex.Pattern;
  */
 public class Loop {
   // Global config options for the runtime.
-  static volatile boolean enableStackTraces = true;
+  static volatile boolean enableStackTraces = false;
   private static final Pattern UNKNOWN_MVEL_PATTERN =
       Pattern.compile("\\[Error: unresolvable property or identifier: \\??(.*)\\]");
 

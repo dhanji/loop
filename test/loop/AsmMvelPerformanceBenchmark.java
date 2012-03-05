@@ -4,6 +4,9 @@ import loop.ast.script.Unit;
 import org.junit.Before;
 import org.junit.Test;
 import org.mvel2.MVEL;
+import org.mvel2.ParserContext;
+import org.mvel2.integration.VariableResolverFactory;
+import org.mvel2.util.VariableSpaceCompiler;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
@@ -21,7 +24,7 @@ import static org.junit.Assert.assertNotNull;
  */
 public class AsmMvelPerformanceBenchmark {
   // Number of cycles for the benchmark, should be > 200000 for anything useful.
-  private static final int RUNS = 50;
+  private static final int RUNS = 500000;
   private static final int WARMUP_RUNS = 15000;
 
   @Before
@@ -172,6 +175,7 @@ public class AsmMvelPerformanceBenchmark {
     // Compile MVEL.
     String mvel = new MvelCodeEmitter(unit).write(unit);
     Serializable compiledMvel = MVEL.compileExpression(mvel + "; " + mvelCallable);
+    System.out.println(mvel);
 
     // Assert validity.
     Object javaGen = javaCallable.call(asmCallable);
@@ -192,10 +196,18 @@ public class AsmMvelPerformanceBenchmark {
        MVEL.executeExpression(compiledMvel, new HashMap());
     }
 
-    compiledMvel = MVEL.compileExpression(mvel + ";\n for(i = 0; i < " + RUNS + "; i++) {\n "
-        + mvelCallable + "\n}\n");
+    String targetRunMvel = mvel + ";\n for(i = 0; i < " + RUNS + "; i++) {\n "
+        + mvelCallable + "\n}\n";
+
+    ParserContext parserContext = new ParserContext();
+    parserContext.addIndexedInput(new String[0]);
+
+    VariableResolverFactory factory =
+        VariableSpaceCompiler.compile(targetRunMvel, parserContext).createFactory(new Object[0]);
+    compiledMvel = MVEL.compileExpression(targetRunMvel, parserContext);
+
     long start = System.currentTimeMillis();
-    MVEL.executeExpression(compiledMvel, new HashMap());
+    MVEL.executeExpression(compiledMvel, factory);
     System.out.println("Mvel runtime: " + (System.currentTimeMillis() - start));
 
     start = System.currentTimeMillis();
