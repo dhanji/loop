@@ -519,10 +519,9 @@ import java.util.concurrent.atomic.AtomicInteger;
     public void emitCode(Node node) {
       Assignment assignment = (Assignment) node;
       trackLineAndColumn(assignment);
-      Variable var = (Variable) assignment.lhs();
       Context context = functionStack.peek();
-      int lhsVar = context.localVarIndex(context.newLocalVariable(var));
 
+      int lhsVar = context.localVarIndex(context.newLocalVariable((Variable) assignment.lhs()));
       emit(assignment.rhs());
       methodStack.peek().visitVarInsn(ASTORE, lhsVar);
     }

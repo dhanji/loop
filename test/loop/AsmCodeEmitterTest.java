@@ -77,7 +77,7 @@ public class AsmCodeEmitterTest {
     Unit unit = parser.script();
     unit.reduceAll();
 
-    Class<?> generated = new AsmCodeEmitter(unit).write(unit, true);
+    Class<?> generated = new AsmCodeEmitter(unit).write(unit);
 
     // Inspect.
     inspect(generated);
@@ -180,7 +180,7 @@ public class AsmCodeEmitterTest {
     Unit unit = parser.script();
     unit.reduceAll();
 
-    Class<?> generated = new AsmCodeEmitter(unit).write(unit, true);
+    Class<?> generated = new AsmCodeEmitter(unit).write(unit);
 
     // Inspect.
     inspect(generated);
@@ -195,7 +195,7 @@ public class AsmCodeEmitterTest {
     Unit unit = parser.script();
     unit.reduceAll();
 
-    Class<?> generated = new AsmCodeEmitter(unit).write(unit, true);
+    Class<?> generated = new AsmCodeEmitter(unit).write(unit);
 
     // Inspect.
     inspect(generated);
@@ -209,7 +209,7 @@ public class AsmCodeEmitterTest {
     Unit unit = parser.script();
     unit.reduceAll();
 
-    Class<?> generated = new AsmCodeEmitter(unit).write(unit, true);
+    Class<?> generated = new AsmCodeEmitter(unit).write(unit);
 
     // Inspect.
     inspect(generated);
@@ -224,7 +224,7 @@ public class AsmCodeEmitterTest {
     Unit unit = parser.script();
     unit.reduceAll();
 
-    Class<?> generated = new AsmCodeEmitter(unit).write(unit, true);
+    Class<?> generated = new AsmCodeEmitter(unit).write(unit);
 
     // Inspect.
     inspect(generated);
@@ -331,7 +331,7 @@ public class AsmCodeEmitterTest {
     Unit unit = parser.script();
     unit.reduceAll();
 
-    Class<?> generated = new AsmCodeEmitter(unit).write(unit, true);
+    Class<?> generated = new AsmCodeEmitter(unit).write(unit);
 
     // Inspect.
     inspect(generated);
