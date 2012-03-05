@@ -690,20 +690,6 @@ import java.util.concurrent.atomic.AtomicInteger;
   private final Emitter argDeclEmitter = new Emitter() {
     @Override
     public void emitCode(Node node) {
-      ArgDeclList argDeclList = (ArgDeclList) node;
-      append('(');
-
-      trackLineAndColumn(argDeclList);
-      List<Node> children = argDeclList.children();
-
-      for (int i = 0, childrenSize = children.size(); i < childrenSize; i++) {
-        Node child = children.get(i);
-        ArgDeclList.Argument arg = (ArgDeclList.Argument) child;
-        append(arg.name());
-        if (i < childrenSize - 1)
-          append(", ");
-      }
-      append(')');
     }
   };
 
@@ -781,22 +767,8 @@ import java.util.concurrent.atomic.AtomicInteger;
             && callChain.nullSafe
             && child instanceof Variable
             && childrenSize > 1)
-          append('?');
-
         trackLineAndColumn(child);
         emit(child);
-
-        if (i < childrenSize - 1) {
-          // Do not emit DOT if the next node is not a method or property.
-          Node next = children.get(i + 1);
-          if (next instanceof IndexIntoList)
-            continue;
-
-          if (i == childrenSize - 2 || !callChain.nullSafe)
-            append('.');
-          else
-            append(".?");
-        }
       }
     }
   };
@@ -923,6 +895,7 @@ import java.util.concurrent.atomic.AtomicInteger;
     public void emitCode(Node node) {
       PatternRule rule = (PatternRule) node;
       Context context = functionStack.peek();
+      MethodVisitor methodVisitor = methodStack.peek();
 
       if (context.arguments.isEmpty())
         throw new RuntimeException("Incorrect number of arguments for pattern matching");
@@ -933,68 +906,59 @@ import java.util.concurrent.atomic.AtomicInteger;
             + Parser.stringify(rule.patterns));
 
       List<EmittedWrapping> emitIntoBody = new ArrayList<EmittedWrapping>();
-      int mark = out.length(), emittedArgs = 0;
-      append("if (");
-      for (int i = 0, argumentsSize = context.arguments.size(); i < argumentsSize; i++) {
+      int emittedArgs = 0;
 
-        boolean wasArgumentEmitted = true;
+      Label matchedClause = new Label();
+      for (int i = 0, argumentsSize = context.arguments.size(); i < argumentsSize; i++) {
+        methodVisitor.visitVarInsn(ALOAD, i);
+
         emittedArgs++;
         Node pattern = rule.patterns.get(i);
         if (pattern instanceof ListDestructuringPattern) {
-          emitIntoBody.add(emitListDestructuringPatternRule(rule, context, i));
+          emitListDestructuringPatternRule(rule, methodVisitor, context, matchedClause, i);
         } else if (pattern instanceof ListStructurePattern) {
-          emitIntoBody.add(emitListStructurePatternRule(rule, context, i));
+          emitListStructurePatternRule(rule, methodVisitor, context, matchedClause, i);
         } else if (pattern instanceof StringLiteral
-            || pattern instanceof IntLiteral) {
-          String argument = context.arguments.get(i);
-          append(argument).append(" == ");
+            || pattern instanceof IntLiteral
+            || pattern instanceof BooleanLiteral) {
 
           emit(pattern);
+
+          if (!(pattern instanceof BooleanLiteral))
+            methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/runtime/Operations", "equal",
+                "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Boolean;");
+          methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Boolean", "booleanValue", "()V");
+
         } else if (pattern instanceof RegexLiteral) {
-          String argument = context.arguments.get(i);
-          append(argument).append(" ~= ");
-          emit(pattern);
+          methodVisitor.visitTypeInsn(CHECKCAST, "java/lang/String");
+          methodVisitor.visitLdcInsn(((RegexLiteral) pattern).value);
+          methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "java/lang/String", "matches",
+              "(Ljava/lang/String;)Z");
+
         } else if (pattern instanceof StringPattern) {
           emitIntoBody.add(emitStringPatternRule(rule, context, i));
         } else if (pattern instanceof MapPattern) {
           emitIntoBody.add(emitMapPatternRule(rule, context, i));
         } else if (pattern instanceof WildcardPattern) {
+          // Always true.
+          methodVisitor.visitJumpInsn(GOTO, matchedClause);
 
-          // If this is the last argument, then we don't need the preceding &&.
-          if (i == argumentsSize - 1) {
-            if (AND.equals(out.substring(out.length() - AND.length())))
-              out.delete(out.length() - AND.length(), out.length());
-          }
-
-          wasArgumentEmitted = false;
           emittedArgs--;
         }
-
-        if (wasArgumentEmitted && i < context.arguments.size() - 1)
-          append(AND);
       }
-
-      if (emittedArgs == 0) {
-        out.delete(mark, mark + "if (".length());
-      } else
-        append(") {\n ");
 
       for (EmittedWrapping emittedWrapping : emitIntoBody) {
         if (null != emittedWrapping)
           append(emittedWrapping.inbody);
       }
 
+      // If any pattern matched, jump to the matched clause label.
+      methodVisitor.visitJumpInsn(IFNE, matchedClause);
+      // Or error if no pattern matched
+      methodVisitor.visitLdcInsn("Non-exhaustive pattern rules");
+      methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/Loop", "error", "(Ljava/lang/String;)V");
+      methodVisitor.visitLabel(matchedClause);
       emitPatternClauses(rule);
-
-      for (EmittedWrapping emittedWrapping : emitIntoBody) {
-        if (null != emittedWrapping)
-          append(emittedWrapping.after);
-      }
-
-      if (emittedArgs == 0)
-        append(";\n");
-      else
-        append(";\n}\n");
     }
   };
 
@@ -1136,77 +1100,111 @@ import java.util.concurrent.atomic.AtomicInteger;
     return new EmittedWrapping(inbody.toString(), splittable ? "\n}\n" : null);
   }
 
-  private EmittedWrapping emitListStructurePatternRule(PatternRule rule,
-                                                       Context context,
-                                                       int argIndex) {
+  private void emitListStructurePatternRule(PatternRule rule,
+                                           MethodVisitor methodVisitor,
+                                           Context context,
+                                           Label matchedClause,
+                                           int argIndex) {
     ListStructurePattern listPattern = (ListStructurePattern) rule.patterns.get(argIndex);
-    String arg0 = context.arguments.get(argIndex);
-    append(arg0);
-    append(" is java.util.List");
+
+    Label noMatch = new Label();
+    methodVisitor.visitInsn(DUP);
+    methodVisitor.visitTypeInsn(INSTANCEOF, "java/util/List");
+    methodVisitor.visitJumpInsn(IFEQ, noMatch);
 
     if (listPattern.children().size() > 0)
-      append(" && ").append(arg0).append(".size() == ").append(listPattern.children().size());
+    methodVisitor.visitTypeInsn(CHECKCAST, "java/util/List");
+    methodVisitor.visitInsn(DUP);
+    methodVisitor.visitMethodInsn(INVOKEINTERFACE, "java/util/List", "size", "()I");
+    methodVisitor.visitLdcInsn(listPattern.children().size());
+    methodVisitor.visitJumpInsn(IF_ICMPNE, noMatch);
 
     // Slice the list by terminals in the pattern list.
     List<Node> children = listPattern.children();
-    StringBuilder inbody = new StringBuilder();
     for (int j = 0, childrenSize = children.size(); j < childrenSize; j++) {
       Node child = children.get(j);
       if (child instanceof Variable) {
         trackLineAndColumn(child);
-        inbody.append(((Variable) child).name);
 
-        inbody.append(" = ");
-        inbody.append(arg0);
-        inbody.append('[').append(j).append("];\n");
+        int localVar = context.localVarIndex(context.newLocalVariable(((Variable) child)));
+
+        methodVisitor.visitInsn(DUP);
+        methodVisitor.visitLdcInsn(j);
+        methodVisitor.visitMethodInsn(INVOKEINTERFACE, "java/util/List", "get", "(I)Ljava/lang/Object;");
+        methodVisitor.visitVarInsn(ASTORE, localVar);
       }
     }
 
-    return new EmittedWrapping(inbody.toString(), null);
+    methodVisitor.visitInsn(POP);    // Discard list as we've already tested it.
+    methodVisitor.visitJumpInsn(GOTO, matchedClause);
+    methodVisitor.visitLabel(noMatch);
   }
 
-  private EmittedWrapping emitListDestructuringPatternRule(PatternRule rule,
+  private void emitListDestructuringPatternRule(PatternRule rule,
+                                                           MethodVisitor methodVisitor,
                                                            Context context,
+                                                           Label matchedClause,
                                                            int argIndex) {
     ListDestructuringPattern listPattern = (ListDestructuringPattern) rule.patterns.get(argIndex);
-    String arg0 = context.arguments.get(argIndex);
-    append(arg0);
-    append(" is java.util.List");
+
+    Label noMatch = new Label();
+    methodVisitor.visitInsn(DUP);
+    methodVisitor.visitTypeInsn(INSTANCEOF, "java/util/List");
+    methodVisitor.visitJumpInsn(IFEQ, noMatch);
+    methodVisitor.visitTypeInsn(CHECKCAST, "java/util/List");
+    methodVisitor.visitInsn(DUP);
+    methodVisitor.visitMethodInsn(INVOKEINTERFACE, "java/util/List", "size", "()I");
+
+    int runtimeListSizeVar = context.localVarIndex(context.newLocalVariable());
+    methodVisitor.visitVarInsn(ISTORE, runtimeListSizeVar);
+    methodVisitor.visitVarInsn(ILOAD, runtimeListSizeVar);
 
     int size = listPattern.children().size();
     if (size == 0) {
-      append(" && (");
-      append(arg0);
-      append(" == empty) ");
+      methodVisitor.visitJumpInsn(IFEQ, matchedClause);
     } else if (size == 1) {
-      append(" && (");
-      append(arg0);
-      append(".size() == 1) ");
+      methodVisitor.visitIntInsn(BIPUSH, 1);
+      methodVisitor.visitJumpInsn(IFNE, matchedClause);
     } else {
       // Slice the list by terminals in the pattern list.
       int i = 0;
-      StringBuilder inbody = new StringBuilder();
       List<Node> children = listPattern.children();
       for (int j = 0, childrenSize = children.size(); j < childrenSize; j++) {
         Node child = children.get(j);
         if (child instanceof Variable) {
           trackLineAndColumn(child);
-          inbody.append(((Variable) child).name);
-          inbody.append(" = ");
-          inbody.append(arg0);
+          int localVar = context.localVarIndex(context.newLocalVariable(((Variable) child)));
 
-          if (j < childrenSize - 1)
-            inbody.append('[').append(i).append("];\n");
-          else {
-            inbody.append(".size() == 1 ? [] : ").append(arg0);
-            inbody.append(".subList(").append(i).append(',').append(arg0).append(".size());\n");
+          methodVisitor.visitInsn(DUP);  // list
+
+          if (j < childrenSize - 1) {
+            methodVisitor.visitLdcInsn(i);
+            methodVisitor.visitMethodInsn(INVOKEINTERFACE, "java/util/List", "get", "(I)[java/lang/Object;");
+            methodVisitor.visitVarInsn(ASTORE, localVar);
+          } else {
+            methodVisitor.visitVarInsn(ILOAD, runtimeListSizeVar);
+            methodVisitor.visitIntInsn(BIPUSH, 1);
+            Label storeEmptyList = new Label();
+            methodVisitor.visitJumpInsn(IF_ICMPEQ, storeEmptyList);
+
+            // Otherwise store a slice of the list.
+            methodVisitor.visitLdcInsn(i);
+            methodVisitor.visitLdcInsn(runtimeListSizeVar);
+            methodVisitor.visitMethodInsn(INVOKEINTERFACE, "java/util/List", "subList", "(I, I)Ljava/util/List;");
+            methodVisitor.visitVarInsn(ASTORE, localVar);
+
+            methodVisitor.visitLabel(storeEmptyList);
+            methodVisitor.visitFieldInsn(GETSTATIC, "java/util/Collections", "EMPTY_LIST", "[java/util/List");
+            methodVisitor.visitVarInsn(ASTORE, localVar);
           }
+
           i++;
         }
       }
 
-      return new EmittedWrapping(inbody.toString(), null);
+      methodVisitor.visitInsn(POP); // discard list as we're done with it.
     }
-    return null;
+
+    methodVisitor.visitLabel(noMatch);
   }
 }

@@ -4,9 +4,10 @@ TODO
 ASM
 - Pattern matching
 x index into string
-- Basic scope verification with symbol table
+- Basic scope verification of AST with symbol table
 - Modules/packaging/import
-- where block
+- where block - functions
+- private functions
 
 - do block
 
@@ -18,7 +19,7 @@ x Null-safety (is this possible?)
 - Tail call optimization
 - enumeration type
 - immutable types
-- Setting values in objects
+- Setting values in objects (setters)
 - Prototypal single inheritance
 - Type classes/extension methods (better than interfaces/traits)
 - Pattern matching methods on character streams

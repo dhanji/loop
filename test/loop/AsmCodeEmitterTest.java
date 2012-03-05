@@ -44,7 +44,7 @@ public class AsmCodeEmitterTest {
   @Test
   public final void emitBasicCallWithArgs()
       throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-    Parser parser = new Parser(new Tokenizer("puts(str) ->\n  str.toLowerCase()").tokenize());
+    Parser parser = new Parser(new Tokenizer("puts(str) ->\n  str.toLowerCase().toUpperCase().toLowerCase()").tokenize());
     Unit unit = parser.script();
     unit.reduceAll();
 
