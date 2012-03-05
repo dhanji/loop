@@ -101,7 +101,7 @@ import java.util.concurrent.atomic.AtomicInteger;
     }
   }
 
-  private static final Map<Class<?>, Emitter> EMITTERS = new HashMap<Class<?>, Emitter>();
+  private final Map<Class<?>, Emitter> EMITTERS = new HashMap<Class<?>, Emitter>();
 
   AsmCodeEmitter(Scope scope) {
     this.scope = scope;
