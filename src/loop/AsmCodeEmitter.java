@@ -803,12 +803,12 @@ import java.util.concurrent.atomic.AtomicInteger;
     @Override
     public void emitCode(Node node) {
       IndexIntoList indexIntoList = (IndexIntoList) node;
-
       MethodVisitor methodVisitor = methodStack.peek();
 
       Node from = indexIntoList.from();
       if (from != null)
         emit(from);
+
       boolean hasTo = indexIntoList.to() != null;
       if (hasTo) {
         emit(indexIntoList.to());

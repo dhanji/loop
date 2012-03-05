@@ -269,6 +269,22 @@ public class AsmCodeEmitterTest {
 
 
   @Test
+  public final void emitStringSlice() throws Exception {
+    Parser parser = new Parser(new Tokenizer("slice(str) ->\n  str[1..3]\n").tokenize());
+    Unit unit = parser.script();
+    unit.reduceAll();
+
+    Class<?> generated = new AsmCodeEmitter(unit).write(unit);
+
+    // Inspect.
+    inspect(generated);
+
+    assertEquals("el", generated.getDeclaredMethod("slice", Object.class)
+        .invoke(null, "Hello"));
+  }
+
+
+  @Test
   public final void emitInterpolatedString() throws Exception {
     Parser parser = new Parser(new Tokenizer("fun(name) ->\n  \"Hi, @{name.toUpperCase()}! @{name.toLowerCase()}\"\n").tokenize());
     Unit unit = parser.script();
@@ -301,12 +317,15 @@ public class AsmCodeEmitterTest {
 
   @Test
   public final void emitLoopConstructor() throws Exception {
-    Parser parser = new Parser(new Tokenizer("class Star ->\n" +
+    Parser parser = new Parser(new Tokenizer(
+        "class Star ->\n" +
         "  name\n" +
         "  galaxy: 'Andromeda'\n" +
         "  mass\n" +
         "  nebula: false\n" +
-        "\nmain() ->\n  new Star(name: 'Proxima', mass: 123)\n").tokenize());
+        "\n" +
+        "main() ->\n" +
+        "  new Star(name: 'Proxima', mass: 123)\n").tokenize());
     Unit unit = parser.script();
     unit.reduceAll();
 
