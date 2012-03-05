@@ -825,7 +825,7 @@ import java.util.concurrent.atomic.AtomicInteger;
               "(Ljava/lang/Object;Ljava/lang/Integer;)Ljava/lang/Object;");
         else
           methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/runtime/Collections", "obtain",
-              "(Ljava/lang/Object;Ljava/lang/Integer;)Ljava/lang/Object;");
+              "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
       }
     }
   };

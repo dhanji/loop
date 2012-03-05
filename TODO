@@ -22,7 +22,7 @@ x Null-safety (is this possible?)
 - Type classes/extension methods (better than interfaces/traits)
 - Pattern matching methods on character streams
 - require as (stuff)
-- index into map
+x index into map
 
 
 Algorithms

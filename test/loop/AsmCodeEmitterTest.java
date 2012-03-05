@@ -285,6 +285,25 @@ public class AsmCodeEmitterTest {
 
 
   @Test
+  public final void emitMapIndexInto() throws Exception {
+    Parser parser = new Parser(new Tokenizer("slice(map) ->\n  map['num']\n").tokenize());
+    Unit unit = parser.script();
+    unit.reduceAll();
+
+    Class<?> generated = new AsmCodeEmitter(unit).write(unit);
+
+    // Inspect.
+    inspect(generated);
+
+    Map<String, Integer> map = new HashMap<String, Integer>();
+    map.put("num", 22);
+
+    assertEquals(22, generated.getDeclaredMethod("slice", Object.class)
+        .invoke(null, map));
+  }
+
+
+  @Test
   public final void emitInterpolatedString() throws Exception {
     Parser parser = new Parser(new Tokenizer("fun(name) ->\n  \"Hi, @{name.toUpperCase()}! @{name.toLowerCase()}\"\n").tokenize());
     Unit unit = parser.script();
