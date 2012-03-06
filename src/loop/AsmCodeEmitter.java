@@ -963,7 +963,7 @@ import java.util.concurrent.atomic.AtomicInteger;
           emitListDestructuringPatternRule(rule, methodVisitor, context, matchedClause, endOfClause,
               i);
         } else if (pattern instanceof ListStructurePattern) {
-//          emitListStructurePatternRule(rule, methodVisitor, context, matchedClause, i);
+          emitListStructurePatternRule(rule, methodVisitor, context, matchedClause, endOfClause, i);
         } else if (pattern instanceof StringLiteral
             || pattern instanceof IntLiteral
             || pattern instanceof BooleanLiteral) {
@@ -1150,41 +1150,35 @@ import java.util.concurrent.atomic.AtomicInteger;
                                             MethodVisitor methodVisitor,
                                             Context context,
                                             Label matchedClause,
+                                            Label endOfClause,
                                             int argIndex) {
     ListStructurePattern listPattern = (ListStructurePattern) rule.patterns.get(argIndex);
+    List<Node> children = listPattern.children();
 
-    Label noMatch = new Label();
-    methodVisitor.visitInsn(DUP);
-    methodVisitor.visitTypeInsn(INSTANCEOF, "java/util/List");
-    methodVisitor.visitJumpInsn(IFEQ, noMatch);
-
-    if (listPattern.children().size() > 0)
-      methodVisitor.visitTypeInsn(CHECKCAST, "java/util/List");
-    methodVisitor.visitInsn(DUP);
-    methodVisitor.visitMethodInsn(INVOKEINTERFACE, "java/util/List", "size", "()I");
-    methodVisitor.visitLdcInsn(listPattern.children().size());
-    methodVisitor.visitJumpInsn(IF_ICMPNE, noMatch);
+    methodVisitor.visitInsn(POP); // get rid of arg, we dont need it (yet)
+    int runtimeListSizeVar = context.localVarIndex(RUNTIME_LIST_SIZE_VAR_PREFIX + argIndex);
+    methodVisitor.visitVarInsn(ILOAD, runtimeListSizeVar);
+    methodVisitor.visitIntInsn(BIPUSH, children.size());
+    methodVisitor.visitJumpInsn(IF_ICMPNE, endOfClause);
 
     // Slice the list by terminals in the pattern list.
-    List<Node> children = listPattern.children();
     for (int j = 0, childrenSize = children.size(); j < childrenSize; j++) {
       Node child = children.get(j);
       if (child instanceof Variable) {
         trackLineAndColumn(child);
 
+        // Store into structure vars.
         int localVar = context.localVarIndex(context.newLocalVariable(((Variable) child)));
 
-        methodVisitor.visitInsn(DUP);
-        methodVisitor.visitLdcInsn(j);
+        methodVisitor.visitVarInsn(ALOAD, argIndex);
+        methodVisitor.visitIntInsn(BIPUSH, j);      // We dont support matching >128 args ;)
         methodVisitor.visitMethodInsn(INVOKEINTERFACE, "java/util/List", "get",
             "(I)Ljava/lang/Object;");
         methodVisitor.visitVarInsn(ASTORE, localVar);
       }
     }
 
-    methodVisitor.visitInsn(POP);    // Discard list as we've already tested it.
     methodVisitor.visitJumpInsn(GOTO, matchedClause);
-    methodVisitor.visitLabel(noMatch);
   }
 
   private void emitListDestructuringPatternRule(PatternRule rule,

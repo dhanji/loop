@@ -324,6 +324,26 @@ public class AsmCodeEmitterTest {
         .invoke(null, Arrays.asList(1, 2, 3, 4, 5, 6)));
   }
 
+  @Test
+  public final void emitListStructurePatternMatchingFunction() throws Exception {
+    Parser parser = new Parser(new Tokenizer(
+        "reverse(ls) =>\n" +
+        "  []         : []\n" +
+        "  [one, two] : [two, one]\n" +
+        "  [x:xs]     : reverse(xs) + [x]\n"
+    ).tokenize());
+    Unit unit = parser.script();
+    unit.reduceAll();
+
+    Class<?> generated = new AsmCodeEmitter(unit).write(unit, true);
+
+    // Inspect.
+    inspect(generated);
+
+    assertEquals(Arrays.asList(6, 5, 4, 3, 2, 1), generated.getDeclaredMethod("reverse", Object.class)
+        .invoke(null, Arrays.asList(1, 2, 3, 4, 5, 6)));
+  }
+
 
 
   @Test
