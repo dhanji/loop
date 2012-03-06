@@ -13,6 +13,8 @@ public class Operations {
   public static Object plus(Object arg0, Object arg1) {
     if (arg0 instanceof Integer) {
       return (Integer)arg0 + (Integer)arg1;
+    } else if (arg0 instanceof String) {
+      return ((String)arg0) + arg1;
     } else if (arg0 instanceof Collection) {
       Collection left = (Collection) arg0;
       Collection right = (Collection) arg1;

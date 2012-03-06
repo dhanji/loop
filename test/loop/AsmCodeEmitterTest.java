@@ -305,6 +305,27 @@ public class AsmCodeEmitterTest {
   }
 
 
+
+  @Test
+  public final void emitStringPatternMatchingFunction() throws Exception {
+    Parser parser = new Parser(new Tokenizer(
+        "pick(str) =>\n" +
+        "  (a:b)         : a\n" +
+        "  *                      : 'nothing'\n"
+    ).tokenize());
+    Unit unit = parser.script();
+    unit.reduceAll();
+
+    Class<?> generated = new AsmCodeEmitter(unit).write(unit, true);
+
+    // Inspect.
+    inspect(generated);
+
+    assertEquals("abcc", generated.getDeclaredMethod("pick", Object.class)
+        .invoke(null, "ab--cc"));
+  }
+
+
   @Test
   public final void emitPatternMatchingFunctionWithGuards() throws Exception {
     Parser parser = new Parser(new Tokenizer(

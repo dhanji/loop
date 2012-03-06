@@ -61,6 +61,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
   private static final String IS_LIST_VAR_PREFIX = "__$isList_";
   private static final String RUNTIME_LIST_SIZE_VAR_PREFIX = "__$runtimeListSize_";
+  private static final String RUNTIME_STR_LEN_PREFIX = "__$str_len_";
+  private static final String IS_STRING_PREFIX = "__$isStr_";
+  private static final String IS_READER_PREFIX = "__$isRdr_";
 
   private StringBuilder out = new StringBuilder();
   private final Stack<Context> functionStack = new Stack<Context>();
@@ -667,7 +670,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
       // Set up some helper local vars to make it easier to pattern match certain types (lists).
       if (functionDecl.patternMatching) {
-        boolean checkIfLists = false;
+        boolean checkIfLists = false, checkIfString = false;
         for (Node child : functionDecl.children()) {
           PatternRule patternRule = (PatternRule) child;
 
@@ -675,7 +678,8 @@ import java.util.concurrent.atomic.AtomicInteger;
             if (pattern instanceof ListDestructuringPattern ||
                 pattern instanceof ListStructurePattern) {
               checkIfLists = true;
-              break;
+            } else if (pattern instanceof StringPattern) {
+              checkIfString = true;
             }
           }
         }
@@ -699,6 +703,32 @@ import java.util.concurrent.atomic.AtomicInteger;
             methodVisitor.visitVarInsn(ISTORE, runtimeListSize);
           }
         }
+        if (checkIfString) {
+          for (int i = 0, childrenSize = children.size(); i < childrenSize; i++) {
+            int isString = context.newLocalVariable(IS_STRING_PREFIX + i);
+            int isReader = context.newLocalVariable(IS_READER_PREFIX + i);
+            int runtimeStringLen = context.newLocalVariable(RUNTIME_STR_LEN_PREFIX + i);
+
+            methodVisitor.visitVarInsn(ALOAD, i);
+            methodVisitor.visitInsn(DUP2);
+            methodVisitor.visitTypeInsn(INSTANCEOF, "java/lang/String");
+            methodVisitor.visitIntInsn(ISTORE, isString);
+            methodVisitor.visitTypeInsn(INSTANCEOF, "java/io/Reader");
+            methodVisitor.visitIntInsn(ISTORE, isReader);
+
+            Label skipStringChecks = new Label();
+            methodVisitor.visitIntInsn(ILOAD, isString);
+            methodVisitor.visitJumpInsn(IFEQ, skipStringChecks);
+            methodVisitor.visitTypeInsn(CHECKCAST, "java/lang/String");
+            methodVisitor.visitInsn(DUP);
+            methodVisitor.visitVarInsn(ASTORE, i);      // does this do anything??
+
+            methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "java/lang/String", "length", "()I");
+            methodVisitor.visitVarInsn(ISTORE, runtimeStringLen);
+            methodVisitor.visitLabel(skipStringChecks);
+          }
+        }
+
       }
 
       emitChildren(node);
@@ -978,8 +1008,7 @@ import java.util.concurrent.atomic.AtomicInteger;
           methodVisitor.visitJumpInsn(IFEQ, endOfClause);
 
         } else if (pattern instanceof StringPattern) {
-          // TODO this thing and guards
-          emitStringPatternRule(rule, context, i);
+          emitStringPatternRule(rule, context, matchedClause, endOfClause, i);
         } else if (pattern instanceof MapPattern) {
           emitMapPatternRule(rule, context, matchedClause, endOfClause, i);
         } else if (pattern instanceof WildcardPattern) {
@@ -1052,17 +1081,23 @@ import java.util.concurrent.atomic.AtomicInteger;
     }
   }
 
-  private EmittedWrapping emitStringPatternRule(PatternRule rule, Context context, int argIndex) {
-    String argument = context.arguments.get(argIndex);
-    append(argument).append(" is String");
+  private void emitStringPatternRule(PatternRule rule,
+                                                Context context,
+                                                Label matchedClause,
+                                                Label endOfClause,
+                                                int argIndex) {
+    MethodVisitor methodVisitor = methodStack.peek();
+
+    methodVisitor.visitVarInsn(ILOAD, context.localVarIndex(IS_STRING_PREFIX + argIndex));
+    methodVisitor.visitJumpInsn(IFEQ, endOfClause);   // Not a string, so skip
+
     List<Node> children = rule.patterns.get(argIndex).children();
     int i = 0, childrenSize = children.size();
 
-    StringBuilder inbody = new StringBuilder();
     boolean splittable = false;
-    String lastIndex =
-        context.newLocalVariable();      // The last index of split (i.e. pattern delimiter).
-    inbody.append(lastIndex).append(" = -1;\n");
+    int lastIndex = context.localVarIndex(context.newLocalVariable());      // The last index of split (i.e. pattern delimiter).
+    methodVisitor.visitIntInsn(BIPUSH, -1);
+    methodVisitor.visitIntInsn(ISTORE, lastIndex);
 
     int ifCount = 0;
     for (int j = 0; j < childrenSize; j++) {
@@ -1075,60 +1110,100 @@ import java.util.concurrent.atomic.AtomicInteger;
           if (next instanceof StringLiteral) {
             // If the next node is a string literal, then we must split this
             // string across occurrences of the given literal.
-            String thisIndex = context.newLocalVariable();
-            inbody.append(thisIndex).append(" = ");
-            inbody.append(argument).append(".indexOf(");
-            emitTo(next, inbody);
+            int thisIndex = context.localVarIndex(context.newLocalVariable());
+
+            methodVisitor.visitVarInsn(ALOAD, argIndex);
+            emit(next);
 
             // If this is the second or greater pattern matcher, seek from the last location.
             if (splittable) {
-              inbody.append(", ").append(lastIndex);
+              methodVisitor.visitIntInsn(ILOAD, lastIndex);
+              methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "java/lang/String", "indexOf",
+                  "(Ljava/lang/String;I)I");
+            } else {
+              methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "java/lang/String", "indexOf",
+                  "(Ljava/lang/String;)I");
             }
+            methodVisitor.visitVarInsn(ISTORE, thisIndex);
 
-            inbody.append(");\n");
-            inbody.append("if (").append(thisIndex).append(" > -1) {\n");
-            emitTo(child, inbody);
-            inbody.append(" = ")
-                .append(argument)
-                .append(".substring(")
-                .append(lastIndex)
-                .append(" == -1 ? 0 : ")
-                .append(lastIndex)
-                .append(", ")
-                .append(thisIndex)
-                .append(");\n");
+            methodVisitor.visitVarInsn(ILOAD, thisIndex);
+            methodVisitor.visitIntInsn(BIPUSH, -1);
+            methodVisitor.visitJumpInsn(IF_ICMPLE, endOfClause); // Jump out of this clause
+
+            int matchedPieceVar = context.localVarIndex(context.newLocalVariable((Variable) child));
+
+            methodVisitor.visitVarInsn(ALOAD, argIndex);
+            methodVisitor.visitVarInsn(ILOAD, lastIndex);
+
+            Label startFromLastIndex = new Label();
+            Label startFromZeroIndex = new Label();
+            methodVisitor.visitIntInsn(BIPUSH, -1);
+            methodVisitor.visitJumpInsn(IF_ICMPNE, startFromLastIndex);
+
+            // Either start from 0 or lastindex of split.
+            methodVisitor.visitIntInsn(BIPUSH, 0);
+            methodVisitor.visitJumpInsn(GOTO, startFromZeroIndex);
+            methodVisitor.visitLabel(startFromLastIndex);
+            methodVisitor.visitIntInsn(ILOAD, lastIndex);
+            methodVisitor.visitLabel(startFromZeroIndex);
+
+            methodVisitor.visitIntInsn(ILOAD, thisIndex);
+
+            methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "java/lang/String", "substring",
+                "(II)Ljava/lang/String;");
+            methodVisitor.visitInsn(DUP);
+
+            // Save this piece into our variable.
+            methodVisitor.visitVarInsn(ASTORE, matchedPieceVar);
+
             // Advance the index by the length of this match.
-            inbody.append(lastIndex).append(" = ").append(thisIndex).append(" + ");
-            emitTo(next, inbody);
-            inbody.append(".length();\n");
+            methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "java/lang/String", "length", "()I");
+            methodVisitor.visitIntInsn(ILOAD, thisIndex);
+            methodVisitor.visitInsn(IADD);
+            methodVisitor.visitIntInsn(ISTORE, lastIndex);
 
             ifCount++;
             splittable = true;
           } else {
-            emitTo(child, inbody);
-            inbody.append(" = ").append(argument).append(".charAt(").append(i).append(");\n");
+            int matchedPieceVar = context.localVarIndex(context.newLocalVariable((Variable) child));
+            methodVisitor.visitLdcInsn(i);
+            methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "java/lang/String", "charAt", "(I)C");
+            methodVisitor.visitMethodInsn(INVOKESTATIC, "java/lang/Character", "valueOf",
+                "(C)Ljava/lang/Character;");
+            methodVisitor.visitVarInsn(ASTORE, matchedPieceVar);
           }
         } else {
-          emitTo(child, inbody);
-          inbody.append(" = ").append(argument).append(".length() == 1 ? '' : ").append(argument);
-          inbody.append(".substring(").append(lastIndex).append(" > -1 ? ")
-              .append(lastIndex).append(": ").append(i).append(");\n");
+          int matchedPieceVar = context.localVarIndex(context.newLocalVariable((Variable) child));
+          int strLen = context.localVarIndex(RUNTIME_STR_LEN_PREFIX + argIndex);
+
+          methodVisitor.visitIntInsn(ILOAD, strLen);
+          methodVisitor.visitIntInsn(BIPUSH, 1);
+
+          Label restOfString = new Label();
+          Label assignToPiece = new Label();
+
+          methodVisitor.visitJumpInsn(IF_ICMPNE, restOfString);
+          methodVisitor.visitLdcInsn("");
+          methodVisitor.visitJumpInsn(GOTO, assignToPiece);
+          methodVisitor.visitLabel(restOfString);
+
+          methodVisitor.visitVarInsn(ALOAD, argIndex);
+          methodVisitor.visitIntInsn(ILOAD, lastIndex);
+          methodVisitor.visitIntInsn(BIPUSH, -1);
+
+          Label restOfStringFromI = new Label();
+          methodVisitor.visitJumpInsn(IF_ICMPLE, restOfStringFromI);
+          methodVisitor.visitIntInsn(ILOAD, lastIndex);
+          methodVisitor.visitJumpInsn(GOTO, assignToPiece);
+          methodVisitor.visitLabel(restOfStringFromI);
+          methodVisitor.visitLdcInsn(i);
+
+          methodVisitor.visitLabel(assignToPiece);
+          methodVisitor.visitVarInsn(ASTORE, matchedPieceVar);
         }
         i++;
       }
     }
-
-    // Close If statements in reverse order.
-    for (int j = 0; j < ifCount; j++) {
-      inbody.append("} else {\n ").append(lastIndex).append(" = -1\n }\n");
-    }
-
-    // Only process the return rule if patterns matched.
-    if (splittable) {
-      inbody.append("if (").append(lastIndex).append(" > -1) {\n");
-    }
-
-    return new EmittedWrapping(inbody.toString(), splittable ? "\n}\n" : null);
   }
 
   private void emitListStructurePatternRule(PatternRule rule,
