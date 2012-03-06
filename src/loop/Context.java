@@ -1,6 +1,7 @@
 package loop;
 
 import loop.ast.Variable;
+import org.objectweb.asm.Label;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,6 +21,8 @@ class Context {
   final List<String> localVars = new ArrayList<String>();
   final Map<String, Integer> localVarIndex = new HashMap<String, Integer>();
 
+  final Label endOfFunction = new Label();
+
   public Context(String name) {
     this.name = name;
   }
@@ -36,6 +39,12 @@ class Context {
     localVars.add(var.name);
     localVarIndex.put(var.name, localVars.size());
     return var.name;
+  }
+
+  public int newLocalVariable(String localVar) {
+    localVars.add(localVar);
+    localVarIndex.put(localVar, localVars.size());
+    return localVars.size();
   }
 
   public int localVarIndex(String name) {

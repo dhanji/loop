@@ -286,6 +286,47 @@ public class AsmCodeEmitterTest {
 
 
   @Test
+  public final void emitLiteralPatternMatchingFunction() throws Exception {
+    Parser parser = new Parser(new Tokenizer(
+        "pick(ls) =>\n" +
+        "  1         : 'one'\n" +
+        "  2         : 'two'\n"
+    ).tokenize());
+    Unit unit = parser.script();
+    unit.reduceAll();
+
+    Class<?> generated = new AsmCodeEmitter(unit).write(unit, true);
+
+    // Inspect.
+    inspect(generated);
+
+    assertEquals("two", generated.getDeclaredMethod("pick", Object.class)
+        .invoke(null, 2));
+  }
+
+
+  @Test
+  public final void emitListPatternMatchingFunction() throws Exception {
+    Parser parser = new Parser(new Tokenizer(
+        "reverse(ls) =>\n" +
+        "  []         : []\n" +
+        "  [x:xs]     : reverse(xs) + [x]\n"
+    ).tokenize());
+    Unit unit = parser.script();
+    unit.reduceAll();
+
+    Class<?> generated = new AsmCodeEmitter(unit).write(unit);
+
+    // Inspect.
+    inspect(generated);
+
+    assertEquals(Arrays.asList(6, 5, 4, 3, 2, 1), generated.getDeclaredMethod("reverse", Object.class)
+        .invoke(null, Arrays.asList(1, 2, 3, 4, 5, 6)));
+  }
+
+
+
+  @Test
   public final void emitWhereBlock() throws Exception {
     Parser parser = new Parser(new Tokenizer("compute() ->\n" +
         "  3 * year\n" +

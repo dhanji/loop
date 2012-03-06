@@ -59,7 +59,9 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 @SuppressWarnings({"FieldCanBeLocal"}) class AsmCodeEmitter implements Opcodes {
   private static final AtomicInteger functionNameSequence = new AtomicInteger();
-  private static final String AND = " && ";
+
+  private static final String IS_LIST_VAR_PREFIX = "__$isList_";
+  private static final String RUNTIME_LIST_SIZE_VAR_PREFIX = "__$runtimeListSize_";
 
   private StringBuilder out = new StringBuilder();
   private final Stack<Context> functionStack = new Stack<Context>();
@@ -667,8 +669,52 @@ import java.util.concurrent.atomic.AtomicInteger;
         emit(helper);
       }
 
+      // Set up some helper local vars to make it easier to pattern match certain types (lists).
+      if (functionDecl.patternMatching) {
+        boolean checkIfLists = false;
+        for (Node child : functionDecl.children()) {
+          PatternRule patternRule = (PatternRule) child;
+
+          for (Node pattern : patternRule.patterns) {
+            if (pattern instanceof ListDestructuringPattern ||
+                pattern instanceof ListStructurePattern) {
+              checkIfLists = true;
+              break;
+            }
+          }
+        }
+
+        if (checkIfLists) {
+          List<Node> children1 = functionDecl.arguments().children();
+          for (int i = 0, children1Size = children1.size(); i < children1Size; i++) {
+            int isList = context.newLocalVariable(IS_LIST_VAR_PREFIX + i);
+            int runtimeListSize = context.newLocalVariable(RUNTIME_LIST_SIZE_VAR_PREFIX + i);
+
+            methodVisitor.visitVarInsn(ALOAD, i);
+            methodVisitor.visitInsn(DUP);
+            methodVisitor.visitTypeInsn(INSTANCEOF, "java/util/List");
+            methodVisitor.visitIntInsn(ISTORE, isList);
+
+            methodVisitor.visitTypeInsn(CHECKCAST, "java/util/List");
+            methodVisitor.visitInsn(DUP);
+            methodVisitor.visitVarInsn(ASTORE, i);      // does this do anything??
+
+            methodVisitor.visitMethodInsn(INVOKEINTERFACE, "java/util/List", "size", "()I");
+            methodVisitor.visitVarInsn(ISTORE, runtimeListSize);
+          }
+        }
+      }
+
       emitChildren(node);
 
+      if (functionDecl.patternMatching) {
+        methodVisitor.visitLdcInsn("Non-exhaustive pattern rules in " + functionDecl.name());
+        methodVisitor.visitInsn(
+            DUP);   // This is necessary just to maintain stack height consistency. =/
+        methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/Loop", "error", "(Ljava/lang/String;)V");
+      }
+
+      methodVisitor.visitLabel(context.endOfFunction);
       methodVisitor.visitInsn(ARETURN);
       methodVisitor.visitMaxs(0, 0);
       methodVisitor.visitEnd();
@@ -767,7 +813,7 @@ import java.util.concurrent.atomic.AtomicInteger;
             && callChain.nullSafe
             && child instanceof Variable
             && childrenSize > 1)
-        trackLineAndColumn(child);
+          trackLineAndColumn(child);
         emit(child);
       }
     }
@@ -906,18 +952,18 @@ import java.util.concurrent.atomic.AtomicInteger;
             + Parser.stringify(rule.patterns));
 
       List<EmittedWrapping> emitIntoBody = new ArrayList<EmittedWrapping>();
-      int emittedArgs = 0;
-
       Label matchedClause = new Label();
+      Label endOfClause = new Label();
+
       for (int i = 0, argumentsSize = context.arguments.size(); i < argumentsSize; i++) {
         methodVisitor.visitVarInsn(ALOAD, i);
 
-        emittedArgs++;
         Node pattern = rule.patterns.get(i);
         if (pattern instanceof ListDestructuringPattern) {
-          emitListDestructuringPatternRule(rule, methodVisitor, context, matchedClause, i);
+          emitListDestructuringPatternRule(rule, methodVisitor, context, matchedClause, endOfClause,
+              i);
         } else if (pattern instanceof ListStructurePattern) {
-          emitListStructurePatternRule(rule, methodVisitor, context, matchedClause, i);
+//          emitListStructurePatternRule(rule, methodVisitor, context, matchedClause, i);
         } else if (pattern instanceof StringLiteral
             || pattern instanceof IntLiteral
             || pattern instanceof BooleanLiteral) {
@@ -927,23 +973,23 @@ import java.util.concurrent.atomic.AtomicInteger;
           if (!(pattern instanceof BooleanLiteral))
             methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/runtime/Operations", "equal",
                 "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Boolean;");
-          methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Boolean", "booleanValue", "()V");
+          methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Boolean", "booleanValue", "()Z");
 
+          methodVisitor.visitJumpInsn(IFEQ, endOfClause);
         } else if (pattern instanceof RegexLiteral) {
           methodVisitor.visitTypeInsn(CHECKCAST, "java/lang/String");
           methodVisitor.visitLdcInsn(((RegexLiteral) pattern).value);
           methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "java/lang/String", "matches",
               "(Ljava/lang/String;)Z");
+          methodVisitor.visitJumpInsn(IFEQ, endOfClause);
 
         } else if (pattern instanceof StringPattern) {
           emitIntoBody.add(emitStringPatternRule(rule, context, i));
         } else if (pattern instanceof MapPattern) {
           emitIntoBody.add(emitMapPatternRule(rule, context, i));
         } else if (pattern instanceof WildcardPattern) {
-          // Always true.
+          // Always matches.
           methodVisitor.visitJumpInsn(GOTO, matchedClause);
-
-          emittedArgs--;
         }
       }
 
@@ -952,19 +998,19 @@ import java.util.concurrent.atomic.AtomicInteger;
           append(emittedWrapping.inbody);
       }
 
-      // If any pattern matched, jump to the matched clause label.
-      methodVisitor.visitJumpInsn(IFNE, matchedClause);
       // Or error if no pattern matched
-      methodVisitor.visitLdcInsn("Non-exhaustive pattern rules");
-      methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/Loop", "error", "(Ljava/lang/String;)V");
+//      methodVisitor.visitLdcInsn("Non-exhaustive pattern rules");
+//      methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/Loop", "error", "(Ljava/lang/String;)V");
       methodVisitor.visitLabel(matchedClause);
       emitPatternClauses(rule);
+      methodVisitor.visitJumpInsn(GOTO, context.endOfFunction);
+
+      methodVisitor.visitLabel(endOfClause);
     }
   };
 
   private void emitPatternClauses(PatternRule rule) {
     if (rule.rhs != null) {
-      append(" return ");
       emit(rule.rhs);
     } else
       emitGuards(rule);
@@ -1101,10 +1147,10 @@ import java.util.concurrent.atomic.AtomicInteger;
   }
 
   private void emitListStructurePatternRule(PatternRule rule,
-                                           MethodVisitor methodVisitor,
-                                           Context context,
-                                           Label matchedClause,
-                                           int argIndex) {
+                                            MethodVisitor methodVisitor,
+                                            Context context,
+                                            Label matchedClause,
+                                            int argIndex) {
     ListStructurePattern listPattern = (ListStructurePattern) rule.patterns.get(argIndex);
 
     Label noMatch = new Label();
@@ -1113,7 +1159,7 @@ import java.util.concurrent.atomic.AtomicInteger;
     methodVisitor.visitJumpInsn(IFEQ, noMatch);
 
     if (listPattern.children().size() > 0)
-    methodVisitor.visitTypeInsn(CHECKCAST, "java/util/List");
+      methodVisitor.visitTypeInsn(CHECKCAST, "java/util/List");
     methodVisitor.visitInsn(DUP);
     methodVisitor.visitMethodInsn(INVOKEINTERFACE, "java/util/List", "size", "()I");
     methodVisitor.visitLdcInsn(listPattern.children().size());
@@ -1130,7 +1176,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
         methodVisitor.visitInsn(DUP);
         methodVisitor.visitLdcInsn(j);
-        methodVisitor.visitMethodInsn(INVOKEINTERFACE, "java/util/List", "get", "(I)Ljava/lang/Object;");
+        methodVisitor.visitMethodInsn(INVOKEINTERFACE, "java/util/List", "get",
+            "(I)Ljava/lang/Object;");
         methodVisitor.visitVarInsn(ASTORE, localVar);
       }
     }
@@ -1141,30 +1188,28 @@ import java.util.concurrent.atomic.AtomicInteger;
   }
 
   private void emitListDestructuringPatternRule(PatternRule rule,
-                                                           MethodVisitor methodVisitor,
-                                                           Context context,
-                                                           Label matchedClause,
-                                                           int argIndex) {
+                                                MethodVisitor methodVisitor,
+                                                Context context,
+                                                Label matchedClause,
+                                                Label endOfClause,
+                                                int argIndex) {
     ListDestructuringPattern listPattern = (ListDestructuringPattern) rule.patterns.get(argIndex);
-
     Label noMatch = new Label();
-    methodVisitor.visitInsn(DUP);
-    methodVisitor.visitTypeInsn(INSTANCEOF, "java/util/List");
-    methodVisitor.visitJumpInsn(IFEQ, noMatch);
-    methodVisitor.visitTypeInsn(CHECKCAST, "java/util/List");
-    methodVisitor.visitInsn(DUP);
-    methodVisitor.visitMethodInsn(INVOKEINTERFACE, "java/util/List", "size", "()I");
 
-    int runtimeListSizeVar = context.localVarIndex(context.newLocalVariable());
-    methodVisitor.visitVarInsn(ISTORE, runtimeListSizeVar);
-    methodVisitor.visitVarInsn(ILOAD, runtimeListSizeVar);
+    int runtimeListSizeVar = context.localVarIndex(RUNTIME_LIST_SIZE_VAR_PREFIX + argIndex);
 
     int size = listPattern.children().size();
     if (size == 0) {
+      methodVisitor.visitInsn(POP);  // Dont need the list really.
+      methodVisitor.visitVarInsn(ILOAD, runtimeListSizeVar);
       methodVisitor.visitJumpInsn(IFEQ, matchedClause);
+      methodVisitor.visitJumpInsn(GOTO, endOfClause);
     } else if (size == 1) {
+      methodVisitor.visitInsn(POP);  // Dont need the list really.
+      methodVisitor.visitVarInsn(ILOAD, runtimeListSizeVar);
       methodVisitor.visitIntInsn(BIPUSH, 1);
       methodVisitor.visitJumpInsn(IFNE, matchedClause);
+      methodVisitor.visitJumpInsn(GOTO, endOfClause);
     } else {
       // Slice the list by terminals in the pattern list.
       int i = 0;
@@ -1175,11 +1220,10 @@ import java.util.concurrent.atomic.AtomicInteger;
           trackLineAndColumn(child);
           int localVar = context.localVarIndex(context.newLocalVariable(((Variable) child)));
 
-          methodVisitor.visitInsn(DUP);  // list
-
           if (j < childrenSize - 1) {
             methodVisitor.visitLdcInsn(i);
-            methodVisitor.visitMethodInsn(INVOKEINTERFACE, "java/util/List", "get", "(I)[java/lang/Object;");
+            methodVisitor.visitMethodInsn(INVOKEINTERFACE, "java/util/List", "get",
+                "(I)Ljava/lang/Object;");
             methodVisitor.visitVarInsn(ASTORE, localVar);
           } else {
             methodVisitor.visitVarInsn(ILOAD, runtimeListSizeVar);
@@ -1188,14 +1232,19 @@ import java.util.concurrent.atomic.AtomicInteger;
             methodVisitor.visitJumpInsn(IF_ICMPEQ, storeEmptyList);
 
             // Otherwise store a slice of the list.
+            methodVisitor.visitVarInsn(ALOAD, argIndex);
             methodVisitor.visitLdcInsn(i);
-            methodVisitor.visitLdcInsn(runtimeListSizeVar);
-            methodVisitor.visitMethodInsn(INVOKEINTERFACE, "java/util/List", "subList", "(I, I)Ljava/util/List;");
+            methodVisitor.visitVarInsn(ILOAD, runtimeListSizeVar);
+            methodVisitor.visitMethodInsn(INVOKEINTERFACE, "java/util/List", "subList",
+                "(II)Ljava/util/List;");
             methodVisitor.visitVarInsn(ASTORE, localVar);
+            methodVisitor.visitJumpInsn(GOTO, matchedClause);
 
             methodVisitor.visitLabel(storeEmptyList);
-            methodVisitor.visitFieldInsn(GETSTATIC, "java/util/Collections", "EMPTY_LIST", "[java/util/List");
+            methodVisitor.visitFieldInsn(GETSTATIC, "java/util/Collections", "EMPTY_LIST",
+                "Ljava/util/List;");
             methodVisitor.visitVarInsn(ASTORE, localVar);
+            methodVisitor.visitJumpInsn(GOTO, matchedClause);
           }
 
           i++;
