@@ -7,7 +7,7 @@ import loop.Parser;
  */
 public class DestructuringPair extends Node {
   public final Node lhs;
-  public final Node rhs;
+  public Node rhs;
 
   public DestructuringPair(Node lhs, Node rhs) {
     this.lhs = lhs;

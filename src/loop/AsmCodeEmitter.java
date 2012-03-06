@@ -45,7 +45,6 @@ import org.objectweb.asm.util.TraceClassVisitor;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -294,9 +293,6 @@ import java.util.concurrent.atomic.AtomicInteger;
         out.deleteCharAt(out.length() - 1);
       } else
         name = normalizeMethodName(call.name());
-
-      if (!call.isFunction)
-        name = "get" + Character.toUpperCase(name.charAt(0)) + name.substring(1);
 
       MethodVisitor methodVisitor = methodStack.peek();
 
@@ -951,7 +947,6 @@ import java.util.concurrent.atomic.AtomicInteger;
             + context.arguments + " but found " + rule.patterns.size() + " rule(s): "
             + Parser.stringify(rule.patterns));
 
-      List<EmittedWrapping> emitIntoBody = new ArrayList<EmittedWrapping>();
       Label matchedClause = new Label();
       Label endOfClause = new Label();
 
@@ -984,23 +979,16 @@ import java.util.concurrent.atomic.AtomicInteger;
           methodVisitor.visitJumpInsn(IFEQ, endOfClause);
 
         } else if (pattern instanceof StringPattern) {
-          emitIntoBody.add(emitStringPatternRule(rule, context, i));
+          // TODO this thing and guards
+          emitStringPatternRule(rule, context, i);
         } else if (pattern instanceof MapPattern) {
-          emitIntoBody.add(emitMapPatternRule(rule, context, i));
+          emitMapPatternRule(rule, context, matchedClause, endOfClause, i);
         } else if (pattern instanceof WildcardPattern) {
           // Always matches.
           methodVisitor.visitJumpInsn(GOTO, matchedClause);
         }
       }
 
-      for (EmittedWrapping emittedWrapping : emitIntoBody) {
-        if (null != emittedWrapping)
-          append(emittedWrapping.inbody);
-      }
-
-      // Or error if no pattern matched
-//      methodVisitor.visitLdcInsn("Non-exhaustive pattern rules");
-//      methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/Loop", "error", "(Ljava/lang/String;)V");
       methodVisitor.visitLabel(matchedClause);
       emitPatternClauses(rule);
       methodVisitor.visitJumpInsn(GOTO, context.endOfFunction);
@@ -1043,28 +1031,26 @@ import java.util.concurrent.atomic.AtomicInteger;
     }
   }
 
-  private EmittedWrapping emitMapPatternRule(PatternRule rule, Context context, int argIndex) {
-    String argument = context.arguments.get(argIndex);
+  private void emitMapPatternRule(PatternRule rule,
+                                  Context context,
+                                  Label matchedClause,
+                                  Label endOfClause,
+                                  int argIndex) {
     MapPattern pattern = (MapPattern) rule.patterns.get(argIndex);
+    MethodVisitor methodVisitor = methodStack.peek();
 
-    StringBuilder inbody = new StringBuilder();
-    List<Node> children = pattern.children();
-    for (int i = 0, childrenSize = children.size(); i < childrenSize; i++) {
-      Node destructuring = children.get(i);
-      DestructuringPair pair = (DestructuringPair) destructuring;
-      append(argument).append(".?");
+    methodVisitor.visitInsn(POP);
+    for (Node child : pattern.children()) {
+      DestructuringPair pair = (DestructuringPair) child;
+
+      int destructuredVar = context.localVarIndex(context.newLocalVariable((Variable) pair.lhs));
       emit(pair.rhs);
 
-      append(" != null");
-      if (i < childrenSize - 1)
-        append(" && ");
-
-      emitTo(pair.lhs, inbody);
-      inbody.append(" = ").append(argument).append('.');
-      emitTo(pair.rhs, inbody);
-      inbody.append(";\n");
+      methodVisitor.visitVarInsn(ASTORE, destructuredVar);
+      methodVisitor.visitVarInsn(ALOAD, destructuredVar);
+      methodVisitor.visitJumpInsn(IFNULL, endOfClause);
+      methodVisitor.visitJumpInsn(GOTO, matchedClause);
     }
-    return new EmittedWrapping(inbody.toString(), null);
   }
 
   private EmittedWrapping emitStringPatternRule(PatternRule rule, Context context, int argIndex) {

@@ -52,6 +52,7 @@ public class Caller {
     System.out.println(thing);
   }
 
+
   @SuppressWarnings("unchecked")
   public static Object instantiate(String type, Object... args) {
     try {
@@ -61,7 +62,6 @@ public class Caller {
       Constructor ctor = staticConstructorCache.get(key);
 
       if (null == ctor) {
-
         boolean cache = true;
 
         // Choose the appropriate constructor.
@@ -123,6 +123,9 @@ public class Caller {
   }
 
   public static Object call(Object target, String method, Object... args) {
+    if (target instanceof Map)
+      return ((Map)target).get(method);
+
     // This key can be improved to use a bitvector, for example.
     String name = target.getClass().getName();
     String key = new StringBuilder(name.length() + method.length() + 5).append(name)
@@ -137,6 +140,15 @@ public class Caller {
     if (toCall == null) {
       for (Method candidate : target.getClass().getMethods()) {
         if (candidate.getName().equals(method) && candidate.getParameterTypes().length == args.length) {
+          toCall = candidate;
+          break;
+        }
+      }
+
+      // Now search getters instead.
+      String altMethod = "get" + Character.toUpperCase(method.charAt(0)) + method.substring(1);
+      for (Method candidate : target.getClass().getMethods()) {
+        if (candidate.getName().equals(altMethod) && candidate.getParameterTypes().length == args.length) {
           toCall = candidate;
           break;
         }

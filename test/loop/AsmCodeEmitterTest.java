@@ -345,6 +345,27 @@ public class AsmCodeEmitterTest {
   }
 
 
+  @Test
+  public final void emitMapPatternMatchingFunction() throws Exception {
+    Parser parser = new Parser(new Tokenizer(
+        "lower(obj) =>\n" +
+        "  [ x <- obj.name]         : x.toLowerCase()\n"
+    ).tokenize());
+    Unit unit = parser.script();
+    unit.reduceAll();
+
+    Class<?> generated = new AsmCodeEmitter(unit).write(unit);
+
+    // Inspect.
+    inspect(generated);
+
+    Map<String, String> obj = new HashMap<String, String>();
+    obj.put("name", "Dude");
+
+    assertEquals("dude", generated.getDeclaredMethod("lower", Object.class).invoke(null, obj));
+  }
+
+
 
   @Test
   public final void emitWhereBlock() throws Exception {

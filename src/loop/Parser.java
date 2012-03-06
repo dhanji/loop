@@ -423,7 +423,8 @@ public class Parser {
   }
 
   /**
-   * listOrMapPattern := (LBRACKET term ((ASSIGN term)* | UNARROW term (COMMA term UNARROW term)*) RBRACKET)
+   * listOrMapPattern := (LBRACKET term ((ASSIGN term)* | UNARROW term (COMMA term UNARROW term)*)
+   * RBRACKET)
    */
   private Node listOrMapPattern() {
     Node pattern;
@@ -564,6 +565,31 @@ public class Parser {
       throw new RuntimeException("Expected ']' at end of object pattern");
     }
 
+    return rewriteObjectPattern(pattern);
+//    return pattern;
+  }
+
+  private Node rewriteObjectPattern(Node pattern) {
+    for (Node node : pattern.children()) {
+      if (node instanceof DestructuringPair) {
+        DestructuringPair pair = (DestructuringPair) node;
+
+        // We need to rewrite the chain of variables as a chain of property calls.
+        if (pair.rhs instanceof CallChain) {
+          CallChain chain = (CallChain) pair.rhs;
+          CallChain rewritten = new CallChain();
+          rewritten.add(chain.children().remove(0));
+
+          for (Node element : chain.children()) {
+            Variable var = (Variable) element;
+
+            rewritten.add(new Call(var.name, false, null));
+          }
+
+          pair.rhs = rewritten;
+        }
+      }
+    }
     return pattern;
   }
 
@@ -698,7 +724,7 @@ public class Parser {
 
   /**
    * Assign a variable an expression.
-   *
+   * <p/>
    * variableAssignment := variable ASSIGN computation
    */
   private Node variableAssignment() {
@@ -723,8 +749,8 @@ public class Parser {
   /**
    * This is really both "free standing expression" and "assignment".
    * <p/>
-   * assign := computation (ASSIGN (computation (IF computation | comprehension)?)
-   *                        | (IF computation THEN computation ELSE computation) )?
+   * assign := computation (ASSIGN (computation (IF computation | comprehension)?) | (IF computation
+   * THEN computation ELSE computation) )?
    */
   private Node assign() {
     Node left = computation();
@@ -901,7 +927,8 @@ public class Parser {
   }
 
   /**
-   * chain := listOrMapDef | ternaryIf | anonymousFunctionDecl | (term  arglist? (call | indexIntoList)*)
+   * chain := listOrMapDef | ternaryIf | anonymousFunctionDecl | (term  arglist? (call |
+   * indexIntoList)*)
    */
   private Node chain() {
     Node node = listOrMapDef();
@@ -982,7 +1009,8 @@ public class Parser {
       if (!isPositional) {
         named = match(Token.Kind.IDENT, Token.Kind.ASSIGN);
         if (null == named) {
-          addError("Cannot mix named and positional arguments in a function call", tokens.get(i - 1));
+          addError("Cannot mix named and positional arguments in a function call",
+              tokens.get(i - 1));
           throw new LoopCompileException();
         }
       }
@@ -1048,9 +1076,9 @@ public class Parser {
   /**
    * Inline list/map definition.
    * <p/>
-   * listOrMapDef := LBRACKET (computation ((COMMA computation)* | computation? DOT DOT computation?))
-   *    | (computation COLON computation (COMMA computation COLON computation)*)
-   *    | COLON RBRACKET
+   * listOrMapDef := LBRACKET (computation ((COMMA computation)* | computation? DOT DOT
+   * computation?)) | (computation COLON computation (COMMA computation COLON computation)*) | COLON
+   * RBRACKET
    */
   private Node listOrMapDef() {
     boolean isBraced = false;
@@ -1267,8 +1295,7 @@ public class Parser {
   }
 
   /**
-   * (lexer super rule) literal := string | MINUS? integer | decimal
-   *                               | TYPE_IDENT | JAVA_LITERAL
+   * (lexer super rule) literal := string | MINUS? integer | decimal | TYPE_IDENT | JAVA_LITERAL
    */
   private Node literal() {
     Token token =

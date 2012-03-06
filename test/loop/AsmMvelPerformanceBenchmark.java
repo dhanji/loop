@@ -24,7 +24,7 @@ import static org.junit.Assert.assertNotNull;
  */
 public class AsmMvelPerformanceBenchmark {
   // Number of cycles for the benchmark, should be > 200000 for anything useful.
-  private static final int RUNS = 500000;
+  private static final int RUNS = 50;
   private static final int WARMUP_RUNS = 15000;
 
   @Before
@@ -62,6 +62,22 @@ public class AsmMvelPerformanceBenchmark {
     };
 
     time("fun() ->\n  new loop.TestObjectWithUnaryCtor(23)", callable, "fun();");
+  }
+
+  @Test
+  public final void newJavaObjectWithNullaryCtor() throws Exception {
+    Callable callable = new Callable() {
+
+      @Override public Method lookup(Class target) throws Exception {
+        return target.getDeclaredMethod("fun");
+      }
+
+      @Override public Object call(Method target) throws Exception {
+        return target.invoke(null);
+      }
+    };
+
+    time("fun() ->\n  new java.lang.String()", callable, "fun();");
   }
 
   @Test
@@ -175,7 +191,6 @@ public class AsmMvelPerformanceBenchmark {
     // Compile MVEL.
     String mvel = new MvelCodeEmitter(unit).write(unit);
     Serializable compiledMvel = MVEL.compileExpression(mvel + "; " + mvelCallable);
-    System.out.println(mvel);
 
     // Assert validity.
     Object javaGen = javaCallable.call(asmCallable);
