@@ -899,7 +899,6 @@ import java.util.concurrent.atomic.AtomicInteger;
       }
 
       // Dump this value into the out list.
-      // out.add(iterator.next())
       methodVisitor.visitVarInsn(ALOAD, outVarIndex);
       methodVisitor.visitVarInsn(ALOAD, nextIndex);
       methodVisitor.visitMethodInsn(INVOKEINTERFACE, "java/util/List", "add",
@@ -1005,29 +1004,29 @@ import java.util.concurrent.atomic.AtomicInteger;
   }
 
   private void emitGuards(PatternRule rule) {
-    List<Node> children = rule.children();
-    for (int i = 0, childrenSize = children.size(); i < childrenSize; i++) {
-      Node node = children.get(i);
+    MethodVisitor methodVisitor = methodStack.peek();
+    methodVisitor.visitInsn(POP);
+    for (Node node : rule.children()) {
       if (!(node instanceof Guard))
         throw new RuntimeException("Apparent pattern rule missing guards: "
             + Parser.stringify(rule));
-
-      if (i > 0)
-        append(" else ");
-
       Guard guard = (Guard) node;
+      Label endOfClause = new Label();
+      Label matchedClause = new Label();
 
       // The "Otherwise" expression is a plain else.
       if (!(guard.expression instanceof OtherwiseGuard)) {
-        append("if (");
         emit(guard.expression);
-        append(") ");
-      }
-      append("{\n return ");
-      emit(guard.line);
 
-      // If this is not the last guard.
-      append(";\n} ");
+        methodVisitor.visitTypeInsn(CHECKCAST, "java/lang/Boolean");
+        methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Boolean", "booleanValue", "()Z");
+        methodVisitor.visitJumpInsn(IFEQ, endOfClause);
+      }
+
+      methodVisitor.visitLabel(matchedClause);
+      emit(guard.line);
+      methodVisitor.visitJumpInsn(GOTO, functionStack.peek().endOfFunction);
+      methodVisitor.visitLabel(endOfClause);
     }
   }
 

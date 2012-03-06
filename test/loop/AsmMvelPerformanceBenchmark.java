@@ -45,8 +45,34 @@ public class AsmMvelPerformanceBenchmark {
       }
     };
 
-    time("fun(name) ->\n  \"hhi @{name.toLowerCase()} - @{1 + 2} >>@{5 * 4}<< @{name} @{name} \"", callable, "fun('yo');");
+    time("fun(name) ->\n  \"hhi @{name.toLowerCase()} - @{1 + 2} >>@{5 * 4}<< @{name} @{name} \"",
+        callable, "fun('yo');");
   }
+
+
+  @Test
+  public final void patternMatchingFunctionWithGuards() throws Exception {
+    String script =
+        "pick(ls) =>\n" +
+            "  5                    : 'five'\n" +
+            "  *         | ls == 1  : 'one'\n" +
+            "            | ls == 2  : 'two'\n" +
+            "            | else     : 'other'\n";
+
+    Callable callable = new Callable() {
+
+      @Override public Method lookup(Class target) throws Exception {
+        return target.getDeclaredMethod("pick", Object.class);
+      }
+
+      @Override public Object call(Method target) throws Exception {
+        return target.invoke(null, 2);
+      }
+    };
+
+    time(script, callable, "pick(2);");
+  }
+
 
   @Test
   public final void newJavaObject() throws Exception {
