@@ -694,11 +694,7 @@ import java.util.concurrent.atomic.AtomicInteger;
             methodVisitor.visitInsn(DUP);
             methodVisitor.visitTypeInsn(INSTANCEOF, "java/util/List");
             methodVisitor.visitIntInsn(ISTORE, isList);
-
             methodVisitor.visitTypeInsn(CHECKCAST, "java/util/List");
-            methodVisitor.visitInsn(DUP);
-            methodVisitor.visitVarInsn(ASTORE, i);      // does this do anything??
-
             methodVisitor.visitMethodInsn(INVOKEINTERFACE, "java/util/List", "size", "()I");
             methodVisitor.visitVarInsn(ISTORE, runtimeListSize);
           }
@@ -710,7 +706,7 @@ import java.util.concurrent.atomic.AtomicInteger;
             int runtimeStringLen = context.newLocalVariable(RUNTIME_STR_LEN_PREFIX + i);
 
             methodVisitor.visitVarInsn(ALOAD, i);
-            methodVisitor.visitInsn(DUP2);
+            methodVisitor.visitInsn(DUP);
             methodVisitor.visitTypeInsn(INSTANCEOF, "java/lang/String");
             methodVisitor.visitIntInsn(ISTORE, isString);
             methodVisitor.visitTypeInsn(INSTANCEOF, "java/io/Reader");
@@ -719,24 +715,20 @@ import java.util.concurrent.atomic.AtomicInteger;
             Label skipStringChecks = new Label();
             methodVisitor.visitIntInsn(ILOAD, isString);
             methodVisitor.visitJumpInsn(IFEQ, skipStringChecks);
+            methodVisitor.visitVarInsn(ALOAD, i);
             methodVisitor.visitTypeInsn(CHECKCAST, "java/lang/String");
-            methodVisitor.visitInsn(DUP);
-            methodVisitor.visitVarInsn(ASTORE, i);      // does this do anything??
-
             methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "java/lang/String", "length", "()I");
             methodVisitor.visitVarInsn(ISTORE, runtimeStringLen);
             methodVisitor.visitLabel(skipStringChecks);
           }
         }
-
       }
 
       emitChildren(node);
 
       if (functionDecl.patternMatching) {
         methodVisitor.visitLdcInsn("Non-exhaustive pattern rules in " + functionDecl.name());
-        methodVisitor.visitInsn(
-            DUP);   // This is necessary just to maintain stack height consistency. =/
+        methodVisitor.visitInsn(DUP);   // This is necessary just to maintain stack height consistency. =/
         methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/Loop", "error", "(Ljava/lang/String;)V");
       }
 
@@ -1099,12 +1091,12 @@ import java.util.concurrent.atomic.AtomicInteger;
     methodVisitor.visitIntInsn(BIPUSH, -1);
     methodVisitor.visitIntInsn(ISTORE, lastIndex);
 
-    int ifCount = 0;
     for (int j = 0; j < childrenSize; j++) {
       Node child = children.get(j);
 
       if (child instanceof Variable) {
         if (j < childrenSize - 1) {
+          context.localVarIndex(context.newLocalVariable((Variable) child));
 
           Node next = children.get(j + 1);
           if (next instanceof StringLiteral) {
@@ -1162,10 +1154,10 @@ import java.util.concurrent.atomic.AtomicInteger;
             methodVisitor.visitInsn(IADD);
             methodVisitor.visitIntInsn(ISTORE, lastIndex);
 
-            ifCount++;
             splittable = true;
           } else {
             int matchedPieceVar = context.localVarIndex(context.newLocalVariable((Variable) child));
+            methodVisitor.visitTypeInsn(CHECKCAST, "java/lang/String");
             methodVisitor.visitLdcInsn(i);
             methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "java/lang/String", "charAt", "(I)C");
             methodVisitor.visitMethodInsn(INVOKESTATIC, "java/lang/Character", "valueOf",
@@ -1187,7 +1179,7 @@ import java.util.concurrent.atomic.AtomicInteger;
           methodVisitor.visitJumpInsn(GOTO, assignToPiece);
           methodVisitor.visitLabel(restOfString);
 
-          methodVisitor.visitVarInsn(ALOAD, argIndex);
+//          methodVisitor.visitVarInsn(ALOAD, argIndex);
           methodVisitor.visitIntInsn(ILOAD, lastIndex);
           methodVisitor.visitIntInsn(BIPUSH, -1);
 

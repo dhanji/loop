@@ -310,8 +310,8 @@ public class AsmCodeEmitterTest {
   public final void emitStringPatternMatchingFunction() throws Exception {
     Parser parser = new Parser(new Tokenizer(
         "pick(str) =>\n" +
-        "  (a:b)         : a\n" +
-        "  *                      : 'nothing'\n"
+        "  (a:b)         : 'a'\n"
+//        "  *                      : 'nothing'\n"
     ).tokenize());
     Unit unit = parser.script();
     unit.reduceAll();
