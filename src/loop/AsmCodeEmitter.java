@@ -696,7 +696,7 @@ import java.util.concurrent.atomic.AtomicInteger;
             methodVisitor.visitIntInsn(ISTORE, isList);
             methodVisitor.visitTypeInsn(CHECKCAST, "java/util/List");
             methodVisitor.visitMethodInsn(INVOKEINTERFACE, "java/util/List", "size", "()I");
-            methodVisitor.visitVarInsn(ISTORE, runtimeListSize);
+            methodVisitor.visitIntInsn(ISTORE, runtimeListSize);
           }
         }
         if (checkIfString) {
@@ -705,20 +705,29 @@ import java.util.concurrent.atomic.AtomicInteger;
             int isReader = context.newLocalVariable(IS_READER_PREFIX + i);
             int runtimeStringLen = context.newLocalVariable(RUNTIME_STR_LEN_PREFIX + i);
 
+            // Initialize all local vars we're going to use.
+            methodVisitor.visitIntInsn(BIPUSH, 0);
+            methodVisitor.visitVarInsn(ISTORE, isString);
+            methodVisitor.visitIntInsn(BIPUSH, 0);
+            methodVisitor.visitVarInsn(ISTORE, isReader);
+            methodVisitor.visitIntInsn(BIPUSH, -1);
+            methodVisitor.visitVarInsn(ISTORE, runtimeStringLen);
+
             methodVisitor.visitVarInsn(ALOAD, i);
             methodVisitor.visitInsn(DUP);
             methodVisitor.visitTypeInsn(INSTANCEOF, "java/lang/String");
             methodVisitor.visitIntInsn(ISTORE, isString);
             methodVisitor.visitTypeInsn(INSTANCEOF, "java/io/Reader");
             methodVisitor.visitIntInsn(ISTORE, isReader);
+            methodVisitor.visitIntInsn(BIPUSH, 1);
 
             Label skipStringChecks = new Label();
-            methodVisitor.visitIntInsn(ILOAD, isString);
-            methodVisitor.visitJumpInsn(IFEQ, skipStringChecks);
+            methodVisitor.visitJumpInsn(IFNE, skipStringChecks);
             methodVisitor.visitVarInsn(ALOAD, i);
             methodVisitor.visitTypeInsn(CHECKCAST, "java/lang/String");
             methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "java/lang/String", "length", "()I");
-            methodVisitor.visitVarInsn(ISTORE, runtimeStringLen);
+            methodVisitor.visitIntInsn(ISTORE, runtimeStringLen);
+
             methodVisitor.visitLabel(skipStringChecks);
           }
         }
@@ -972,7 +981,7 @@ import java.util.concurrent.atomic.AtomicInteger;
       Label endOfClause = new Label();
 
       for (int i = 0, argumentsSize = context.arguments.size(); i < argumentsSize; i++) {
-        methodVisitor.visitVarInsn(ALOAD, i);
+//        methodVisitor.visitVarInsn(ALOAD, i);
 
         Node pattern = rule.patterns.get(i);
         if (pattern instanceof ListDestructuringPattern) {
@@ -984,6 +993,7 @@ import java.util.concurrent.atomic.AtomicInteger;
             || pattern instanceof IntLiteral
             || pattern instanceof BooleanLiteral) {
 
+          methodVisitor.visitVarInsn(ALOAD, i);
           emit(pattern);
 
           if (!(pattern instanceof BooleanLiteral))
@@ -1012,7 +1022,6 @@ import java.util.concurrent.atomic.AtomicInteger;
       methodVisitor.visitLabel(matchedClause);
       emitPatternClauses(rule);
       methodVisitor.visitJumpInsn(GOTO, context.endOfFunction);
-
       methodVisitor.visitLabel(endOfClause);
     }
   };
@@ -1026,7 +1035,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
   private void emitGuards(PatternRule rule) {
     MethodVisitor methodVisitor = methodStack.peek();
-    methodVisitor.visitInsn(POP);
+//    methodVisitor.visitInsn(POP);
     for (Node node : rule.children()) {
       if (!(node instanceof Guard))
         throw new RuntimeException("Apparent pattern rule missing guards: "
@@ -1059,7 +1068,6 @@ import java.util.concurrent.atomic.AtomicInteger;
     MapPattern pattern = (MapPattern) rule.patterns.get(argIndex);
     MethodVisitor methodVisitor = methodStack.peek();
 
-    methodVisitor.visitInsn(POP);
     for (Node child : pattern.children()) {
       DestructuringPair pair = (DestructuringPair) child;
 
@@ -1079,6 +1087,7 @@ import java.util.concurrent.atomic.AtomicInteger;
                                                 Label endOfClause,
                                                 int argIndex) {
     MethodVisitor methodVisitor = methodStack.peek();
+//    methodVisitor.visitInsn(POP);
 
     methodVisitor.visitVarInsn(ILOAD, context.localVarIndex(IS_STRING_PREFIX + argIndex));
     methodVisitor.visitJumpInsn(IFEQ, endOfClause);   // Not a string, so skip
@@ -1105,6 +1114,7 @@ import java.util.concurrent.atomic.AtomicInteger;
             int thisIndex = context.localVarIndex(context.newLocalVariable());
 
             methodVisitor.visitVarInsn(ALOAD, argIndex);
+            methodVisitor.visitTypeInsn(CHECKCAST, "java/lang/String");
             emit(next);
 
             // If this is the second or greater pattern matcher, seek from the last location.
@@ -1116,16 +1126,18 @@ import java.util.concurrent.atomic.AtomicInteger;
               methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "java/lang/String", "indexOf",
                   "(Ljava/lang/String;)I");
             }
-            methodVisitor.visitVarInsn(ISTORE, thisIndex);
+            methodVisitor.visitIntInsn(ISTORE, thisIndex);
 
-            methodVisitor.visitVarInsn(ILOAD, thisIndex);
+            methodVisitor.visitIntInsn(ILOAD, thisIndex);
             methodVisitor.visitIntInsn(BIPUSH, -1);
             methodVisitor.visitJumpInsn(IF_ICMPLE, endOfClause); // Jump out of this clause
 
             int matchedPieceVar = context.localVarIndex(context.newLocalVariable((Variable) child));
 
             methodVisitor.visitVarInsn(ALOAD, argIndex);
-            methodVisitor.visitVarInsn(ILOAD, lastIndex);
+            methodVisitor.visitTypeInsn(CHECKCAST, "java/lang/String");
+
+            methodVisitor.visitIntInsn(ILOAD, lastIndex);
 
             Label startFromLastIndex = new Label();
             Label startFromZeroIndex = new Label();
@@ -1140,7 +1152,6 @@ import java.util.concurrent.atomic.AtomicInteger;
             methodVisitor.visitLabel(startFromZeroIndex);
 
             methodVisitor.visitIntInsn(ILOAD, thisIndex);
-
             methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "java/lang/String", "substring",
                 "(II)Ljava/lang/String;");
             methodVisitor.visitInsn(DUP);
@@ -1156,6 +1167,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
             splittable = true;
           } else {
+            methodVisitor.visitVarInsn(ALOAD, argIndex);
             int matchedPieceVar = context.localVarIndex(context.newLocalVariable((Variable) child));
             methodVisitor.visitTypeInsn(CHECKCAST, "java/lang/String");
             methodVisitor.visitLdcInsn(i);
@@ -1168,6 +1180,7 @@ import java.util.concurrent.atomic.AtomicInteger;
           int matchedPieceVar = context.localVarIndex(context.newLocalVariable((Variable) child));
           int strLen = context.localVarIndex(RUNTIME_STR_LEN_PREFIX + argIndex);
 
+//          methodVisitor.visitVarInsn(ALOAD, argIndex);
           methodVisitor.visitIntInsn(ILOAD, strLen);
           methodVisitor.visitIntInsn(BIPUSH, 1);
 
@@ -1179,16 +1192,22 @@ import java.util.concurrent.atomic.AtomicInteger;
           methodVisitor.visitJumpInsn(GOTO, assignToPiece);
           methodVisitor.visitLabel(restOfString);
 
-//          methodVisitor.visitVarInsn(ALOAD, argIndex);
+          methodVisitor.visitVarInsn(ALOAD, argIndex);
+          methodVisitor.visitTypeInsn(CHECKCAST, "java/lang/String");
+
           methodVisitor.visitIntInsn(ILOAD, lastIndex);
           methodVisitor.visitIntInsn(BIPUSH, -1);
 
           Label restOfStringFromI = new Label();
+          Label reduceString = new Label();
           methodVisitor.visitJumpInsn(IF_ICMPLE, restOfStringFromI);
           methodVisitor.visitIntInsn(ILOAD, lastIndex);
-          methodVisitor.visitJumpInsn(GOTO, assignToPiece);
+          methodVisitor.visitJumpInsn(GOTO, reduceString);
           methodVisitor.visitLabel(restOfStringFromI);
           methodVisitor.visitLdcInsn(i);
+          methodVisitor.visitLabel(reduceString);
+          methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "java/lang/String", "substring",
+              "(I)Ljava/lang/String;");
 
           methodVisitor.visitLabel(assignToPiece);
           methodVisitor.visitVarInsn(ASTORE, matchedPieceVar);
@@ -1207,9 +1226,9 @@ import java.util.concurrent.atomic.AtomicInteger;
     ListStructurePattern listPattern = (ListStructurePattern) rule.patterns.get(argIndex);
     List<Node> children = listPattern.children();
 
-    methodVisitor.visitInsn(POP); // get rid of arg, we dont need it (yet)
+//    methodVisitor.visitInsn(POP); // get rid of arg, we dont need it (yet)
     int runtimeListSizeVar = context.localVarIndex(RUNTIME_LIST_SIZE_VAR_PREFIX + argIndex);
-    methodVisitor.visitVarInsn(ILOAD, runtimeListSizeVar);
+    methodVisitor.visitIntInsn(ILOAD, runtimeListSizeVar);
     methodVisitor.visitIntInsn(BIPUSH, children.size());
     methodVisitor.visitJumpInsn(IF_ICMPNE, endOfClause);
 
@@ -1246,13 +1265,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 
     int size = listPattern.children().size();
     if (size == 0) {
-      methodVisitor.visitInsn(POP);  // Dont need the list really.
-      methodVisitor.visitVarInsn(ILOAD, runtimeListSizeVar);
+//      methodVisitor.visitInsn(POP);  // Dont need the list really.
+      methodVisitor.visitIntInsn(ILOAD, runtimeListSizeVar);
       methodVisitor.visitJumpInsn(IFEQ, matchedClause);
       methodVisitor.visitJumpInsn(GOTO, endOfClause);
     } else if (size == 1) {
-      methodVisitor.visitInsn(POP);  // Dont need the list really.
-      methodVisitor.visitVarInsn(ILOAD, runtimeListSizeVar);
+//      methodVisitor.visitInsn(POP);  // Dont need the list really.
+      methodVisitor.visitIntInsn(ILOAD, runtimeListSizeVar);
       methodVisitor.visitIntInsn(BIPUSH, 1);
       methodVisitor.visitJumpInsn(IFNE, matchedClause);
       methodVisitor.visitJumpInsn(GOTO, endOfClause);
@@ -1267,12 +1286,13 @@ import java.util.concurrent.atomic.AtomicInteger;
           int localVar = context.localVarIndex(context.newLocalVariable(((Variable) child)));
 
           if (j < childrenSize - 1) {
+            methodVisitor.visitVarInsn(ALOAD, argIndex);
             methodVisitor.visitLdcInsn(i);
             methodVisitor.visitMethodInsn(INVOKEINTERFACE, "java/util/List", "get",
                 "(I)Ljava/lang/Object;");
             methodVisitor.visitVarInsn(ASTORE, localVar);
           } else {
-            methodVisitor.visitVarInsn(ILOAD, runtimeListSizeVar);
+            methodVisitor.visitIntInsn(ILOAD, runtimeListSizeVar);
             methodVisitor.visitIntInsn(BIPUSH, 1);
             Label storeEmptyList = new Label();
             methodVisitor.visitJumpInsn(IF_ICMPEQ, storeEmptyList);
@@ -1280,7 +1300,7 @@ import java.util.concurrent.atomic.AtomicInteger;
             // Otherwise store a slice of the list.
             methodVisitor.visitVarInsn(ALOAD, argIndex);
             methodVisitor.visitLdcInsn(i);
-            methodVisitor.visitVarInsn(ILOAD, runtimeListSizeVar);
+            methodVisitor.visitIntInsn(ILOAD, runtimeListSizeVar);
             methodVisitor.visitMethodInsn(INVOKEINTERFACE, "java/util/List", "subList",
                 "(II)Ljava/util/List;");
             methodVisitor.visitVarInsn(ASTORE, localVar);
@@ -1297,7 +1317,7 @@ import java.util.concurrent.atomic.AtomicInteger;
         }
       }
 
-      methodVisitor.visitInsn(POP); // discard list as we're done with it.
+//      methodVisitor.visitInsn(POP); // discard list as we're done with it.
     }
 
     methodVisitor.visitLabel(noMatch);

@@ -52,6 +52,18 @@ public class Caller {
     System.out.println(thing);
   }
 
+  public static void print(int thing) {
+    System.out.println(">>>>>>>>>>>>>>>>>>>>>");
+    System.out.println(">>>>>>>>>>>>>>>>>>>>>");
+    System.out.println(">>>>>>>>>>>>>>>>>>>>>");
+    System.out.println(">>>>>>>>>>>>>>>>>>>>>");
+    System.out.println(thing);
+    System.out.println(">>>>>>>>>>>>>>>>>>>>>");
+    System.out.println(">>>>>>>>>>>>>>>>>>>>>");
+    System.out.println(">>>>>>>>>>>>>>>>>>>>>");
+    System.out.println(">>>>>>>>>>>>>>>>>>>>>");
+  }
+
 
   @SuppressWarnings("unchecked")
   public static Object instantiate(String type, Object... args) {
