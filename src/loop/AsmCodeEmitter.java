@@ -45,6 +45,7 @@ import org.objectweb.asm.util.TraceClassVisitor;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -341,7 +342,7 @@ import java.util.concurrent.atomic.AtomicInteger;
           // If JDK7, use invokedynamic instead for better performance.
           if (isClosure)
             methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/runtime/Caller", "callClosure",
-                "(Lloop/runtime/Closure;Ljava/lang/String;)Ljava/lang/Object;");
+                "(Lloop/runtime/Closure;Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/Object;");
           else
             methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/runtime/Caller", "callStatic",
                 "(Ljava/lang/String;Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/Object;");
@@ -556,6 +557,7 @@ import java.util.concurrent.atomic.AtomicInteger;
       Integer index = context.argumentIndex.get(var.name);
       if (index == null)
         index = context.localVarIndex(var.name);
+
       methodStack.peek().visitVarInsn(ALOAD, index);
     }
   };
@@ -661,32 +663,69 @@ import java.util.concurrent.atomic.AtomicInteger;
         // Function is anonymous, generate a globally unique name for it.
         name = "$fn_" + functionNameSequence.incrementAndGet();
       }
-
-      Context context = new Context(name);
-      StringBuilder args = new StringBuilder("(");
-      List<Node> children = functionDecl.arguments().children();
-      for (int i = 0, childrenSize = children.size(); i < childrenSize; i++) {
-        Node arg = children.get(i);
-        String argName = ((ArgDeclList.Argument) arg).name();
-        context.arguments.add(argName);
-        context.argumentIndex.put(argName, i);
-
-        args.append("Ljava/lang/Object;");
-      }
-      args.append(")");
-      functionStack.push(context);
-      scope.pushScope(context);
+      Context innerContext = new Context(name);
 
       // Before we emit the body of this method into the class scope, let's
       // see if this is closure, and if it is, emit it as a function reference.
+      List<Variable> freeVariables = null;
       if (isClosure) {
         MethodVisitor currentVisitor = methodStack.peek();
+
+        // Discover any free variables and save them to this closure.
+        freeVariables = new ArrayList<Variable>();
+        detectFreeVariables(functionDecl, functionDecl.arguments(), freeVariables);
+        functionDecl.freeVariables = freeVariables;
+
+        // Add them to the argument list of the function.
+        for (Variable freeVariable : freeVariables) {
+          functionDecl.arguments().add(new ArgDeclList.Argument(freeVariable.name, null));
+        }
 
         currentVisitor.visitTypeInsn(NEW, "loop/runtime/Closure");
         currentVisitor.visitInsn(DUP);
         currentVisitor.visitLdcInsn(name);
-        currentVisitor.visitMethodInsn(INVOKESPECIAL, "loop/runtime/Closure", "<init>", "(Ljava/lang/String;)V");
+
+        if (!freeVariables.isEmpty()) {
+          Context outerContext = functionStack.peek();
+          int arrayIndex = outerContext.localVarIndex(outerContext.newLocalVariable());
+
+          // push free variables as array.
+          currentVisitor.visitIntInsn(BIPUSH, freeVariables.size());       // size of array
+          currentVisitor.visitTypeInsn(ANEWARRAY, "java/lang/Object");
+          currentVisitor.visitVarInsn(ASTORE, arrayIndex);
+          int i = 0;
+          for (Variable freeVariable : freeVariables) {
+//            innerContext.newFreeVariable(freeVariable);
+
+            currentVisitor.visitVarInsn(ALOAD, arrayIndex);    // array
+            currentVisitor.visitIntInsn(BIPUSH, i);            // index
+            emit(freeVariable);                                // value
+
+            currentVisitor.visitInsn(AASTORE);
+            i++;
+          }
+
+          // Load the array back in.
+          currentVisitor.visitVarInsn(ALOAD, arrayIndex);
+          currentVisitor.visitMethodInsn(INVOKESPECIAL, "loop/runtime/Closure", "<init>", "(Ljava/lang/String;[Ljava/lang/Object;)V");
+        } else
+          currentVisitor.visitMethodInsn(INVOKESPECIAL, "loop/runtime/Closure", "<init>", "(Ljava/lang/String;)V");
       }
+
+      // Start writing this function in its own scope.
+      StringBuilder args = new StringBuilder("(");
+      List<Node> children = functionDecl.arguments().children();
+      for (int functionArgIndex = 0, childrenSize = children.size(); functionArgIndex < childrenSize; functionArgIndex++) {
+        Node arg = children.get(functionArgIndex);
+        String argName = ((ArgDeclList.Argument) arg).name();
+        innerContext.arguments.add(argName);
+        innerContext.argumentIndex.put(argName, functionArgIndex);
+
+        args.append("Ljava/lang/Object;");
+      }
+      args.append(")");
+      functionStack.push(innerContext);
+      scope.pushScope(innerContext);
 
       final MethodVisitor methodVisitor = classWriter.visitMethod(
           (functionDecl.isPrivate ? ACC_PRIVATE : ACC_PUBLIC) + ACC_STATIC,
@@ -700,7 +739,7 @@ import java.util.concurrent.atomic.AtomicInteger;
       for (Node helper : functionDecl.whereBlock) {
         // Rewrite helper functions to be namespaced inside the parent function.
         if (helper instanceof FunctionDecl)
-          scopeNestedFunction(functionDecl, context, (FunctionDecl) helper);
+          scopeNestedFunction(functionDecl, innerContext, (FunctionDecl) helper);
         emit(helper);
       }
 
@@ -723,8 +762,8 @@ import java.util.concurrent.atomic.AtomicInteger;
         if (checkIfLists) {
           List<Node> children1 = functionDecl.arguments().children();
           for (int i = 0, children1Size = children1.size(); i < children1Size; i++) {
-            int isList = context.newLocalVariable(IS_LIST_VAR_PREFIX + i);
-            int runtimeListSize = context.newLocalVariable(RUNTIME_LIST_SIZE_VAR_PREFIX + i);
+            int isList = innerContext.newLocalVariable(IS_LIST_VAR_PREFIX + i);
+            int runtimeListSize = innerContext.newLocalVariable(RUNTIME_LIST_SIZE_VAR_PREFIX + i);
 
             methodVisitor.visitVarInsn(ALOAD, i);
             methodVisitor.visitInsn(DUP);
@@ -737,9 +776,9 @@ import java.util.concurrent.atomic.AtomicInteger;
         }
         if (checkIfString) {
           for (int i = 0, childrenSize = children.size(); i < childrenSize; i++) {
-            int isString = context.newLocalVariable(IS_STRING_PREFIX + i);
-            int isReader = context.newLocalVariable(IS_READER_PREFIX + i);
-            int runtimeStringLen = context.newLocalVariable(RUNTIME_STR_LEN_PREFIX + i);
+            int isString = innerContext.newLocalVariable(IS_STRING_PREFIX + i);
+            int isReader = innerContext.newLocalVariable(IS_READER_PREFIX + i);
+            int runtimeStringLen = innerContext.newLocalVariable(RUNTIME_STR_LEN_PREFIX + i);
 
             // Initialize all local vars we're going to use.
             methodVisitor.visitIntInsn(BIPUSH, 0);
@@ -777,7 +816,7 @@ import java.util.concurrent.atomic.AtomicInteger;
         methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/Loop", "error", "(Ljava/lang/String;)V");
       }
 
-      methodVisitor.visitLabel(context.endOfFunction);
+      methodVisitor.visitLabel(innerContext.endOfFunction);
       methodVisitor.visitInsn(ARETURN);
       methodVisitor.visitMaxs(0, 0);
       methodVisitor.visitEnd();
@@ -787,6 +826,34 @@ import java.util.concurrent.atomic.AtomicInteger;
       scope.popScope();
     }
   };
+
+  private void detectFreeVariables(Node top, ArgDeclList args, List<Variable> vars) {
+    // Pre-order traversal.
+    for (Node node : top.children()) {
+      detectFreeVariables(node, args, vars);
+    }
+
+    if (top instanceof Variable) {
+      Variable local = (Variable) top;
+
+      boolean free = true;
+      if (args != null)
+        for (Node arg : args.children()) {
+          ArgDeclList.Argument argument = (ArgDeclList.Argument) arg;
+
+          if (argument.name().equals(local.name))
+            free = false;
+        }
+
+      if (free)
+        vars.add(local);
+
+    } else if (top instanceof Call) {
+      Call call = (Call) top;
+      detectFreeVariables(call.args(), args, vars);
+    }
+
+  }
 
   private void scopeNestedFunction(FunctionDecl parent, Context context, FunctionDecl function) {
     String unscopedName = function.name();

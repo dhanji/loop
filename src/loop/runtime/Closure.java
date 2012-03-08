@@ -5,15 +5,15 @@ package loop.runtime;
  */
 public class Closure {
   public final String name;
-  public final Object[] args;
+  public final Object[] freeVariables;
 
   public Closure(String name) {
     this.name = name;
-    this.args = Caller.EMPTY_ARRAY;
+    this.freeVariables = Caller.EMPTY_ARRAY;
   }
 
-  public Closure(String name, Object[] args) {
+  public Closure(String name, Object[] freeVariables) {
     this.name = name;
-    this.args = args;
+    this.freeVariables = freeVariables;
   }
 }

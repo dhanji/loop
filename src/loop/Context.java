@@ -47,8 +47,13 @@ public class Context {
   }
 
   public String newLocalVariable(Variable var) {
-    localVars.add(var.name);
-    localVarIndex.put(var.name, localVars.size());
+    if (arguments.isEmpty()) {
+      localVarIndex.put(var.name, localVars.size());
+      localVars.add(var.name);
+    } else {
+      localVars.add(var.name);
+      localVarIndex.put(var.name, localVars.size());
+    }
     return var.name;
   }
 
@@ -56,6 +61,10 @@ public class Context {
     localVars.add(localVar);
     localVarIndex.put(localVar, localVars.size());
     return localVars.size();
+  }
+
+  public void newFreeVariable(Variable freeVariable) {
+    localVarIndex.put(freeVariable.name, arguments.size());
   }
 
   public int localVarIndex(String name) {

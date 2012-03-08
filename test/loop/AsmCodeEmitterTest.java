@@ -542,6 +542,55 @@ public class AsmCodeEmitterTest {
   }
 
 
+  @Test
+  public final void emitBinaryClosure() throws Exception {
+    Parser parser = new Parser(new Tokenizer(
+        "lower(obj) ->\n" +
+        "  obj.@call(1, 2) * 10\n" +
+        "\n" +
+        "main ->\n" +
+        "  lower(@(a, b) ->\n" +
+        "          a + b)\n" +
+        "\n"
+    ).tokenize());
+    Unit unit = parser.script();
+    unit.reduceAll();
+
+    Class<?> generated = new AsmCodeEmitter(unit).write(unit, true);
+
+    // Inspect.
+    inspect(generated);
+
+    assertEquals(30, generated.getDeclaredMethod("main").invoke(null));
+  }
+
+
+
+  @Test
+  public final void emitBinaryClosureWithFreeVars() throws Exception {
+    Parser parser = new Parser(new Tokenizer(
+        "lower(obj) ->\n" +
+        "  obj.@call(1, 2) * 10\n" +
+        "\n" +
+        "main ->\n" +
+        "  lower(@(a, b) ->\n" +
+        "          a + b + c)\n" +
+        "  where\n" +
+        "    c: 4\n" +
+        "\n"
+    ).tokenize());
+    Unit unit = parser.script();
+    unit.reduceAll();
+
+    Class<?> generated = new AsmCodeEmitter(unit).write(unit, true);
+
+    // Inspect.
+    inspect(generated);
+
+    assertEquals(70, generated.getDeclaredMethod("main").invoke(null));
+  }
+
+
 
   @Test
   public final void emitWhereBlock() throws Exception {

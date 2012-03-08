@@ -188,10 +188,23 @@ public class Caller {
   }
 
   public static Object callClosure(Closure closure, String target) {
-    return callStatic(target, closure.name, closure.args);
+    return callStatic(target, closure.name, closure.freeVariables);
   }
 
-  public static Object callStatic(String target, String method, Object... args) {
+  public static Object callClosure(Closure closure, String target, Object[] args) {
+    int argLen = args.length;
+    int freeVarLen = closure.freeVariables.length;
+    if (freeVarLen > 0) {
+      Object[] combinedArgs = new Object[argLen + freeVarLen];
+      System.arraycopy(args, 0, combinedArgs, 0, argLen);
+      System.arraycopy(closure.freeVariables, 0, combinedArgs, argLen, freeVarLen);
+
+      args = combinedArgs;
+    }
+    return callStatic(target, closure.name, args);
+  }
+
+  public static Object callStatic(String target, String method, Object[] args) {
     Method toCall;
 
     try {

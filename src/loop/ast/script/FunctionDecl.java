@@ -2,6 +2,7 @@ package loop.ast.script;
 
 import loop.Parser;
 import loop.ast.Node;
+import loop.ast.Variable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +17,9 @@ public class FunctionDecl extends Node {
   public final boolean isPrivate;
 
   public final List<Node> whereBlock = new ArrayList<Node>();
+
+  // Memo fields.
+  public transient List<Variable> freeVariables;
 
   public FunctionDecl(String name, ArgDeclList arguments) {
     this.name = name;
