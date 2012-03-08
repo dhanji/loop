@@ -2,7 +2,7 @@ TODO
 ----
 
 ASM
-- Pattern matching
+x Pattern matching
 x index into string
 - Basic scope verification of AST with symbol table
 - Modules/packaging/import

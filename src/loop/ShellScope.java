@@ -46,12 +46,30 @@ class ShellScope implements Scope {
     scopes.pop();
   }
 
+  @Override public String resolveJavaType(String name) {
+    for (RequireDecl requireDecl : requires) {
+      if (requireDecl.javaLiteral == null)
+        continue;
+
+      if (requireDecl.javaLiteral.endsWith(name))
+        return requireDecl.javaLiteral;
+    }
+    return null;
+  }
+
   @Override public ClassDecl resolve(String fullyQualifiedName) {
     return classes.get(fullyQualifiedName);
   }
 
   @Override
   public FunctionDecl resolveFunction(String fullyQualifiedName) {
+    // First resolve in local scope if possible.
+    Context context = scopes.peek();
+    if (context != null) {
+      FunctionDecl func = context.localFunctionName(fullyQualifiedName);
+      if (func != null)
+        return func;
+    }
     return functions.get(fullyQualifiedName);
   }
 }

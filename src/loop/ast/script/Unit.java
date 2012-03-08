@@ -20,6 +20,7 @@ public class Unit implements Scope {
   private final ModuleDecl module;
 
   private final Set<RequireDecl> imports = new LinkedHashSet<RequireDecl>();
+
   private final Map<String, FunctionDecl> functions = new LinkedHashMap<String, FunctionDecl>();
   private final Map<String, ClassDecl> classes = new HashMap<String, ClassDecl>();
   private final Stack<Context> scopes = new Stack<Context>();
@@ -34,6 +35,17 @@ public class Unit implements Scope {
 
   @Override public void popScope() {
     scopes.pop();
+  }
+
+  @Override public String resolveJavaType(String name) {
+    for (RequireDecl requireDecl : imports) {
+      if (requireDecl.javaLiteral == null)
+        continue;
+
+      if (requireDecl.javaLiteral.endsWith(name))
+        return requireDecl.javaLiteral;
+    }
+    return null;
   }
 
   public void reduceAll() {

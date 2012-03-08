@@ -467,6 +467,57 @@ public class AsmCodeEmitterTest {
   }
 
 
+  @Test
+  public final void emitTypedMapPatternMatchingFunction() throws Exception {
+    Parser parser = new Parser(new Tokenizer(
+        "require `java.util.List`\n" +
+        "require `java.util.Map`\n" +
+        "\n" +
+        "lower(obj) =>\n" +
+        "  List[ x <- obj.name]        : x.toUpperCase()\n" +
+        "  Map[ x <- obj.name]         : x.toLowerCase()\n"
+    ).tokenize());
+    Unit unit = parser.script();
+    unit.reduceAll();
+
+    Class<?> generated = new AsmCodeEmitter(unit).write(unit, true);
+
+    // Inspect.
+    inspect(generated);
+
+    Map<String, String> obj = new HashMap<String, String>();
+    obj.put("name", "Dude");
+
+    assertEquals("dude", generated.getDeclaredMethod("lower", Object.class).invoke(null, obj));
+  }
+
+
+
+  @Test
+  public final void emitTypedPatternMatchingFunction() throws Exception {
+    Parser parser = new Parser(new Tokenizer(
+        "require `java.util.List`\n" +
+        "require `java.util.Map`\n" +
+        "\n" +
+        "lower(obj) =>\n" +
+        "  List        : obj.name.toUpperCase()\n" +
+        "  Map         : obj.name.toLowerCase()\n"
+    ).tokenize());
+    Unit unit = parser.script();
+    unit.reduceAll();
+
+    Class<?> generated = new AsmCodeEmitter(unit).write(unit, true);
+
+    // Inspect.
+    inspect(generated);
+
+    Map<String, String> obj = new HashMap<String, String>();
+    obj.put("name", "Dude");
+
+    assertEquals("dude", generated.getDeclaredMethod("lower", Object.class).invoke(null, obj));
+  }
+
+
 
   @Test
   public final void emitWhereBlock() throws Exception {

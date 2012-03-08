@@ -1025,6 +1025,8 @@ import java.util.concurrent.atomic.AtomicInteger;
           methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Boolean", "booleanValue", "()Z");
 
           methodVisitor.visitJumpInsn(IFEQ, endOfClause);
+        } else if (pattern instanceof TypeLiteral) {
+          emitTypePatternRule(methodVisitor, matchedClause, endOfClause, i, (TypeLiteral) pattern);
         } else if (pattern instanceof RegexLiteral) {
           methodVisitor.visitTypeInsn(CHECKCAST, "java/lang/String");
           methodVisitor.visitLdcInsn(((RegexLiteral) pattern).value);
@@ -1048,6 +1050,25 @@ import java.util.concurrent.atomic.AtomicInteger;
       methodVisitor.visitLabel(endOfClause);
     }
   };
+
+  private void emitTypePatternRule(MethodVisitor methodVisitor,
+                                   Label matchedClause,
+                                   Label endOfClause,
+                                   int argIndex,
+                                   TypeLiteral pattern) {
+    String typeName;
+    ClassDecl resolved = scope.resolve(pattern.name);
+    if (resolved != null) {
+      typeName = resolved.name;
+    } else {
+      typeName = scope.resolveJavaType(pattern.name);
+    }
+
+    methodVisitor.visitVarInsn(ALOAD, argIndex);
+    methodVisitor.visitTypeInsn(INSTANCEOF, typeName.replace('.', '/'));
+    methodVisitor.visitJumpInsn(IFEQ, endOfClause);
+    methodVisitor.visitJumpInsn(GOTO, matchedClause);
+  }
 
   private void emitPatternClauses(PatternRule rule) {
     if (rule.rhs != null) {
@@ -1091,7 +1112,32 @@ import java.util.concurrent.atomic.AtomicInteger;
     MapPattern pattern = (MapPattern) rule.patterns.get(argIndex);
     MethodVisitor methodVisitor = methodStack.peek();
 
-    for (Node child : pattern.children()) {
+    boolean hasType = false;
+    List<Node> children = pattern.children();
+    for (int i = 0, childrenSize = children.size(); i < childrenSize; i++) {
+      Node child = children.get(i);
+      if (child instanceof TypeLiteral) {
+        hasType = true;
+
+        TypeLiteral typeLiteral = (TypeLiteral) child;
+        String typeName;
+        ClassDecl resolved = scope.resolve(typeLiteral.name);
+        if (resolved != null) {
+          typeName = resolved.name;
+        } else {
+          typeName = scope.resolveJavaType(typeLiteral.name);
+        }
+
+        methodVisitor.visitVarInsn(ALOAD, argIndex);
+        methodVisitor.visitTypeInsn(INSTANCEOF, typeName.replace('.', '/'));
+        continue;
+      }
+
+      // Guard the first destructuring pair if there is a type pattern.
+      if (hasType && i == 1) {
+        methodVisitor.visitJumpInsn(IFEQ, endOfClause);
+      }
+
       DestructuringPair pair = (DestructuringPair) child;
 
       int destructuredVar = context.localVarIndex(context.newLocalVariable((Variable) pair.lhs));

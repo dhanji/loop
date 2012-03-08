@@ -26,4 +26,6 @@ public interface Scope {
   void pushScope(Context context);
 
   void popScope();
+
+  String resolveJavaType(String name);
 }
