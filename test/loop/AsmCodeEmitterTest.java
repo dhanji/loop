@@ -305,6 +305,26 @@ public class AsmCodeEmitterTest {
   }
 
 
+  @Test
+  public final void emitWhereBlockFunction() throws Exception {
+    Parser parser = new Parser(new Tokenizer(
+        "pick(ls) =>\n" +
+        "  1         : 'one'\n" +
+        "  2         : 'two'\n"
+    ).tokenize());
+    Unit unit = parser.script();
+    unit.reduceAll();
+
+    Class<?> generated = new AsmCodeEmitter(unit).write(unit, true);
+
+    // Inspect.
+    inspect(generated);
+
+    assertEquals("two", generated.getDeclaredMethod("pick", Object.class)
+        .invoke(null, 2));
+  }
+
+
 
   @Test
   public final void emitStringPatternMatchingFunction() throws Exception {
