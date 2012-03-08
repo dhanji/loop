@@ -16,7 +16,7 @@ import static org.junit.Assert.assertTrue;
  * @author dhanji@gmail.com (Dhanji R. Prasanna)
  */
 public class JavaInteropConfidenceTest extends LoopTest {
-  public static final Long CONSTANT = new Date().getTime();
+  public static final Integer CONSTANT = Long.valueOf(new Date().getTime()).intValue();
 
   @Test
   public final void normalFunctionCall() {
@@ -32,10 +32,5 @@ public class JavaInteropConfidenceTest extends LoopTest {
   @Test
   public final void callJavaStaticConstant() {
     assertEquals(CONSTANT + 1, Loop.run("test/loop/confidence/interop/call_java_static_2.loop"));
-  }
-
-//  @Test
-  public final void callJavaStaticClassUsingWhere() {
-    assertTrue(CONSTANT <= (Long)Loop.run("test/loop/confidence/interop/call_java_static_3.loop", true));
   }
 }

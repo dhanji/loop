@@ -302,6 +302,10 @@ import java.util.concurrent.atomic.AtomicInteger;
       FunctionDecl resolvedFunction = scope.resolveFunction(call.name());
       boolean isStatic = resolvedFunction != null, isClosure = false;
 
+      // The parse-tree knows if we are calling a java method statically.
+      if (!isStatic)
+        isStatic = call.isJavaStatic();
+
       // This is a special invocation so we emit it without the dot.
       String name;
       if ("@call".equals(call.name())) {
@@ -309,7 +313,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
         isStatic = true;
         isClosure = true;
-      } else if (isStatic) {
+      } else if (isStatic && resolvedFunction != null) {
         name = normalizeMethodName(resolvedFunction.scopedName());
       } else
         name = normalizeMethodName(call.name());
@@ -334,7 +338,7 @@ import java.util.concurrent.atomic.AtomicInteger;
       }
 
       // push name of containing type if this is a static call.
-      if (isStatic) {
+      if (isStatic && !call.isJavaStatic()) {
         if (isClosure)
           methodVisitor.visitTypeInsn(CHECKCAST, "loop/runtime/Closure");
 
@@ -654,7 +658,17 @@ import java.util.concurrent.atomic.AtomicInteger;
     public void emitCode(Node node) {
       JavaLiteral java = (JavaLiteral) node;
       trackLineAndColumn(java);
-      append(java.value);
+
+      MethodVisitor methodVisitor = methodStack.peek();
+
+      if (java.staticFieldAccess == null)
+        methodVisitor.visitLdcInsn(java.value);
+      else {
+        methodVisitor.visitLdcInsn(java.value);
+        methodVisitor.visitLdcInsn(java.staticFieldAccess);
+        methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/runtime/Caller", "getStatic",
+            "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/Object;");
+      }
     }
   };
 

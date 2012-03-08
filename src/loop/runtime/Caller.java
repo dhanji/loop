@@ -3,8 +3,10 @@ package loop.runtime;
 import loop.LoopClassLoader;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,6 +36,8 @@ public class Caller {
       new ConcurrentHashMap<String, Method>();
   private static volatile ConcurrentMap<String, Constructor> staticConstructorCache =
       new ConcurrentHashMap<String, Constructor>();
+  private static volatile ConcurrentMap<String, Field> staticFieldCache =
+      new ConcurrentHashMap<String, Field>();
   private static volatile ConcurrentMap<String, Method> dynamicMethodCache =
       new ConcurrentHashMap<String, Method>();
   public static final Object[] EMPTY_ARRAY = new Object[0];
@@ -42,6 +46,7 @@ public class Caller {
     staticConstructorCache = new ConcurrentHashMap<String, Constructor>();
     staticMethodCache = new ConcurrentHashMap<String, Method>();
     dynamicMethodCache = new ConcurrentHashMap<String, Method>();
+    staticFieldCache = new ConcurrentHashMap<String, Field>();
   }
 
   public static Object call(Object target, String method) {
@@ -245,6 +250,38 @@ public class Caller {
     } catch (IllegalAccessException e) {
       throw new RuntimeException(e.getCause());
     } catch (InvocationTargetException e) {
+      throw new RuntimeException(e.getCause());
+    } catch (ClassNotFoundException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public static Object getStatic(String target, String field) {
+    Field toCall;
+
+    try {
+      final String key = target + field;
+      toCall = staticFieldCache.get(key);
+
+      if (toCall == null) {
+        final Class<?> clazz = Class.forName(target, true, LoopClassLoader.CLASS_LOADER);
+        if (toCall == null) {
+          for (Field candidate : clazz.getDeclaredFields()) {
+            if (Modifier.isStatic(candidate.getModifiers()) && candidate.getName().equals(field)) {
+              toCall = candidate;
+              break;
+            }
+          }
+        }
+
+        staticFieldCache.put(key, toCall);
+      }
+
+      return toCall.get(null);
+    } catch (NullPointerException e) {
+      throw new RuntimeException(
+          "No such method could be resolved: " + field + " on type " + target);
+    } catch (IllegalAccessException e) {
       throw new RuntimeException(e.getCause());
     } catch (ClassNotFoundException e) {
       throw new RuntimeException(e);

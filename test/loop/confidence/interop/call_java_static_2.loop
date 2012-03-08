@@ -1,7 +1,7 @@
 # Calling Java and Loop functions.
 
 @do() ->
-  `loop.confidence.interop.JavaInteropConfidenceTest.CONSTANT` + 1
+  `loop.confidence.interop.JavaInteropConfidenceTest::CONSTANT` + 1
 
 
 main ->

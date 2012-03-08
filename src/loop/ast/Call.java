@@ -11,6 +11,7 @@ public class Call extends Node {
 
   private CallArguments args;
   private static final String PRINT = "System.out.println";
+  private boolean javaStatic;
 
   public Call(String name, boolean function, CallArguments args) {
     // HACK! rewrites print calls to Java sout
@@ -25,6 +26,14 @@ public class Call extends Node {
 
   public String name() {
     return name;
+  }
+
+  public void javaStatic(boolean javaStatic) {
+    this.javaStatic = javaStatic;
+  }
+
+  public boolean isJavaStatic() {
+    return javaStatic;
   }
 
   @Override

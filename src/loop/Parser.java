@@ -966,8 +966,12 @@ public class Parser {
     CallChain chain = new CallChain();
     chain.add(node);
 
+    // Is this a static method call being set up? I.e. NOT a reference to a constant.
+    boolean isJavaStaticRef = node instanceof JavaLiteral && ((JavaLiteral)node).staticFieldAccess == null;
     Node call, indexIntoList = null;
     while ((call = call()) != null || (indexIntoList = indexIntoList()) != null) {
+      if (call != null)
+        ((Call)call).javaStatic(isJavaStaticRef);
       chain.add(call != null ? call : indexIntoList);
     }
 
