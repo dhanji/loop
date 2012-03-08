@@ -6,16 +6,17 @@ ASM
 x index into string
 - Basic scope verification of AST with symbol table
 - Modules/packaging/import
-- where block - functions
-- private functions
-
+x where block - functions
+x private functions
+- closures
 - do block
 
 
 Stretch
 -------
 
-x Null-safety (is this possible?)
+- "Call as method"
+- Null-safety (is this possible?)
 - Tail call optimization
 - enumeration type
 - immutable types

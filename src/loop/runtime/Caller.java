@@ -220,6 +220,9 @@ public class Caller {
           }
         }
 
+        if (!toCall.isAccessible())
+          toCall.setAccessible(true);
+
         staticMethodCache.put(key, toCall);
       }
 

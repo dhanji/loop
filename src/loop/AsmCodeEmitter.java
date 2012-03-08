@@ -661,7 +661,8 @@ import java.util.concurrent.atomic.AtomicInteger;
       functionStack.push(context);
       scope.pushScope(context);
 
-      final MethodVisitor methodVisitor = classWriter.visitMethod(ACC_PUBLIC + ACC_STATIC,
+      final MethodVisitor methodVisitor = classWriter.visitMethod(
+          (functionDecl.isPrivate ? ACC_PRIVATE : ACC_PUBLIC) + ACC_STATIC,
           normalizeMethodName(name),
           args.append("Ljava/lang/Object;").toString(),
           null,
@@ -1004,7 +1005,6 @@ import java.util.concurrent.atomic.AtomicInteger;
       Label endOfClause = new Label();
 
       for (int i = 0, argumentsSize = context.arguments.size(); i < argumentsSize; i++) {
-//        methodVisitor.visitVarInsn(ALOAD, i);
 
         Node pattern = rule.patterns.get(i);
         if (pattern instanceof ListDestructuringPattern) {
@@ -1058,7 +1058,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
   private void emitGuards(PatternRule rule) {
     MethodVisitor methodVisitor = methodStack.peek();
-//    methodVisitor.visitInsn(POP);
+
     for (Node node : rule.children()) {
       if (!(node instanceof Guard))
         throw new RuntimeException("Apparent pattern rule missing guards: "
@@ -1110,7 +1110,6 @@ import java.util.concurrent.atomic.AtomicInteger;
                                                 Label endOfClause,
                                                 int argIndex) {
     MethodVisitor methodVisitor = methodStack.peek();
-//    methodVisitor.visitInsn(POP);
 
     methodVisitor.visitVarInsn(ILOAD, context.localVarIndex(IS_STRING_PREFIX + argIndex));
     methodVisitor.visitJumpInsn(IFEQ, endOfClause);   // Not a string, so skip

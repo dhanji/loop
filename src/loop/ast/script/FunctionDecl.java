@@ -13,10 +13,13 @@ public class FunctionDecl extends Node {
   private String name;
   private final ArgDeclList arguments;
   public boolean patternMatching;
+  public final boolean isPrivate;
+
   public final List<Node> whereBlock = new ArrayList<Node>();
 
   public FunctionDecl(String name, ArgDeclList arguments) {
     this.name = name;
+    this.isPrivate = name == null || name.startsWith("@");
     this.arguments = arguments == null ? new ArgDeclList() : arguments;
   }
 
