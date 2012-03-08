@@ -10,7 +10,7 @@ import java.util.List;
  * A declaration of a function. May be free or a member of a class.
  */
 public class FunctionDecl extends Node {
-  private final String name;
+  private String name;
   private final ArgDeclList arguments;
   public boolean patternMatching;
   public final List<Node> whereBlock = new ArrayList<Node>();
@@ -26,6 +26,10 @@ public class FunctionDecl extends Node {
 
   public ArgDeclList arguments() {
     return arguments;
+  }
+
+  public void name(String name) {
+    this.name = name;
   }
 
   @Override

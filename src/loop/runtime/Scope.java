@@ -1,5 +1,6 @@
 package loop.runtime;
 
+import loop.Context;
 import loop.ast.ClassDecl;
 import loop.ast.script.FunctionDecl;
 import loop.ast.script.RequireDecl;
@@ -21,4 +22,8 @@ public interface Scope {
   void declare(FunctionDecl function);
 
   Set<RequireDecl> requires();
+
+  void pushScope(Context context);
+
+  void popScope();
 }

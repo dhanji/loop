@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 
 /**
  * Simple scope that resolves constructors in the current context.
@@ -19,6 +20,7 @@ class ShellScope implements Scope {
   private final Set<RequireDecl> requires = new LinkedHashSet<RequireDecl>();
   private final Map<String, ClassDecl> classes = new HashMap<String, ClassDecl>();
   private final Map<String, FunctionDecl> functions = new HashMap<String, FunctionDecl>();
+  private final Stack<Context> scopes = new Stack<Context>();
 
   @Override public void declare(RequireDecl require) {
     requires.add(require);
@@ -34,6 +36,14 @@ class ShellScope implements Scope {
 
   @Override public Set<RequireDecl> requires() {
     return requires;
+  }
+
+  @Override public void pushScope(Context context) {
+    scopes.push(context);
+  }
+
+  @Override public void popScope() {
+    scopes.pop();
   }
 
   @Override public ClassDecl resolve(String fullyQualifiedName) {

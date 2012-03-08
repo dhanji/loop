@@ -310,12 +310,18 @@ public class AsmCodeEmitterTest {
     Parser parser = new Parser(new Tokenizer(
         "pick(ls) =>\n" +
         "  1         : 'one'\n" +
-        "  2         : 'two'\n"
+        "  2         : two()\n" +
+        "  where\n" +
+        "    two ->\n" +
+        "      two()\n" +
+        "    where\n" +
+        "      two ->\n" +
+        "        'two'\n"
     ).tokenize());
     Unit unit = parser.script();
     unit.reduceAll();
 
-    Class<?> generated = new AsmCodeEmitter(unit).write(unit, true);
+    Class<?> generated = new AsmCodeEmitter(unit).write(unit);
 
     // Inspect.
     inspect(generated);

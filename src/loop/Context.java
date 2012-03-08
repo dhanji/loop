@@ -1,6 +1,7 @@
 package loop;
 
 import loop.ast.Variable;
+import loop.ast.script.FunctionDecl;
 import org.objectweb.asm.Label;
 
 import java.util.ArrayList;
@@ -12,7 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * @author dhanji@gmail.com (Dhanji R. Prasanna)
  */
-class Context {
+public class Context {
   private static final AtomicInteger localVariableNameSequence = new AtomicInteger();
 
   String name;
@@ -21,10 +22,20 @@ class Context {
   final List<String> localVars = new ArrayList<String>();
   final Map<String, Integer> localVarIndex = new HashMap<String, Integer>();
 
+  final Map<String, FunctionDecl> localFunctions = new HashMap<String, FunctionDecl>();
+
   final Label endOfFunction = new Label();
 
   public Context(String name) {
     this.name = name;
+  }
+
+  public void newLocalFunction(String localName, FunctionDecl func) {
+    localFunctions.put(localName, func);
+  }
+
+  public FunctionDecl localFunctionName(String localName) {
+    return localFunctions.get(localName);
   }
 
   public String newLocalVariable() {

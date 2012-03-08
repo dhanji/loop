@@ -1,5 +1,6 @@
 package loop.ast.script;
 
+import loop.Context;
 import loop.Reducer;
 import loop.ast.ClassDecl;
 import loop.runtime.Scope;
@@ -10,6 +11,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 
 /**
  * A compilation unit containing imports classes, functions, etc. Represents a single file.
@@ -20,9 +22,18 @@ public class Unit implements Scope {
   private final Set<RequireDecl> imports = new LinkedHashSet<RequireDecl>();
   private final Map<String, FunctionDecl> functions = new LinkedHashMap<String, FunctionDecl>();
   private final Map<String, ClassDecl> classes = new HashMap<String, ClassDecl>();
+  private final Stack<Context> scopes = new Stack<Context>();
 
   public Unit(ModuleDecl module) {
     this.module = module;
+  }
+
+  @Override public void pushScope(Context context) {
+    scopes.push(context);
+  }
+
+  @Override public void popScope() {
+    scopes.pop();
   }
 
   public void reduceAll() {
@@ -48,6 +59,13 @@ public class Unit implements Scope {
 
   @Override
   public FunctionDecl resolveFunction(String fullyQualifiedName) {
+    // First resolve in local scope if possible.
+    Context context = scopes.peek();
+    if (context != null) {
+      FunctionDecl func = context.localFunctionName(fullyQualifiedName);
+      if (func != null)
+        return func;
+    }
     return functions.get(fullyQualifiedName);
   }
 

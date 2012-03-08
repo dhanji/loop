@@ -64,6 +64,7 @@ import java.util.concurrent.atomic.AtomicInteger;
   private static final String RUNTIME_STR_LEN_PREFIX = "__$str_len_";
   private static final String IS_STRING_PREFIX = "__$isStr_";
   private static final String IS_READER_PREFIX = "__$isRdr_";
+  private static final String WHERE_SCOPE_FN_PREFIX = "$wh$";
 
   private StringBuilder out = new StringBuilder();
   private final Stack<Context> functionStack = new Stack<Context>();
@@ -298,11 +299,14 @@ import java.util.concurrent.atomic.AtomicInteger;
         name = normalizeMethodName(call.name());
 
       MethodVisitor methodVisitor = methodStack.peek();
+      FunctionDecl resolvedFunction = scope.resolveFunction(call.name());
+      boolean isStatic = resolvedFunction != null;
 
-      boolean isStatic = scope.resolveFunction(call.name()) != null;
       // push name of containing type if this is a static call.
-      if (isStatic)
+      if (isStatic) {
         methodVisitor.visitLdcInsn("_default_");
+        name = normalizeMethodName(resolvedFunction.name());
+      }
 
       // push method name onto stack
       methodVisitor.visitLdcInsn(name);
@@ -655,6 +659,7 @@ import java.util.concurrent.atomic.AtomicInteger;
       }
       args.append(")");
       functionStack.push(context);
+      scope.pushScope(context);
 
       final MethodVisitor methodVisitor = classWriter.visitMethod(ACC_PUBLIC + ACC_STATIC,
           normalizeMethodName(name),
@@ -665,6 +670,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
       // Emit locally-scoped helper functions and variables.
       for (Node helper : functionDecl.whereBlock) {
+        // Rewrite helper functions to be namespaced inside the parent function.
+        if (helper instanceof FunctionDecl)
+          scopeNestedFunction(functionDecl, context, (FunctionDecl) helper);
         emit(helper);
       }
 
@@ -748,8 +756,23 @@ import java.util.concurrent.atomic.AtomicInteger;
 
       methodStack.pop();
       functionStack.pop();
+      scope.popScope();
     }
   };
+
+  private void scopeNestedFunction(FunctionDecl parent, Context context, FunctionDecl function) {
+    String unscopedName = function.name();
+
+    String newName;
+    if (parent.name().startsWith(WHERE_SCOPE_FN_PREFIX))
+      newName = parent.name() + '$' + unscopedName;
+    else
+      newName = WHERE_SCOPE_FN_PREFIX + parent.name() + '$' + unscopedName;
+
+    // Apply the scoped name globally.
+    function.name(newName);
+    context.newLocalFunction(unscopedName, function);
+  }
 
   private final Emitter privateFieldEmitter = new Emitter() {
     @Override
