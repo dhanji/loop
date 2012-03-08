@@ -474,7 +474,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 
       } else {
         // Emit Java constructor call.
-        String javaType = (call.modulePart != null ? call.modulePart : "") + call.name;
+        String javaType;
+        if (call.modulePart != null)
+          javaType = call.modulePart + call.name;
+        else
+          javaType = scope.resolveJavaType(call.name);
 
         boolean isNullary = call.args().children().isEmpty();
         if (!isNullary) {
