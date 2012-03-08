@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
@@ -19,6 +20,7 @@ import java.util.Stack;
 public class Unit implements Scope {
   private final ModuleDecl module;
 
+  private String name;
   private final Set<RequireDecl> imports = new LinkedHashSet<RequireDecl>();
 
   private final Map<String, FunctionDecl> functions = new LinkedHashMap<String, FunctionDecl>();
@@ -27,6 +29,21 @@ public class Unit implements Scope {
 
   public Unit(ModuleDecl module) {
     this.module = module;
+
+    StringBuilder builder = new StringBuilder();
+    List<String> moduleChain = module.moduleChain;
+    for (int i = 0, moduleChainSize = moduleChain.size(); i < moduleChainSize; i++) {
+      String modulePart = moduleChain.get(i);
+      builder.append(modulePart);
+
+      if (i < moduleChainSize - 1)
+        builder.append('_');
+    }
+    this.name = builder.toString();
+  }
+
+  @Override public String getModuleName() {
+    return name;
   }
 
   @Override public void pushScope(Context context) {
@@ -58,11 +75,7 @@ public class Unit implements Scope {
   }
 
   public String name() {
-    StringBuilder name = new StringBuilder();
-    for (String part : module.moduleChain) {
-      name.append(part).append("_");
-    }
-    return name.toString();
+    return name;
   }
 
   @Override public ClassDecl resolve(String fullyQualifiedName) {

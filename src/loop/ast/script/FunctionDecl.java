@@ -23,6 +23,10 @@ public class FunctionDecl extends Node {
     this.arguments = arguments == null ? new ArgDeclList() : arguments;
   }
 
+  public boolean isAnonymous() {
+    return null == name;
+  }
+
   public String name() {
     return name;
   }

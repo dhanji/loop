@@ -286,30 +286,35 @@ import java.util.concurrent.atomic.AtomicInteger;
     @Override
     public void emitCode(Node node) {
       Call call = (Call) node;
-      String name;
-
       trackLineAndColumn(call);
-      // This is a special invocation so we emit it without the dot.
-      if ("@call".equals(call.name())) {
-        name = "";
-
-        // Chew the previous dot in the call chain.
-        out.deleteCharAt(out.length() - 1);
-      } else
-        name = normalizeMethodName(call.name());
 
       MethodVisitor methodVisitor = methodStack.peek();
       FunctionDecl resolvedFunction = scope.resolveFunction(call.name());
-      boolean isStatic = resolvedFunction != null;
+      boolean isStatic = resolvedFunction != null, isClosure = false;
+
+      // This is a special invocation so we emit it without the dot.
+      String name;
+      if ("@call".equals(call.name())) {
+        name = "";
+
+        isStatic = true;
+        isClosure = true;
+      } else
+        name = normalizeMethodName(call.name());
 
       // push name of containing type if this is a static call.
       if (isStatic) {
-        methodVisitor.visitLdcInsn("_default_");
-        name = normalizeMethodName(resolvedFunction.name());
+        if (isClosure)
+          methodVisitor.visitTypeInsn(CHECKCAST, "loop/runtime/Closure");
+        else
+          name = normalizeMethodName(resolvedFunction.name());
+
+        methodVisitor.visitLdcInsn(scope.getModuleName());
       }
 
       // push method name onto stack
-      methodVisitor.visitLdcInsn(name);
+      if (!isClosure)
+        methodVisitor.visitLdcInsn(name);
 
       if (call.args() != null && !call.args().children().isEmpty()) {
         int arrayIndex = call.args().children().size();
@@ -334,8 +339,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 
         if (isStatic) {
           // If JDK7, use invokedynamic instead for better performance.
-          methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/runtime/Caller", "callStatic",
-              "(Ljava/lang/String;Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/Object;");
+          if (isClosure)
+            methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/runtime/Caller", "callClosure",
+                "(Lloop/runtime/Closure;Ljava/lang/String;)Ljava/lang/Object;");
+          else
+            methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/runtime/Caller", "callStatic",
+                "(Ljava/lang/String;Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/Object;");
+
         } else {
           // If JDK7, use invokedynamic instead for better performance.
           methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/runtime/Caller", "call",
@@ -344,8 +354,13 @@ import java.util.concurrent.atomic.AtomicInteger;
       } else {
         if (isStatic) {
           // If JDK7, use invokedynamic instead for better performance.
-          methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/runtime/Caller", "callStatic",
-              "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/Object;");
+          if (isClosure)
+            methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/runtime/Caller", "callClosure",
+                "(Lloop/runtime/Closure;Ljava/lang/String;)Ljava/lang/Object;");
+          else
+            methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/runtime/Caller", "callStatic",
+                "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/Object;");
+
         } else {
           // If JDK7, use invokedynamic instead for better performance.
           methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/runtime/Caller", "call",
@@ -641,9 +656,10 @@ import java.util.concurrent.atomic.AtomicInteger;
     public void emitCode(Node node) {
       FunctionDecl functionDecl = (FunctionDecl) node;
       String name = functionDecl.name();
-      if (name == null) {
+      boolean isClosure = functionDecl.isAnonymous();
+      if (isClosure) {
         // Function is anonymous, generate a globally unique name for it.
-        name = "$" + functionNameSequence.incrementAndGet();
+        name = "$fn_" + functionNameSequence.incrementAndGet();
       }
 
       Context context = new Context(name);
@@ -660,6 +676,17 @@ import java.util.concurrent.atomic.AtomicInteger;
       args.append(")");
       functionStack.push(context);
       scope.pushScope(context);
+
+      // Before we emit the body of this method into the class scope, let's
+      // see if this is closure, and if it is, emit it as a function reference.
+      if (isClosure) {
+        MethodVisitor currentVisitor = methodStack.peek();
+
+        currentVisitor.visitTypeInsn(NEW, "loop/runtime/Closure");
+        currentVisitor.visitInsn(DUP);
+        currentVisitor.visitLdcInsn(name);
+        currentVisitor.visitMethodInsn(INVOKESPECIAL, "loop/runtime/Closure", "<init>", "(Ljava/lang/String;)V");
+      }
 
       final MethodVisitor methodVisitor = classWriter.visitMethod(
           (functionDecl.isPrivate ? ACC_PRIVATE : ACC_PUBLIC) + ACC_STATIC,

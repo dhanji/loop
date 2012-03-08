@@ -520,6 +520,30 @@ public class AsmCodeEmitterTest {
 
 
   @Test
+  public final void emitNullaryClosure() throws Exception {
+    Parser parser = new Parser(new Tokenizer(
+        "lower(obj) ->\n" +
+        "  obj.@call().toUpperCase()\n" +
+        "\n" +
+        "main ->\n" +
+        "  lower(@() ->\n" +
+        "          'two')\n" +
+        "\n"
+    ).tokenize());
+    Unit unit = parser.script();
+    unit.reduceAll();
+
+    Class<?> generated = new AsmCodeEmitter(unit).write(unit);
+
+    // Inspect.
+    inspect(generated);
+
+    assertEquals("TWO", generated.getDeclaredMethod("main").invoke(null));
+  }
+
+
+
+  @Test
   public final void emitWhereBlock() throws Exception {
     Parser parser = new Parser(new Tokenizer("compute() ->\n" +
         "  3 * year\n" +

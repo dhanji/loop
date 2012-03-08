@@ -36,7 +36,7 @@ public class Caller {
       new ConcurrentHashMap<String, Constructor>();
   private static volatile ConcurrentMap<String, Method> dynamicMethodCache =
       new ConcurrentHashMap<String, Method>();
-  private static final Object[] EMPTY_ARRAY = new Object[0];
+  public static final Object[] EMPTY_ARRAY = new Object[0];
 
   public static void reset() {
     staticConstructorCache = new ConcurrentHashMap<String, Constructor>();
@@ -53,15 +53,7 @@ public class Caller {
   }
 
   public static void print(int thing) {
-    System.out.println(">>>>>>>>>>>>>>>>>>>>>");
-    System.out.println(">>>>>>>>>>>>>>>>>>>>>");
-    System.out.println(">>>>>>>>>>>>>>>>>>>>>");
-    System.out.println(">>>>>>>>>>>>>>>>>>>>>");
     System.out.println(thing);
-    System.out.println(">>>>>>>>>>>>>>>>>>>>>");
-    System.out.println(">>>>>>>>>>>>>>>>>>>>>");
-    System.out.println(">>>>>>>>>>>>>>>>>>>>>");
-    System.out.println(">>>>>>>>>>>>>>>>>>>>>");
   }
 
 
@@ -193,6 +185,10 @@ public class Caller {
 
   public static Object callStatic(String target, String method) {
     return callStatic(target, method, EMPTY_ARRAY);
+  }
+
+  public static Object callClosure(Closure closure, String target) {
+    return callStatic(target, closure.name, closure.args);
   }
 
   public static Object callStatic(String target, String method, Object... args) {

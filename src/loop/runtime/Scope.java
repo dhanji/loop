@@ -28,4 +28,6 @@ public interface Scope {
   void popScope();
 
   String resolveJavaType(String name);
+
+  String getModuleName();
 }

@@ -22,6 +22,10 @@ class ShellScope implements Scope {
   private final Map<String, FunctionDecl> functions = new HashMap<String, FunctionDecl>();
   private final Stack<Context> scopes = new Stack<Context>();
 
+  @Override public String getModuleName() {
+    return "_shell_";
+  }
+
   @Override public void declare(RequireDecl require) {
     requires.add(require);
   }
