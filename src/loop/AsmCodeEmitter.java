@@ -567,7 +567,8 @@ import java.util.concurrent.atomic.AtomicInteger;
           methodVisitor.visitInsn(IOR);
           break;
         case NOT:
-          methodVisitor.visitInsn(INEG);
+          methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/runtime/Operations", "notEqual",
+              "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Boolean;");
           break;
         default:
           throw new UnsupportedOperationException(

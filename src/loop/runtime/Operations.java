@@ -156,4 +156,12 @@ public class Operations {
 
     return arg0.equals(arg1);
   }
+
+  public static Boolean notEqual(Object arg0, Object arg1) {
+    if (arg0 == null) {
+      return arg1 != null;
+    }
+
+    return !arg0.equals(arg1);
+  }
 }

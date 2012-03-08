@@ -59,7 +59,7 @@ public class ListComprehensionConfidenceTest extends LoopTest {
   @Test
   public final void expressionProjectComprehension6() {
     assertEquals(Arrays.asList(100, 200, 300, 400, -1),
-        Loop.run("test/loop/confidence/lists/projection_expr6.loop", true));
+        Loop.run("test/loop/confidence/lists/projection_expr6.loop"));
   }
 
   @Test
