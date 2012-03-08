@@ -8,14 +8,14 @@ x index into string
 - Modules/packaging/import
 x where block - functions
 x private functions
-- closures
+x closures
 - do block
 
 
 Stretch
 -------
 
-- "Call as method"
+x "Call as method"
 - Null-safety (is this possible?)
 - Tail call optimization
 - enumeration type

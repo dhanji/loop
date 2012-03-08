@@ -590,6 +590,27 @@ public class AsmCodeEmitterTest {
     assertEquals(70, generated.getDeclaredMethod("main").invoke(null));
   }
 
+  @Test
+  public final void emitCallAsMethod() throws Exception {
+    Parser parser = new Parser(new Tokenizer(
+        "lower(obj) ->\n" +
+        "  obj.toLowerCase()\n" +
+        "\n" +
+        "main ->\n" +
+        "  'HELLO'.lower()\n" +
+        "\n"
+    ).tokenize());
+    Unit unit = parser.script();
+    unit.reduceAll();
+
+    Class<?> generated = new AsmCodeEmitter(unit).write(unit, true);
+
+    // Inspect.
+    inspect(generated);
+
+    assertEquals("hello", generated.getDeclaredMethod("main").invoke(null));
+  }
+
 
 
   @Test

@@ -46,6 +46,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -290,6 +291,7 @@ import java.util.concurrent.atomic.AtomicInteger;
       trackLineAndColumn(call);
 
       MethodVisitor methodVisitor = methodStack.peek();
+      Context context = functionStack.peek();
       FunctionDecl resolvedFunction = scope.resolveFunction(call.name());
       boolean isStatic = resolvedFunction != null, isClosure = false;
 
@@ -302,6 +304,25 @@ import java.util.concurrent.atomic.AtomicInteger;
         isClosure = true;
       } else
         name = normalizeMethodName(call.name());
+
+      // Compute if we should "call as postfix method"
+      List<Node> arguments = call.args() == null ? Collections.<Node>emptyList() : call.args().children();
+      int callAsPostfixVar = -1;
+
+      boolean callAsPostfix = false;
+      int argSize = arguments.size();
+      if (resolvedFunction != null && resolvedFunction.arguments() != null) {
+        // The actual call is 1 less argument than the function takes, so this is a
+        // "call-as-method" syntax.
+        if (resolvedFunction.arguments().children().size() - argSize == 1) {
+          callAsPostfix = true;
+          callAsPostfixVar = context.localVarIndex(context.newLocalVariable());
+          argSize++;
+
+          // Save the top of the stack for use as the first argument.
+          methodVisitor.visitVarInsn(ASTORE, callAsPostfixVar);
+        }
+      }
 
       // push name of containing type if this is a static call.
       if (isStatic) {
@@ -317,26 +338,35 @@ import java.util.concurrent.atomic.AtomicInteger;
       if (!isClosure)
         methodVisitor.visitLdcInsn(name);
 
-      if (call.args() != null && !call.args().children().isEmpty()) {
-        int arrayIndex = call.args().children().size();
-        // push args as array.
-        methodVisitor.visitIntInsn(BIPUSH, arrayIndex);       // size of array
-        methodVisitor.visitTypeInsn(ANEWARRAY, "java/lang/Object");
-        methodVisitor.visitVarInsn(ASTORE, arrayIndex);
-        if (!call.args().children().isEmpty()) {
-          int i = 0;
-          for (Node arg : call.args().children()) {
-            methodVisitor.visitVarInsn(ALOAD, arrayIndex);    // array
-            methodVisitor.visitIntInsn(BIPUSH, i);            // index
-            emit(arg);                                        // value
+      if (argSize > 0) {
+        int arrayVar = context.localVarIndex(context.newLocalVariable());
 
-            methodVisitor.visitInsn(AASTORE);
-            i++;
-          }
+        // push args as array.
+        methodVisitor.visitIntInsn(BIPUSH, argSize);       // size of array
+        methodVisitor.visitTypeInsn(ANEWARRAY, "java/lang/Object");
+        methodVisitor.visitVarInsn(ASTORE, arrayVar);
+        int i = 0;
+
+        if (callAsPostfix) {
+          methodVisitor.visitVarInsn(ALOAD, arrayVar);          // array
+          methodVisitor.visitIntInsn(BIPUSH, i);                // index
+          methodVisitor.visitVarInsn(ALOAD, callAsPostfixVar);  // value
+          methodVisitor.visitInsn(AASTORE);
+
+          i++;
+        }
+
+        for (Node arg : arguments) {
+          methodVisitor.visitVarInsn(ALOAD, arrayVar);      // array
+          methodVisitor.visitIntInsn(BIPUSH, i);            // index
+          emit(arg);                                        // value
+
+          methodVisitor.visitInsn(AASTORE);
+          i++;
         }
 
         // Load the array back in.
-        methodVisitor.visitVarInsn(ALOAD, arrayIndex);
+        methodVisitor.visitVarInsn(ALOAD, arrayVar);
 
         if (isStatic) {
           // If JDK7, use invokedynamic instead for better performance.
