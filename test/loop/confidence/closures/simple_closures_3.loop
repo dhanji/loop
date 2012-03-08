@@ -1,7 +1,7 @@
 # Simple closures
 
 comp(inner_fn) ->
-  inner_fn(2)
+  inner_fn.@call(2)
 
 main ->
   comp(fn())

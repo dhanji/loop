@@ -608,7 +608,17 @@ import java.util.concurrent.atomic.AtomicInteger;
       if (index == null)
         index = context.localVarIndex(var.name);
 
-      methodStack.peek().visitVarInsn(ALOAD, index);
+      // It could be a function-reference. In which case emit it as a closure.
+      FunctionDecl functionDecl = scope.resolveFunction(var.name);
+      if (functionDecl != null) {
+        MethodVisitor methodVisitor = methodStack.peek();
+        methodVisitor.visitTypeInsn(NEW, "loop/runtime/Closure");
+        methodVisitor.visitInsn(DUP);
+        methodVisitor.visitLdcInsn(functionDecl.scopedName());
+        methodVisitor.visitMethodInsn(INVOKESPECIAL, "loop/runtime/Closure", "<init>", "(Ljava/lang/String;)V");
+
+      } else
+        methodStack.peek().visitVarInsn(ALOAD, index);
     }
   };
 

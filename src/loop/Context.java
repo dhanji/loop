@@ -68,7 +68,7 @@ public class Context {
     localVarIndex.put(freeVariable.name, arguments.size());
   }
 
-  public int localVarIndex(String name) {
+  public Integer localVarIndex(String name) {
     return localVarIndex.get(name);
   }
 }

@@ -1,7 +1,7 @@
 # Simple closures
 
 comp(fn) ->
-  fn() * 2
+  fn.@call() * 2
 
 main ->
   comp(@() ->
