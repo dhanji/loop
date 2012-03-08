@@ -1,6 +1,7 @@
 package loop.confidence.classes;
 
 import loop.Loop;
+import loop.LoopTest;
 import loop.lang.LoopObject;
 import org.junit.Test;
 
@@ -16,7 +17,7 @@ import static org.junit.Assert.assertTrue;
  *
  * @author dhanji@gmail.com (Dhanji R. Prasanna)
  */
-public class ClassesConfidenceTest {
+public class ClassesConfidenceTest extends LoopTest {
   @Test
   public final void simpleClassDeclAndInstantiation() {
     Object run = Loop.run("test/loop/confidence/classes/classes_1.loop");

@@ -2,7 +2,7 @@
 
 reverse(ls) =>
   []                  : []
-  [x:xs]  | x < 10    : reverse(xs) + x
+  [x:xs]  | x < 10    : reverse(xs) + [x]
           | else      : [x] + reverse(xs)
 
 main ->

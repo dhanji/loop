@@ -5,7 +5,7 @@ spout ->
   where
     reverse(ls) =>
       []      : []
-      [x:xs]  : reverse(xs) + x
+      [x:xs]  : reverse(xs) + [x]
 
 main ->
   spout()

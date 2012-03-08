@@ -33,6 +33,7 @@ import loop.ast.Variable;
 import loop.ast.WildcardPattern;
 import loop.ast.script.ArgDeclList;
 import loop.ast.script.FunctionDecl;
+import loop.ast.script.ModuleDecl;
 import loop.ast.script.Unit;
 import loop.runtime.Scope;
 import org.objectweb.asm.ClassReader;
@@ -153,8 +154,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
     for (FunctionDecl functionDecl : unit.functions()) {
       emit(functionDecl);
-      append('\n');
-      append('\n');
     }
 
     classWriter.visitEnd();
@@ -176,15 +175,23 @@ import java.util.concurrent.atomic.AtomicInteger;
     }
   }
 
-  public String write(Node node) {
+  public Class<?> write(FunctionDecl node) {
+    Unit unit = new Unit(ModuleDecl.DEFAULT);
+    unit.declare(node);
+    unit.reduceAll();
+
+    return write(unit);
+  }
+
+
+  public Class<?> write(Node node) {
     // We don't really emit classes.
     if (node instanceof ClassDecl)
-      return "";
+      return null;
+    else if (node instanceof FunctionDecl)
+      return write((FunctionDecl)node);
 
-    emit(node);
-    append(";\n");
-
-    return out.toString();
+    throw new UnsupportedOperationException("Can't compile nodes of type " + node);
   }
 
   private AsmCodeEmitter append(String str) {
@@ -302,6 +309,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
         isStatic = true;
         isClosure = true;
+      } else if (isStatic) {
+        name = normalizeMethodName(resolvedFunction.scopedName());
       } else
         name = normalizeMethodName(call.name());
 
@@ -328,8 +337,6 @@ import java.util.concurrent.atomic.AtomicInteger;
       if (isStatic) {
         if (isClosure)
           methodVisitor.visitTypeInsn(CHECKCAST, "loop/runtime/Closure");
-        else
-          name = normalizeMethodName(resolvedFunction.name());
 
         methodVisitor.visitLdcInsn(scope.getModuleName());
       }
@@ -536,6 +543,10 @@ import java.util.concurrent.atomic.AtomicInteger;
           methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/runtime/Operations", "lesserThan",
               "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Boolean;");
           break;
+        case LEQ:
+          methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/runtime/Operations", "lesserThanOrEqual",
+              "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Boolean;");
+          break;
         case GREATER:
           methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/runtime/Operations", "greaterThan",
               "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Boolean;");
@@ -687,13 +698,13 @@ import java.util.concurrent.atomic.AtomicInteger;
     @Override
     public void emitCode(Node node) {
       FunctionDecl functionDecl = (FunctionDecl) node;
-      String name = functionDecl.name();
+      String name = functionDecl.scopedName();
       boolean isClosure = functionDecl.isAnonymous();
       if (isClosure) {
         // Function is anonymous, generate a globally unique name for it.
         name = "$fn_" + functionNameSequence.incrementAndGet();
       }
-      Context innerContext = new Context(name);
+      Context innerContext = new Context(functionDecl);
 
       // Before we emit the body of this method into the class scope, let's
       // see if this is closure, and if it is, emit it as a function reference.
@@ -893,7 +904,7 @@ import java.util.concurrent.atomic.AtomicInteger;
       newName = WHERE_SCOPE_FN_PREFIX + parent.name() + '$' + unscopedName;
 
     // Apply the scoped name globally.
-    function.name(newName);
+    function.scopedName(newName);
     context.newLocalFunction(unscopedName, function);
   }
 
@@ -1078,6 +1089,15 @@ import java.util.concurrent.atomic.AtomicInteger;
       // Dump this value into the out list.
       methodVisitor.visitVarInsn(ALOAD, outVarIndex);
       methodVisitor.visitVarInsn(ALOAD, nextIndex);
+
+      // Transform the value first using the projection expression.
+      if (comprehension.projection() != null) {
+        methodVisitor.visitInsn(POP);
+        for (Node projection : comprehension.projection()) {
+          emit(projection);
+        }
+      }
+
       methodVisitor.visitMethodInsn(INVOKEINTERFACE, "java/util/List", "add",
           "(Ljava/lang/Object;)Z");
 
@@ -1150,6 +1170,7 @@ import java.util.concurrent.atomic.AtomicInteger;
         } else if (pattern instanceof TypeLiteral) {
           emitTypePatternRule(methodVisitor, matchedClause, endOfClause, i, (TypeLiteral) pattern);
         } else if (pattern instanceof RegexLiteral) {
+          methodVisitor.visitVarInsn(ALOAD, i);
           methodVisitor.visitTypeInsn(CHECKCAST, "java/lang/String");
           methodVisitor.visitLdcInsn(((RegexLiteral) pattern).value);
           methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "java/lang/String", "matches",
@@ -1202,7 +1223,9 @@ import java.util.concurrent.atomic.AtomicInteger;
   private void emitGuards(PatternRule rule) {
     MethodVisitor methodVisitor = methodStack.peek();
 
-    for (Node node : rule.children()) {
+    List<Node> children = rule.children();
+    for (int i = 0, childrenSize = children.size(); i < childrenSize; i++) {
+      Node node = children.get(i);
       if (!(node instanceof Guard))
         throw new RuntimeException("Apparent pattern rule missing guards: "
             + Parser.stringify(rule));
@@ -1211,7 +1234,8 @@ import java.util.concurrent.atomic.AtomicInteger;
       Label matchedClause = new Label();
 
       // The "Otherwise" expression is a plain else.
-      if (!(guard.expression instanceof OtherwiseGuard)) {
+      boolean notElse = !(guard.expression instanceof OtherwiseGuard);
+      if (notElse) {
         emit(guard.expression);
 
         methodVisitor.visitTypeInsn(CHECKCAST, "java/lang/Boolean");
@@ -1223,6 +1247,9 @@ import java.util.concurrent.atomic.AtomicInteger;
       emit(guard.line);
       methodVisitor.visitJumpInsn(GOTO, functionStack.peek().endOfFunction);
       methodVisitor.visitLabel(endOfClause);
+
+      if (i == childrenSize - 1 && notElse)
+        methodVisitor.visitInsn(ACONST_NULL);
     }
   }
 

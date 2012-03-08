@@ -7,7 +7,6 @@ import loop.ast.script.FunctionDecl;
 import loop.ast.script.RequireDecl;
 import loop.ast.script.Unit;
 import loop.runtime.Scope;
-import org.mvel2.ParserContext;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -26,15 +25,14 @@ public class Executable {
   private volatile String source;      // Raw source code, discarded after compile.
   private final List<String> lines;    // Loop source code lines (for error tracing).
 
-
   private Scope scope;
   private Node node;
       // If a fragment and not a whole unit (mutually exclusive with unit)
 
-  private ParserContext parserContext;
-  private String compiled;  // Uncompiled MVEL script.
   private List<ParseError> parseErrors;
-  private TreeMap<SourceLocation, Node> emittedNodes;     // Lookup map of MVEL script -> Loop AST
+  private TreeMap<SourceLocation, Node> emittedNodes;
+  private Class<?> compiled;
+  private boolean runMain;
 
   public Executable(Reader source) {
     List<String> lines = new ArrayList<String>();
@@ -59,14 +57,6 @@ public class Executable {
 
     this.source = builder.toString();
     this.lines = lines;
-  }
-
-  public ParserContext getParserContext() {
-    return parserContext;
-  }
-
-  public String getCompiled() {
-    return compiled;
   }
 
   private Unit parse(String input) {
@@ -114,6 +104,10 @@ public class Executable {
     }
   }
 
+  public boolean runMain() {
+    return runMain;
+  }
+
   public boolean hasParseErrors() {
     return parseErrors != null;
   }
@@ -123,10 +117,10 @@ public class Executable {
     if (hasParseErrors())
       return;
 
-    MvelCodeEmitter codeEmitter = new MvelCodeEmitter(unit);
+    AsmCodeEmitter codeEmitter = new AsmCodeEmitter(unit);
     this.scope = unit;
-    this.emittedNodes = codeEmitter.getEmittedNodeMap();
-    this.compiled = codeEmitter.write(unit);
+//    this.emittedNodes = codeEmitter.getEmittedNodeMap();
+    this.compiled = codeEmitter.write(unit, true);
 
     requireImports(unit.imports());
 
@@ -134,11 +128,10 @@ public class Executable {
   }
 
   private void requireImports(Set<RequireDecl> imports) {
-    this.parserContext = new ParserContext();
     for (RequireDecl requireDecl : imports) {
       if (requireDecl.javaLiteral != null)
         try {
-          parserContext.addImport(Class.forName(requireDecl.javaLiteral));
+          Class.forName(requireDecl.javaLiteral);
         } catch (ClassNotFoundException e) {
           if (parseErrors == null)
             parseErrors = new ArrayList<ParseError>();
@@ -158,8 +151,8 @@ public class Executable {
 
     this.node = new Reducer(line).reduce();
 
-    MvelCodeEmitter codeEmitter = new MvelCodeEmitter(scope);
-    this.emittedNodes = codeEmitter.getEmittedNodeMap();
+    AsmCodeEmitter codeEmitter = new AsmCodeEmitter(scope);
+//    this.emittedNodes = codeEmitter.getEmittedNodeMap();
     this.compiled = codeEmitter.write(node);
     this.source = null;
 
@@ -181,8 +174,8 @@ public class Executable {
       return;
 
     this.node = new Reducer(node).reduce();
-    MvelCodeEmitter codeEmitter = new MvelCodeEmitter(scope);
-    this.emittedNodes = codeEmitter.getEmittedNodeMap();
+    AsmCodeEmitter codeEmitter = new AsmCodeEmitter(scope);
+//    this.emittedNodes = codeEmitter.getEmittedNodeMap();
     this.compiled = codeEmitter.write(node);
     this.source = null;
 
@@ -202,9 +195,13 @@ public class Executable {
     return builder.toString();
   }
 
+  public Class<?> getCompiled() {
+    return compiled;
+  }
+
   public void runMain(boolean runMain) {
     if (runMain)
-      compiled += "; main();";
+      this.runMain = runMain;
   }
 
   @SuppressWarnings("unchecked")

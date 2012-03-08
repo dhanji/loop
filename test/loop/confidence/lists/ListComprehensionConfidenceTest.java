@@ -1,6 +1,7 @@
 package loop.confidence.lists;
 
 import loop.Loop;
+import loop.LoopTest;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -13,7 +14,7 @@ import static org.junit.Assert.assertEquals;
  *
  * @author dhanji@gmail.com (Dhanji R. Prasanna)
  */
-public class ListComprehensionConfidenceTest {
+public class ListComprehensionConfidenceTest extends LoopTest {
   @Test
   public final void identityComprehension() {
     assertEquals(Arrays.asList(10, 20, 30), Loop.run("test/loop/confidence/lists/projection.loop"));

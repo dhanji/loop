@@ -2,6 +2,7 @@ package loop.confidence;
 
 import loop.Loop;
 import loop.LoopError;
+import loop.LoopTest;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -20,7 +21,7 @@ import static org.junit.Assert.assertTrue;
  *
  * @author dhanji@gmail.com (Dhanji R. Prasanna)
  */
-public class BasicFunctionsConfidenceTest {
+public class BasicFunctionsConfidenceTest extends LoopTest {
   @Test
   public final void reverseListPatternMatching() {
     assertEquals(Arrays.asList(3, 2, 1), Loop.run("test/loop/confidence/reverse.loop"));
@@ -59,7 +60,7 @@ public class BasicFunctionsConfidenceTest {
 
   @Test
   public final void reverseListPatternMatchingUsingNestedWhereBlocks() {
-    assertEquals(Arrays.asList(4, 3, 2, 1), Loop.run("test/loop/confidence/whereblock_2.loop"));
+    assertEquals(Arrays.asList(4, 3, 2, 1), Loop.run("test/loop/confidence/whereblock_2.loop", true));
   }
 
   @Test
@@ -67,12 +68,12 @@ public class BasicFunctionsConfidenceTest {
     assertEquals(26208, Loop.run("test/loop/confidence/whereblock_3.loop"));
   }
 
-//  @Test DISABLED
+//  @Test
   public final void objectPatternMatch1() {
     assertEquals("Stephen", Loop.run("test/loop/confidence/pattern_matching_objects_1.loop", true));
   }
 
-//  @Test DISABLED
+//  @Test
   public final void objectPatternMatch2() {
     assertEquals("Stephenpa", Loop.run("test/loop/confidence/pattern_matching_objects_2.loop"));
   }
@@ -107,7 +108,7 @@ public class BasicFunctionsConfidenceTest {
     assertTrue(Loop.run("test/loop/confidence/split_various_string_error.loop") instanceof LoopError);
   }
 
-  @Test
+  @Test(expected = RuntimeException.class)
   public final void reverseLoopPatternMissingError() {
     assertTrue(Loop.run("test/loop/confidence/reverse_error.loop") instanceof LoopError);
   }

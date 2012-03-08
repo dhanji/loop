@@ -462,7 +462,7 @@ import java.util.concurrent.atomic.AtomicInteger;
         name = "$" + functionNameSequence.incrementAndGet();
       }
 
-      Context context = new Context(name);
+      Context context = new Context(functionDecl);
       for (Node arg : functionDecl.arguments().children()) {
         context.arguments.add(((ArgDeclList.Argument) arg).name());
       }
@@ -479,7 +479,7 @@ import java.util.concurrent.atomic.AtomicInteger;
       }
 
       // We only support stack traces for non-pattern functions right now.
-      if (Loop.enableStackTraces && !functionDecl.patternMatching) {
+      if (!functionDecl.patternMatching) {
         append("loop.runtime.Tracer.push('").append(functionDecl.name()).append("');\n");
 
         String retVal = "$_" + functionNameSequence.incrementAndGet();

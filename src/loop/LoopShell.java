@@ -78,7 +78,7 @@ public class LoopShell {
 
           for (int i = 1, splitLength = split.length; i < splitLength; i++) {
             String script = split[i];
-            Loop.run(script, false, context, false);
+            Loop.run(script, false, false);
           }
 
           System.out.println("Loaded.");
@@ -94,7 +94,7 @@ public class LoopShell {
           if (split.length <= 1)
             System.out.println("Give me an expression to determine the type for.");
 
-          Object result = Loop.eval(split[1], shellScope, context);
+          Object result = Loop.eval(split[1], shellScope);
           if (result instanceof LoopError)
             System.out.println(result.toString());
           else if (result instanceof LoopObject)
@@ -109,7 +109,7 @@ public class LoopShell {
           if (split.length <= 1)
             System.out.println("Give me an expression to determine the type for.");
 
-          Object result = Loop.eval(split[1], shellScope, context);
+          Object result = Loop.eval(split[1], shellScope);
           if (result instanceof LoopError)
             System.out.println(result.toString());
           else
@@ -125,7 +125,7 @@ public class LoopShell {
         }
 
         // OK execute expression.
-        printResult(Loop.eval(rawLine, shellScope, context));
+        printResult(Loop.eval(rawLine, shellScope));
       } while (true);
     } catch (IOException e) {
       System.err.println("Something went wrong =(");

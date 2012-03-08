@@ -90,6 +90,10 @@ public class Unit implements Scope {
       FunctionDecl func = context.localFunctionName(fullyQualifiedName);
       if (func != null)
         return func;
+
+      // Look for recursion only if a local function did not hide us.
+      if (fullyQualifiedName.equals(context.thisFunction.name()))
+        return context.thisFunction;
     }
     return functions.get(fullyQualifiedName);
   }

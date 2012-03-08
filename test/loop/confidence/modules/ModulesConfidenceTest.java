@@ -2,6 +2,7 @@ package loop.confidence.modules;
 
 import loop.Loop;
 import loop.LoopCompileException;
+import loop.LoopTest;
 import org.junit.Test;
 
 import java.util.Date;
@@ -14,7 +15,7 @@ import static org.junit.Assert.assertEquals;
  *
  * @author dhanji@gmail.com (Dhanji R. Prasanna)
  */
-public class ModulesConfidenceTest {
+public class ModulesConfidenceTest extends LoopTest {
   @Test
   public final void requireJavaClass() {
     assertEquals(new Date(10), Loop.run("test/loop/confidence/modules/require_java.loop"));

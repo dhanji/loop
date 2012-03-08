@@ -2,7 +2,6 @@ package loop;
 
 import loop.ast.script.Unit;
 import loop.lang.LoopObject;
-import org.junit.After;
 import org.junit.Test;
 
 import java.lang.reflect.Field;
@@ -20,12 +19,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author dhanji@gmail.com (Dhanji R. Prasanna)
  */
-public class AsmCodeEmitterTest {
-  @After
-  public void tearDown() throws Exception {
-    LoopClassLoader.reset();
-  }
-
+public class AsmCodeEmitterTest extends LoopTest {
   @Test
   public final void emitBasicCall()
       throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
@@ -321,7 +315,7 @@ public class AsmCodeEmitterTest {
     Unit unit = parser.script();
     unit.reduceAll();
 
-    Class<?> generated = new AsmCodeEmitter(unit).write(unit);
+    Class<?> generated = new AsmCodeEmitter(unit).write(unit, true);
 
     // Inspect.
     inspect(generated);
@@ -429,14 +423,16 @@ public class AsmCodeEmitterTest {
   public final void emitListStructurePatternMatchingFunction() throws Exception {
     Parser parser = new Parser(new Tokenizer(
         "reverse(ls) =>\n" +
-        "  []         : []\n" +
-        "  [one, two] : [two, one]\n" +
-        "  [x:xs]     : reverse(xs) + [x]\n"
+        "  []                 : []\n" +
+        "  [x]                : [x]\n" +
+        "  [one, two] | true  : [two, one]\n" +
+        "             | else  : []\n" +
+        "  [x:xs]             : reverse(xs) + [x]\n"
     ).tokenize());
     Unit unit = parser.script();
     unit.reduceAll();
 
-    Class<?> generated = new AsmCodeEmitter(unit).write(unit, true);
+    Class<?> generated = new AsmCodeEmitter(unit).write(unit);
 
     // Inspect.
     inspect(generated);

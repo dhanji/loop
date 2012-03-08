@@ -1,6 +1,7 @@
 package loop.confidence.cflow;
 
 import loop.Loop;
+import loop.LoopTest;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -15,7 +16,7 @@ import static org.junit.Assert.assertEquals;
  *
  * @author dhanji@gmail.com (Dhanji R. Prasanna)
  */
-public class ControlFlowConfidenceTest {
+public class ControlFlowConfidenceTest extends LoopTest {
   @Test
   public final void ifThenElse() {
     assertEquals("evenodd", Loop.run("test/loop/confidence/cflow/if-then-else.loop"));

@@ -16,7 +16,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class Context {
   private static final AtomicInteger localVariableNameSequence = new AtomicInteger();
 
-  String name;
+//  public String name;
+  public final FunctionDecl thisFunction;
   final List<String> arguments = new ArrayList<String>();
   final Map<String, Integer> argumentIndex = new HashMap<String, Integer>();
   final List<String> localVars = new ArrayList<String>();
@@ -26,8 +27,8 @@ public class Context {
 
   final Label endOfFunction = new Label();
 
-  public Context(String name) {
-    this.name = name;
+  public Context(FunctionDecl thisFunction) {
+    this.thisFunction = thisFunction;
   }
 
   public void newLocalFunction(String localName, FunctionDecl func) {

@@ -1,6 +1,7 @@
 package loop.confidence.closures;
 
 import loop.Loop;
+import loop.LoopTest;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -11,7 +12,7 @@ import static org.junit.Assert.assertEquals;
  *
  * @author dhanji@gmail.com (Dhanji R. Prasanna)
  */
-public class ClosuresConfidenceTest {
+public class ClosuresConfidenceTest extends LoopTest {
   @Test
   public final void createAndCallAnonymousFunction() {
     assertEquals(100, Loop.run("test/loop/confidence/closures/simple_closures_1.loop"));

@@ -4,11 +4,8 @@ spout ->
   reverse([1,2,3,4])
   where
     reverse(ls) =>
-      []      : emptyList()
-      [x:xs]  : reverse(xs) + x
-    where
-      emptyList ->
-        []
+      []      : []
+      [x:xs]  : reverse(xs) + [x]
 
 main ->
   spout()

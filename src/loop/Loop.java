@@ -1,13 +1,11 @@
 package loop;
 
 import loop.runtime.Tracer;
-import org.mvel2.MVEL;
 import org.mvel2.PropertyAccessException;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.Serializable;
 import java.io.StringReader;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -20,7 +18,6 @@ import java.util.regex.Pattern;
  */
 public class Loop {
   // Global config options for the runtime.
-  static volatile boolean enableStackTraces = false;
   private static final Pattern UNKNOWN_MVEL_PATTERN =
       Pattern.compile("\\[Error: unresolvable property or identifier: \\??(.*)\\]");
 
@@ -33,7 +30,7 @@ public class Loop {
     map.put("ARGV", Arrays.asList(args));
 
     if (args.length > 1)
-      run(args[0], false, map);
+      run(args[0], false);
     else
       run(args[0]);
   }
@@ -43,26 +40,22 @@ public class Loop {
   }
 
   public static Object run(String file, boolean print) {
-    return run(file, print, new HashMap<String, Object>());
+    return run(file, print, true);
   }
 
-  public static Object run(String file, boolean print, Map<String, Object> context) {
-    return run(file, print, context, true);
-  }
 
   public static Object run(String file,
                            boolean print,
-                           Map<String, Object> context,
                            boolean runMain) {
     Executable unit = loopCompile(file);
     if (print)
       System.out.println(unit.getCompiled());
 
     unit.runMain(runMain);
-    return safeEval(unit, context);
+    return safeEval(unit);
   }
 
-  public static Object eval(String expression, ShellScope shellScope, Map<String, Object> context) {
+  public static Object eval(String expression, ShellScope shellScope) {
     Executable executable = new Executable(new StringReader(expression + '\n'));
     try {
       executable.compileExpression(shellScope);
@@ -71,7 +64,7 @@ public class Loop {
       return new LoopError("malformed expression '" + expression + "'");
     }
 
-    return safeEval(executable, context);
+    return safeEval(executable);
   }
 
   public static Object evalClassOrFunction(String function,
@@ -85,16 +78,15 @@ public class Loop {
       return new LoopError("malformed function");
     }
 
-    return safeEval(executable, context);
+    return safeEval(executable);
   }
 
-  private static Object safeEval(Executable executable, Map<String, Object> context) {
+  private static Object safeEval(Executable executable) {
     try {
-      if (enableStackTraces)
-        Tracer.startTrace();
-
-      return MVEL.executeExpression(MVEL.compileExpression(executable.getCompiled(),
-          executable.getParserContext()), context);
+      if (executable.runMain())
+        return executable.getCompiled().getDeclaredMethod("main").invoke(null);
+      else
+        return executable.getCompiled();
     } catch (PropertyAccessException e) {
       String message = e.getMessage();
       String loopError;
@@ -115,9 +107,6 @@ public class Loop {
           loopError = e.getCause().getClass().getSimpleName() + ": " + e.getCause().getMessage();
         else
           loopError = message;
-        if (enableStackTraces) {
-          printStackTrace = true;
-        } else
           e.printStackTrace();
       }
 
@@ -132,21 +121,16 @@ public class Loop {
     } catch (LoopCompileException e) {
       throw e;
     } catch (Exception e) {
-      if (enableStackTraces) {
-        Tracer.printCurrentTrace(executable, null, System.out);
-        Tracer.complete();
-      }
-      return new LoopError(e);
+      throw new RuntimeException(e);
+//      return new LoopError(e);
     }
   }
 
   /**
-   * Compiles the specified file into a binary MVEL executable.
+   * Compiles the specified file into a binary Java executable.
    */
-  public static Serializable compile(String file) {
-    Executable unit = loopCompile(file);
-
-    return MVEL.compileExpression(unit.getCompiled(), unit.getParserContext());
+  public static Class<?> compile(String file) {
+    return loopCompile(file).getCompiled();
   }
 
   private static Executable loopCompile(String file) {

@@ -1,6 +1,7 @@
 package loop.confidence.interop;
 
 import loop.Loop;
+import loop.LoopTest;
 import org.junit.Test;
 
 import java.util.Date;
@@ -14,7 +15,7 @@ import static org.junit.Assert.assertTrue;
  *
  * @author dhanji@gmail.com (Dhanji R. Prasanna)
  */
-public class JavaInteropConfidenceTest {
+public class JavaInteropConfidenceTest extends LoopTest {
   public static final Long CONSTANT = new Date().getTime();
 
   @Test

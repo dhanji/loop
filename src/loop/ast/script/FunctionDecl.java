@@ -20,6 +20,7 @@ public class FunctionDecl extends Node {
 
   // Memo fields.
   public transient List<Variable> freeVariables;
+  private String scopedName;
 
   public FunctionDecl(String name, ArgDeclList arguments) {
     this.name = name;
@@ -41,6 +42,14 @@ public class FunctionDecl extends Node {
 
   public void name(String name) {
     this.name = name;
+  }
+
+  public String scopedName() {
+    return scopedName == null ? name : scopedName;
+  }
+
+  public void scopedName(String newName) {
+    this.scopedName = newName;
   }
 
   @Override
