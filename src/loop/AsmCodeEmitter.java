@@ -695,8 +695,6 @@ import java.util.concurrent.atomic.AtomicInteger;
           currentVisitor.visitVarInsn(ASTORE, arrayIndex);
           int i = 0;
           for (Variable freeVariable : freeVariables) {
-//            innerContext.newFreeVariable(freeVariable);
-
             currentVisitor.visitVarInsn(ALOAD, arrayIndex);    // array
             currentVisitor.visitIntInsn(BIPUSH, i);            // index
             emit(freeVariable);                                // value
