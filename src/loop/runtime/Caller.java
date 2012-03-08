@@ -127,6 +127,9 @@ public class Caller {
   }
 
   public static Object call(Object target, String method, Object... args) {
+    if (target == null)
+      return null;
+
     if (target instanceof Map)
       return ((Map)target).get(method);
 

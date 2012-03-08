@@ -603,7 +603,7 @@ public class AsmCodeEmitterTest {
     Unit unit = parser.script();
     unit.reduceAll();
 
-    Class<?> generated = new AsmCodeEmitter(unit).write(unit, true);
+    Class<?> generated = new AsmCodeEmitter(unit).write(unit);
 
     // Inspect.
     inspect(generated);
@@ -611,6 +611,24 @@ public class AsmCodeEmitterTest {
     assertEquals("hello", generated.getDeclaredMethod("main").invoke(null));
   }
 
+
+  @Test
+  public final void emitNullSafeCalls() throws Exception {
+    Parser parser = new Parser(new Tokenizer(
+        "lower(obj) ->\n" +
+        "  obj.toLowerCase().toLowerCase()\n" +
+        "\n"
+    ).tokenize());
+    Unit unit = parser.script();
+    unit.reduceAll();
+
+    Class<?> generated = new AsmCodeEmitter(unit).write(unit);
+
+    // Inspect.
+    inspect(generated);
+
+    assertEquals(null, generated.getDeclaredMethod("lower", Object.class).invoke(null, new Object[] { null }));
+  }
 
 
   @Test
