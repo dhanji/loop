@@ -33,6 +33,27 @@ public class AsmMvelPerformanceBenchmark {
   }
 
   @Test
+  public final void quicksort() throws Exception {
+    Callable callable = new Callable() {
+
+      @Override public Method lookup(Class target) throws Exception {
+        return target.getDeclaredMethod("quicksort", Object.class);
+      }
+
+      @Override public Object call(Method target) throws Exception {
+        return target.invoke("quicksort", Arrays.asList(5, 2, 6, 19, 0, 92, 144, 1));
+      }
+    };
+
+    time("quicksort(ls) =>\n" +
+        "  []        : []\n" +
+        "  [x:xs]    : quicksort(i for i in xs if i < x) + [x] + quicksort(i for i in xs if i > x)\n" +
+        "\n",
+        callable, "quicksort([5, 2, 6, 19, 0, 92, 144, 1])");
+  }
+
+
+  @Test
   public final void interpolatedStrings() throws Exception {
     Callable callable = new Callable() {
 

@@ -1,6 +1,7 @@
 package loop.confidence.algorithms;
 
 import loop.Loop;
+import loop.LoopTest;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -14,7 +15,7 @@ import static org.junit.Assert.assertEquals;
  *
  * @author dhanji@gmail.com (Dhanji R. Prasanna)
  */
-public class AlgorithmsConfidenceTest {
+public class AlgorithmsConfidenceTest extends LoopTest {
   @Test
   public final void insertsort() {
     assertEquals(Arrays.asList(1, 2, 3), Loop.run("test/loop/confidence/algorithms/insertsort.loop"));
