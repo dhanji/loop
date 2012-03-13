@@ -486,14 +486,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 
         boolean isNullary = call.args().children().isEmpty();
         if (!isNullary) {
-          int arrayIndex = context.localVarIndex(context.newLocalVariable());
-          methodVisitor.visitIntInsn(BIPUSH, arrayIndex);       // size of array
+          int arrayVar = context.localVarIndex(context.newLocalVariable());
+          methodVisitor.visitIntInsn(BIPUSH, call.args().children().size());       // size of array
           methodVisitor.visitTypeInsn(ANEWARRAY, "java/lang/Object");
-          methodVisitor.visitVarInsn(ASTORE, arrayIndex);
+          methodVisitor.visitVarInsn(ASTORE, arrayVar);
 
           int i = 0;
           for (Node arg : call.args().children()) {
-            methodVisitor.visitVarInsn(ALOAD, arrayIndex);    // array
+            methodVisitor.visitVarInsn(ALOAD, arrayVar);      // array
             methodVisitor.visitIntInsn(BIPUSH, i);            // index
             emit(arg);                                        // value
 
@@ -503,7 +503,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
           // push type and constructor arg array.
           methodVisitor.visitLdcInsn(javaType);
-          methodVisitor.visitVarInsn(ALOAD, arrayIndex);
+          methodVisitor.visitVarInsn(ALOAD, arrayVar);
 
           methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/runtime/Caller", "instantiate",
               "(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/Object;");
@@ -1222,7 +1222,7 @@ import java.util.concurrent.atomic.AtomicInteger;
           emitMapPatternRule(rule, context, matchedClause, endOfClause, i);
         } else if (pattern instanceof WildcardPattern) {
           // Always matches.
-          methodVisitor.visitJumpInsn(GOTO, matchedClause);
+          //methodVisitor.visitJumpInsn(GOTO, endOfClause);
         }
       }
 
@@ -1482,7 +1482,6 @@ import java.util.concurrent.atomic.AtomicInteger;
     ListStructurePattern listPattern = (ListStructurePattern) rule.patterns.get(argIndex);
     List<Node> children = listPattern.children();
 
-//    methodVisitor.visitInsn(POP); // get rid of arg, we dont need it (yet)
     int runtimeListSizeVar = context.localVarIndex(RUNTIME_LIST_SIZE_VAR_PREFIX + argIndex);
     methodVisitor.visitIntInsn(ILOAD, runtimeListSizeVar);
     methodVisitor.visitIntInsn(BIPUSH, children.size());

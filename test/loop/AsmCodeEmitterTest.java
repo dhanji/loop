@@ -688,7 +688,7 @@ public class AsmCodeEmitterTest extends LoopTest {
     Unit unit = parser.script();
     unit.reduceAll();
 
-    Class<?> generated = new AsmCodeEmitter(unit).write(unit);
+    Class<?> generated = new AsmCodeEmitter(unit).write(unit, true);
 
     // Inspect.
     inspect(generated);

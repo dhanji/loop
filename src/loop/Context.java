@@ -40,8 +40,10 @@ public class Context {
 
   public String newLocalVariable() {
     String var = "$__" + localVariableNameSequence.incrementAndGet();
+    int index = arguments.size() + localVars.size();
+
     localVars.add(var);
-    localVarIndex.put(var, localVars.size());
+    localVarIndex.put(var, index);
 
     return var;
   }
