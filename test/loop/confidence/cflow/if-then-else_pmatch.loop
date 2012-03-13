@@ -1,8 +1,9 @@
 # Inline ternary if
 
 cond(x, y) =>
-  /fet.*/, *    | x.endsWith('sock')        :     []
+  /fet.*/, *    | x.endsWith('sock')        :     ['' : '']
                 | x.endsWith('lock')        :     [1 : if y >= 12 then 1 else 2, 2 : 12 + 1]
+                | else                      :     [:]
 
 
 main ->

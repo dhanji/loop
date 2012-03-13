@@ -16,7 +16,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class Context {
   private static final AtomicInteger localVariableNameSequence = new AtomicInteger();
 
-//  public String name;
   public final FunctionDecl thisFunction;
   final List<String> arguments = new ArrayList<String>();
   final Map<String, Integer> argumentIndex = new HashMap<String, Integer>();
@@ -52,16 +51,19 @@ public class Context {
       localVarIndex.put(var.name, localVars.size());
       localVars.add(var.name);
     } else {
+      int index = arguments.size() + localVars.size();
       localVars.add(var.name);
-      localVarIndex.put(var.name, localVars.size());
+      localVarIndex.put(var.name, index);
     }
     return var.name;
   }
 
   public int newLocalVariable(String localVar) {
+    int index = arguments.size() + localVars.size();
+
     localVars.add(localVar);
-    localVarIndex.put(localVar, localVars.size());
-    return localVars.size();
+    localVarIndex.put(localVar, index);
+    return index;
   }
 
   public void newFreeVariable(Variable freeVariable) {

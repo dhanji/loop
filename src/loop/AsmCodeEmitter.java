@@ -834,12 +834,22 @@ import java.util.concurrent.atomic.AtomicInteger;
             int runtimeListSize = innerContext.newLocalVariable(RUNTIME_LIST_SIZE_VAR_PREFIX + i);
 
             methodVisitor.visitVarInsn(ALOAD, i);
-            methodVisitor.visitInsn(DUP);
             methodVisitor.visitTypeInsn(INSTANCEOF, "java/util/List");
             methodVisitor.visitIntInsn(ISTORE, isList);
+
+            // Initialize register for local var.
+            methodVisitor.visitIntInsn(BIPUSH, -1);
+            methodVisitor.visitIntInsn(ISTORE, runtimeListSize);
+
+            Label notAList = new Label();
+            methodVisitor.visitIntInsn(ILOAD, isList);
+            methodVisitor.visitJumpInsn(IFEQ, notAList);
+
+            methodVisitor.visitVarInsn(ALOAD, i);
             methodVisitor.visitTypeInsn(CHECKCAST, "java/util/List");
             methodVisitor.visitMethodInsn(INVOKEINTERFACE, "java/util/List", "size", "()I");
             methodVisitor.visitIntInsn(ISTORE, runtimeListSize);
+            methodVisitor.visitLabel(notAList);
           }
         }
         if (checkIfString) {

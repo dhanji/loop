@@ -2,12 +2,8 @@
 
 insert(i, ls) =>
   *, []        : [i]
-  *, [x:xs]    : if i <= x then [i, x] + xs else [x] + insert(i, xs)
+  *, [x:xs]    : if i <= x then ([i, x] + xs) else [x] + insert(i, xs)
 
-
-sort(ls) =>
-  []        : []
-  [x:xs]    : insert(x, sort(xs))
 
 main ->
-  sort([3, 2, 1])
+  insert(1, [1, 2, 3])

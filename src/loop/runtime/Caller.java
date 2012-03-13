@@ -216,7 +216,7 @@ public class Caller {
     Method toCall;
 
     try {
-      final String key = target + method;
+      final String key = target + ':' + method;
       toCall = staticMethodCache.get(key);
 
       if (toCall == null) {
