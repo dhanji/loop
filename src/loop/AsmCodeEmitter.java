@@ -36,6 +36,7 @@ import loop.ast.script.FunctionDecl;
 import loop.ast.script.ModuleDecl;
 import loop.ast.script.Unit;
 import loop.runtime.Scope;
+import loop.runtime.regex.NamedPattern;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;
@@ -1209,12 +1210,43 @@ import java.util.concurrent.atomic.AtomicInteger;
         } else if (pattern instanceof TypeLiteral) {
           emitTypePatternRule(methodVisitor, matchedClause, endOfClause, i, (TypeLiteral) pattern);
         } else if (pattern instanceof RegexLiteral) {
+          String regex = ((RegexLiteral) pattern).value;
+          methodVisitor.visitLdcInsn(regex);
+
+          // Discover named capturing groups if any.
+          NamedPattern namedPattern = NamedPattern.compile(regex);
+          List<String> groupNames = namedPattern.groupNames();
+          for (String groupVarName : groupNames) {
+            int varIndex = context.newLocalVariable(groupVarName);
+            methodVisitor.visitInsn(ACONST_NULL);
+            methodVisitor.visitVarInsn(ASTORE, varIndex);   // initialize part to null.
+          }
+
+          int matcherVar = context.localVarIndex(context.newLocalVariable());
+
+          methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/runtime/regex/NamedPattern", "compile",
+              "(Ljava/lang/String;)Lloop/runtime/regex/NamedPattern;");
+
           methodVisitor.visitVarInsn(ALOAD, i);
           methodVisitor.visitTypeInsn(CHECKCAST, "java/lang/String");
-          methodVisitor.visitLdcInsn(((RegexLiteral) pattern).value);
-          methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "java/lang/String", "matches",
-              "(Ljava/lang/String;)Z");
+          methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "loop/runtime/regex/NamedPattern", "matcher",
+              "(Ljava/lang/CharSequence;)Lloop/runtime/regex/NamedMatcher;");
+
+          methodVisitor.visitVarInsn(ASTORE, matcherVar);
+          methodVisitor.visitVarInsn(ALOAD, matcherVar);
+          methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "loop/runtime/regex/NamedMatcher", "matches",
+              "()Z");
+
           methodVisitor.visitJumpInsn(IFEQ, endOfClause);
+
+          // Now extract the capturing group names.
+          for (String groupNameVar : groupNames) {
+            methodVisitor.visitVarInsn(ALOAD, matcherVar);
+            methodVisitor.visitLdcInsn(groupNameVar);
+            methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "loop/runtime/regex/NamedMatcher", "group",
+                "(Ljava/lang/String;)Ljava/lang/String;");
+            methodVisitor.visitVarInsn(ASTORE, context.localVarIndex(groupNameVar));
+          }
 
         } else if (pattern instanceof StringPattern) {
           emitStringPatternRule(rule, context, matchedClause, endOfClause, i);

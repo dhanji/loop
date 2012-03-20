@@ -68,7 +68,7 @@ public class BasicFunctionsConfidenceTest extends LoopTest {
     assertEquals(26208, Loop.run("test/loop/confidence/whereblock_3.loop"));
   }
 
-//  @Test
+  @Test
   public final void objectPatternMatch1() {
     assertEquals("Stephen", Loop.run("test/loop/confidence/pattern_matching_objects_1.loop", true));
   }

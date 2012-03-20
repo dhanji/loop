@@ -1,8 +1,8 @@
 # Pattern Matching split lines in a string
 
 unline(input) =>
-  (first: '\n' : rest)  : first + unline(rest)
-  *                     : input
+  /(?<one>hello)\\n(?<two>there)\\n(?<three>dude)/  : one + two + three
+  *                                                 : ''
 
 main ->
   unline("hello\nthere\ndude")

@@ -566,7 +566,6 @@ public class Parser {
     }
 
     return rewriteObjectPattern(pattern);
-//    return pattern;
   }
 
   private Node rewriteObjectPattern(Node pattern) {
