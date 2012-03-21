@@ -8,4 +8,4 @@ ransom(str, map) =>
       map[c]: map[c] + 1
 
 main ->
-  ransom('Now is the winter of our discontent made glorious summer by this son of York.', [:])
+  ransom('Now is the winter of our discontent made glorious summer by this son of York.', {:})

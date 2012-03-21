@@ -1100,7 +1100,7 @@ public class Parser {
     if (null != index) {
       boolean isMap = match(Token.Kind.ASSIGN) != null;
       if (isMap) {
-        list = new InlineMapDef(isBraced).sourceLocation(lbracketTokens);
+        list = new InlineMapDef(!isBraced).sourceLocation(lbracketTokens);
 
         // This map will be stored as a list of alternating keys/values (in pairs).
         list.add(index);
@@ -1161,7 +1161,7 @@ public class Parser {
     // Is there a hashrocket?
     if (match(Token.Kind.ASSIGN) != null) {
       // This is an empty hashmap.
-      list = new InlineMapDef(isBraced);
+      list = new InlineMapDef(!isBraced);
     }
     if (anyOf(Token.Kind.RBRACKET, Token.Kind.RBRACE) == null) {
       addError("Expected '" + (isBraced ? "}" : "]'"), tokens.get(i - 1));
