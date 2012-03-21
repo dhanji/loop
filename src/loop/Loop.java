@@ -122,7 +122,6 @@ public class Loop {
       throw e;
     } catch (Exception e) {
       throw new RuntimeException(e);
-//      return new LoopError(e);
     }
   }
 

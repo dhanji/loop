@@ -93,7 +93,7 @@ public class Tokenizer {
       }
 
       // strings and sequences
-      if (STRING_TERMINATORS[c]) {
+      if (STRING_TERMINATORS[c] && !inComment) {
 
         if (inStringSequence > 0) {
 

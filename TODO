@@ -9,7 +9,6 @@ x index into string
 x where block - functions
 x private functions
 x closures
-- do block
 
 
 Stretch
@@ -21,9 +20,9 @@ x Null-safety (is this possible?)
 - enumeration type
 - immutable types
 - Setting values in objects (setters)
-- Prototypal single inheritance
+- Single inheritance
 - Type classes/extension methods (better than interfaces/traits)
-- Pattern matching methods on character streams
+x Pattern matching methods on character streams
 - require as (stuff)
 x index into map
 

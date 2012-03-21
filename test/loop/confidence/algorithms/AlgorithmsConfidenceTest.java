@@ -33,7 +33,7 @@ public class AlgorithmsConfidenceTest extends LoopTest {
         Loop.run("test/loop/confidence/algorithms/mergesort.loop", true));
   }
 
-//  @Test // DISABLED WHILE MVEL FIX GOES IN TO 2.1.Final
+  @Test // DISABLED WHILE MVEL FIX GOES IN TO 2.1.Final
   public final void ransomNote() {
     assertEquals(new HashMap<Character, Integer>(),
         Loop.run("test/loop/confidence/algorithms/ransom_note.loop", true));
