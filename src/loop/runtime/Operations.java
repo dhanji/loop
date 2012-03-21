@@ -29,9 +29,12 @@ public class Operations {
       return (Long)arg0 + (Long)arg1;
     } else if (arg1 instanceof String) {
       return arg0.toString() + arg1;
-    }
+    } else if (arg0 == null)
+      return arg1;
 
-    throw new IllegalArgumentException("Cannot add objects of type " + arg0.getClass() + " and " + arg1.getClass());
+    throw new IllegalArgumentException("Cannot add objects of type "
+        + (arg0 != null ? arg0.getClass() : arg0) + " and "
+        + (arg1 != null ? arg1.getClass() : arg1));
   }
 
   @SuppressWarnings("unchecked")

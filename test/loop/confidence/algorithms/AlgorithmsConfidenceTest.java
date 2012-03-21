@@ -33,10 +33,10 @@ public class AlgorithmsConfidenceTest extends LoopTest {
         Loop.run("test/loop/confidence/algorithms/mergesort.loop", true));
   }
 
-  @Test // DISABLED WHILE MVEL FIX GOES IN TO 2.1.Final
+  @Test
   public final void ransomNote() {
-    assertEquals(new HashMap<Character, Integer>(),
-        Loop.run("test/loop/confidence/algorithms/ransom_note.loop", true));
+    assertEquals("{f=2, g=1, d=2,  =14, e=5, b=1, c=1, a=1, n=4, o=9, l=1, N=1, m=3, .=1, k=1, h=2, i=5, w=2, u=3, t=5, s=6, r=5, Y=1, y=1}",
+        Loop.run("test/loop/confidence/algorithms/ransom_note.loop", true).toString());
   }
 
 //  @Test

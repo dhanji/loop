@@ -592,10 +592,40 @@ import java.util.concurrent.atomic.AtomicInteger;
       Assignment assignment = (Assignment) node;
       trackLineAndColumn(assignment);
       Context context = functionStack.peek();
+      MethodVisitor methodVisitor = methodStack.peek();
 
-      int lhsVar = context.localVarIndex(context.newLocalVariable((Variable) assignment.lhs()));
-      emit(assignment.rhs());
-      methodStack.peek().visitVarInsn(ASTORE, lhsVar);
+      if (assignment.lhs() instanceof Variable) {
+        int lhsVar = context.localVarIndex(context.newLocalVariable((Variable) assignment.lhs()));
+        emit(assignment.rhs());
+        methodVisitor.visitVarInsn(ASTORE, lhsVar);
+      } else if (assignment.lhs() instanceof CallChain) {
+        // this is a setter/put style assignment.
+        CallChain lhs = (CallChain) assignment.lhs();
+        List<Node> children = lhs.children();
+        Node last = children.remove(children.size() - 1);
+
+        if (last instanceof IndexIntoList) {
+          // The object to assign into.
+          emit(lhs);
+
+          // The slot where this assignment will go.
+          emit(((IndexIntoList) last).from());
+
+          // The value to assign.
+          emit(assignment.rhs());
+          methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/runtime/Collections", "store",
+              "(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
+
+        } else if (last instanceof Call) {
+          Call call = (Call) last;
+          if (call.isFunction)
+            throw new RuntimeException("Cannot assign value to a function call");
+
+          emit(lhs);
+
+        } else
+          throw new RuntimeException("Can only assign a value to variable or object property");
+      }
     }
   };
 
@@ -616,7 +646,8 @@ import java.util.concurrent.atomic.AtomicInteger;
         methodVisitor.visitTypeInsn(NEW, "loop/runtime/Closure");
         methodVisitor.visitInsn(DUP);
         methodVisitor.visitLdcInsn(functionDecl.scopedName());
-        methodVisitor.visitMethodInsn(INVOKESPECIAL, "loop/runtime/Closure", "<init>", "(Ljava/lang/String;)V");
+        methodVisitor.visitMethodInsn(INVOKESPECIAL, "loop/runtime/Closure", "<init>",
+            "(Ljava/lang/String;)V");
 
       } else
         methodStack.peek().visitVarInsn(ALOAD, index);

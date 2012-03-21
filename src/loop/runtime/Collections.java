@@ -40,6 +40,26 @@ public class Collections {
     throw new RuntimeException("Arrays not supported");
   }
 
+  @SuppressWarnings("unchecked")
+  public static Object store(Object collection, Object property, Object value) {
+    if (collection instanceof List) {
+      List list = (List) collection;
+      list.set((Integer) property, value);
+
+      return list;
+    } else if (collection instanceof Map) {
+      Map map = (Map) collection;
+      map.put(property, value);
+
+      return map;
+    } else {
+      // Set value.
+
+    }
+
+    throw new RuntimeException("Arrays and Strings cannot be mutated in Loop");
+  }
+
   public static Object sliceFrom(Object collection, Integer from) {
     if (collection instanceof List) {
       List list = (List) collection;
