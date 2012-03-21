@@ -34,7 +34,7 @@ x Quicksort
 z MergeSort
 x Insert Sort
 - Skyline (range sorting)
-- Djikstra's algroithm
+x Djikstra's algroithm
 - A* pathfinding
 - Djikstra's Shunting Yard
 - Sieve of Eratosthenes

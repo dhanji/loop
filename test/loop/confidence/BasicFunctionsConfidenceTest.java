@@ -248,4 +248,15 @@ public class BasicFunctionsConfidenceTest extends LoopTest {
         "o",
         "p").equals(new ArrayList<String>(((Map) tree).values())));
   }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  public final void setAndPutValues() {
+    Object result = Loop.run("test/loop/confidence/set_put.loop");
+
+    Map<String, String> map = new HashMap<String, String>();
+    map.put("name", "Sol");
+
+    assertEquals(map, result);
+  }
 }

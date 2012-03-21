@@ -621,7 +621,16 @@ import java.util.concurrent.atomic.AtomicInteger;
           if (call.isFunction)
             throw new RuntimeException("Cannot assign value to a function call");
 
+          // The object to assign into.
           emit(lhs);
+
+          // The slot where this assignment will go.
+          methodVisitor.visitLdcInsn(call.name);
+
+          // The value to assign.
+          emit(assignment.rhs());
+          methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/runtime/Collections", "store",
+              "(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
 
         } else
           throw new RuntimeException("Can only assign a value to variable or object property");
@@ -834,6 +843,16 @@ import java.util.concurrent.atomic.AtomicInteger;
           null,
           null);
       methodStack.push(methodVisitor);
+
+      // Emit static definitions in all parent where blocks.
+      for (int i1 = 0, functionStackSize = functionStack.size(); i1 < functionStackSize - 1; i1++) {
+        FunctionDecl parent = functionStack.get(i1).thisFunction;
+
+        for (Node helper : parent.whereBlock) {
+          if (helper instanceof Assignment)
+            emit(helper);
+        }
+      }
 
       // Emit locally-scoped helper functions and variables.
       for (Node helper : functionDecl.whereBlock) {
