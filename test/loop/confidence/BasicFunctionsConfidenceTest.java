@@ -7,6 +7,7 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -250,7 +251,6 @@ public class BasicFunctionsConfidenceTest extends LoopTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   public final void setAndPutValues() {
     Object result = Loop.run("test/loop/confidence/set_put.loop");
 
@@ -258,5 +258,11 @@ public class BasicFunctionsConfidenceTest extends LoopTest {
     map.put("name", "Sol");
 
     assertEquals(map, result);
+  }
+
+  @Test
+  public final void setAndPutValueIntoJavaObject() {
+    Object result = Loop.run("test/loop/confidence/set_put_2.loop");
+    assertEquals(new Date(0), result);
   }
 }

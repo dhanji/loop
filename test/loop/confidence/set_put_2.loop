@@ -1,0 +1,7 @@
+# Call setters on Java objects
+
+set_put(obj) ->
+  obj.time : 0
+
+main ->
+  set_put(new java.util.Date())

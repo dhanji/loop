@@ -57,9 +57,9 @@ public class Collections {
       String prop = property.toString();
       Caller.call(collection, "set" + Character.toUpperCase(prop.charAt(0)) + prop.substring(1),
           value);
-    }
 
-    throw new RuntimeException("Arrays and Strings cannot be mutated in Loop");
+      return collection;
+    }
   }
 
   public static Object sliceFrom(Object collection, Integer from) {
