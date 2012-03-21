@@ -19,7 +19,7 @@ x Null-safety (is this possible?)
 - Tail call optimization
 - enumeration type
 - immutable types
-- Setting values in objects (setters)
+x Setting values in objects (setters)
 - Single inheritance
 - Type classes/extension methods (better than interfaces/traits)
 x Pattern matching methods on character streams
