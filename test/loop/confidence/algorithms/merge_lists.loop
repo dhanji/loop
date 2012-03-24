@@ -1,0 +1,9 @@
+# Recursive ordered list merge
+
+merge(one, two) =>
+  *, []           : one
+  [], *           : two
+  [x:xs], [y:ys]  : if x < y then [x] + merge(xs, [y] + ys) else [y] + merge([x] + xs, ys)
+
+main ->
+  merge([0, 1, 2, 5], [6, 19, 92, 144])

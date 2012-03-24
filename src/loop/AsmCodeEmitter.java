@@ -1306,7 +1306,7 @@ import java.util.concurrent.atomic.AtomicInteger;
           emitMapPatternRule(rule, context, matchedClause, endOfClause, i);
         } else if (pattern instanceof WildcardPattern) {
           // Always matches.
-          //methodVisitor.visitJumpInsn(GOTO, endOfClause);
+//          methodVisitor.visitJumpInsn(GOTO, endOfClause);
         }
       }
 
@@ -1604,16 +1604,17 @@ import java.util.concurrent.atomic.AtomicInteger;
 
     int size = listPattern.children().size();
     if (size == 0) {
-//      methodVisitor.visitInsn(POP);  // Dont need the list really.
       methodVisitor.visitIntInsn(ILOAD, runtimeListSizeVar);
-      methodVisitor.visitJumpInsn(IFEQ, matchedClause);
-      methodVisitor.visitJumpInsn(GOTO, endOfClause);
+//      methodVisitor.visitJumpInsn(IFEQ, matchedClause);
+//      methodVisitor.visitJumpInsn(GOTO, endOfClause);
+      methodVisitor.visitJumpInsn(IFNE, endOfClause);
     } else if (size == 1) {
-//      methodVisitor.visitInsn(POP);  // Dont need the list really.
       methodVisitor.visitIntInsn(ILOAD, runtimeListSizeVar);
       methodVisitor.visitIntInsn(BIPUSH, 1);
-      methodVisitor.visitJumpInsn(IFNE, matchedClause);
-      methodVisitor.visitJumpInsn(GOTO, endOfClause);
+//      methodVisitor.visitJumpInsn(IFNE, matchedClause);
+//      methodVisitor.visitJumpInsn(GOTO, endOfClause);
+      methodVisitor.visitJumpInsn(IFNE, endOfClause);
+
     } else {
       // Slice the list by terminals in the pattern list.
       int i = 0;
@@ -1643,20 +1644,22 @@ import java.util.concurrent.atomic.AtomicInteger;
             methodVisitor.visitMethodInsn(INVOKEINTERFACE, "java/util/List", "subList",
                 "(II)Ljava/util/List;");
             methodVisitor.visitVarInsn(ASTORE, localVar);
-            methodVisitor.visitJumpInsn(GOTO, matchedClause);
+
+            Label endOfStoreEmptyList = new Label();
+            methodVisitor.visitJumpInsn(GOTO, endOfStoreEmptyList);
 
             methodVisitor.visitLabel(storeEmptyList);
             methodVisitor.visitFieldInsn(GETSTATIC, "java/util/Collections", "EMPTY_LIST",
                 "Ljava/util/List;");
             methodVisitor.visitVarInsn(ASTORE, localVar);
-            methodVisitor.visitJumpInsn(GOTO, matchedClause);
+            methodVisitor.visitLabel(endOfStoreEmptyList);
+//            methodVisitor.visitJumpInsn(GOTO, matchedClause);
+
           }
 
           i++;
         }
       }
-
-//      methodVisitor.visitInsn(POP); // discard list as we're done with it.
     }
 
     methodVisitor.visitLabel(noMatch);

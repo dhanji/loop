@@ -3,7 +3,7 @@
 merge(one, two) =>
   *, []           : one
   [], *           : two
-  [x:xs], [y:ys]  : if x > y then merge(xs, [y] + ys) else merge([x] + xs, ys)
+  [x:xs], [y:ys]  : if x < y then [x] + merge(xs, [y] + ys) else [y] + merge([x] + xs, ys)
 
 mergesort(ls) =>
   []              : []

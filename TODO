@@ -4,7 +4,12 @@ TODO
 ASM
 - Basic verification of AST with symbol table
   - resolve symbol in scope
-  -
+  - ensure function call arg-lengths
+  - ensure pattern lengths
+  - guard without else(?)
+  - conflicting module imports
+  - report errors in a list (like parser)
+  
 - Modules/packaging/import
 - Tail call optimization
 - immutable types
@@ -15,8 +20,10 @@ Stretch
 
 x Null-safety (is this possible?)
 x symbols (interned strings)
+- line numbers
 - require as (stuff)
 - enumeration type
+- function inlining
 - Single inheritance
 - actor framework
 - Type classes/extension methods (better than interfaces/traits)
@@ -26,7 +33,7 @@ Algorithms
 ----------
 
 x Quicksort
-z MergeSort
+x MergeSort
 x Insert Sort
 - Skyline (range sorting)
 x Djikstra's algroithm

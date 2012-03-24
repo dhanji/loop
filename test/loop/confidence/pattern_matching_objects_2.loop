@@ -7,4 +7,4 @@ gran(person, num) =>
 main ->
   gran(guy, 1)
   where
-    guy: [ 'fo' : 'pa', 'parent': ['parent': [ 'name': 'Stephen' ] ] ]
+    guy: [ @fo : 'pa', @parent: [@parent: [ @name: 'Stephen' ] ] ]

@@ -23,12 +23,21 @@ import java.util.concurrent.ConcurrentMap;
 @SuppressWarnings("unchecked")
 public class Caller {
   private static final Map<Class, Set<Class>> compatibleTypes = new HashMap<Class, Set<Class>>();
+  private static final Map<Class, Class> convertibleTypes = new HashMap<Class, Class>();
   static {
     compatibleTypes.put(long.class, new HashSet<Class>(
         Arrays.asList(int.class, Short.class, short.class, Integer.class, Long.class, Byte.class,
             byte.class)));
     compatibleTypes.put(int.class, new HashSet<Class>(
         Arrays.asList(short.class, Short.class, Integer.class, Byte.class, byte.class)));
+
+    convertibleTypes.put(int.class, Number.class);
+    convertibleTypes.put(long.class, Number.class);
+    convertibleTypes.put(double.class, Double.class);
+    convertibleTypes.put(boolean.class, Boolean.class);
+    convertibleTypes.put(short.class, Short.class);
+    convertibleTypes.put(float.class, Float.class);
+    convertibleTypes.put(byte.class, Byte.class);
   }
 
   // Caches for high performance.
@@ -92,6 +101,7 @@ public class Caller {
 
               if (arg != null && !isAssignable(argType, arg)) {
                 acceptable = false;
+                break;
               }
             }
 
@@ -151,29 +161,38 @@ public class Caller {
 
     if (toCall == null) {
       for (Method candidate : target.getClass().getMethods()) {
-        if (candidate.getName().equals(method) && candidate.getParameterTypes().length == args.length) {
+        if (signatureMatches(method, candidate, args)) {
           toCall = candidate;
           break;
         }
       }
 
       // Now search getters instead.
-      String altMethod = "get" + Character.toUpperCase(method.charAt(0)) + method.substring(1);
-      for (Method candidate : target.getClass().getMethods()) {
-        if (candidate.getName().equals(altMethod) && candidate.getParameterTypes().length == args.length) {
-          toCall = candidate;
-          break;
-        }
-      }
-
-      if (toCall == null) {
-        for (Method candidate : target.getClass().getDeclaredMethods()) {
-          if (candidate.getName().equals(method) && candidate.getParameterTypes().length == args.length) {
+      if (toCall == null && args.length == 0) {
+        String altMethod = "get" + Character.toUpperCase(method.charAt(0)) + method.substring(1);
+        for (Method candidate : target.getClass().getMethods()) {
+          if (candidate.getName().equals(altMethod) && candidate.getParameterTypes().length == 0) {
             toCall = candidate;
             break;
           }
         }
       }
+
+      if (toCall == null) {
+        for (Method candidate : target.getClass().getDeclaredMethods()) {
+          if (signatureMatches(method, candidate, args)) {
+            toCall = candidate;
+            break;
+          }
+        }
+      }
+
+      if (null == toCall)
+        throw new RuntimeException("Method not found: " + name + "#" + method
+            + "(" + Arrays.toString(args) + ")");
+
+      if (!toCall.isAccessible())
+        toCall.setAccessible(true);
 
       dynamicMethodCache.putIfAbsent(key, toCall);
     }
@@ -189,6 +208,26 @@ public class Caller {
     } catch (InvocationTargetException e) {
       throw new RuntimeException(e.getCause());
     }
+  }
+
+  private static boolean signatureMatches(String method, Method candidate, Object[] args) {
+    Class<?>[] parameterTypes = candidate.getParameterTypes();
+    if (!(candidate.getName().equals(method) && parameterTypes.length == args.length))
+      return false;
+
+    for (int i = 0, parameterTypesLength = parameterTypes.length; i < parameterTypesLength; i++) {
+      Class<?> parameterType = parameterTypes[i];
+      Object arg = args[i];
+
+      if (arg != null) {
+        Class<?> argClass = arg.getClass();
+        if (parameterType.isPrimitive())
+          parameterType = convertibleTypes.get(parameterType);
+        if (!parameterType.isAssignableFrom(argClass))
+          return false;
+      }
+    }
+    return true;
   }
 
   public static Object callStatic(String target, String method) {

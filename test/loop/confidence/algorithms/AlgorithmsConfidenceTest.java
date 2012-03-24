@@ -26,10 +26,16 @@ public class AlgorithmsConfidenceTest extends LoopTest {
         Loop.run("test/loop/confidence/algorithms/quicksort.loop"));
   }
 
-//  @Test
+  @Test
   public final void mergesort() {
     assertEquals(Arrays.asList(0, 1, 2, 5, 6, 19, 92, 144),
         Loop.run("test/loop/confidence/algorithms/mergesort.loop", true));
+  }
+
+  @Test
+  public final void mergeLists() {
+    assertEquals(Arrays.asList(0, 1, 2, 5, 6, 19, 92, 144),
+        Loop.run("test/loop/confidence/algorithms/merge_lists.loop"));
   }
 
   @Test
