@@ -1003,7 +1003,9 @@ import java.util.concurrent.atomic.AtomicInteger;
     public void emitCode(Node node) {
       PrivateField privateField = (PrivateField) node;
       trackLineAndColumn(privateField);
-      append(normalizeMethodName(privateField.name()));
+      String name = privateField.name().substring(1); // Strip @
+
+      methodStack.peek().visitLdcInsn(name);
     }
   };
 

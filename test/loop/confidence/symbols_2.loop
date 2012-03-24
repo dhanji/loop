@@ -1,0 +1,8 @@
+# symbols (interned strings)
+
+main ->
+  (@soup == sp2) == ok
+  where
+    sp: 'soup'
+    sp2: "sou@{@p}"
+    ok: sp == sp2

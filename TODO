@@ -2,29 +2,24 @@ TODO
 ----
 
 ASM
-x Pattern matching
-x index into string
-- Basic scope verification of AST with symbol table
+- Basic verification of AST with symbol table
+  - resolve symbol in scope
+  -
 - Modules/packaging/import
-x where block - functions
-x private functions
-x closures
+- Tail call optimization
+- immutable types
 
 
 Stretch
 -------
 
-x "Call as method"
 x Null-safety (is this possible?)
-- Tail call optimization
-- enumeration type
-- immutable types
-x Setting values in objects (setters)
-- Single inheritance
-- Type classes/extension methods (better than interfaces/traits)
-x Pattern matching methods on character streams
+x symbols (interned strings)
 - require as (stuff)
-x index into map
+- enumeration type
+- Single inheritance
+- actor framework
+- Type classes/extension methods (better than interfaces/traits)
 
 
 Algorithms
