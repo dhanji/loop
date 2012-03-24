@@ -1418,8 +1418,8 @@ import java.util.concurrent.atomic.AtomicInteger;
       methodVisitor.visitVarInsn(ASTORE, destructuredVar);
       methodVisitor.visitVarInsn(ALOAD, destructuredVar);
       methodVisitor.visitJumpInsn(IFNULL, endOfClause);
-      methodVisitor.visitJumpInsn(GOTO, matchedClause);
     }
+    methodVisitor.visitJumpInsn(GOTO, matchedClause);
   }
 
   private void emitStringPatternRule(PatternRule rule,
