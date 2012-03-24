@@ -1,0 +1,16 @@
+# Recursive shunting yard algorithm
+
+shunt(input, symbols, ops) =>
+  /[0-9]+/, *, *             : symbols.add(input)
+  /[+-/*%]+/, *, *           : ops.add(input)
+  *, *, *                    : 'error'
+
+parse(input) ->
+  [symbols, ops]
+  where
+    symbols: []
+    ops: []
+    run: (shunt(i, symbols, ops) for i in input)
+
+main ->
+  parse(['1', '+', '2', '-', '3'])

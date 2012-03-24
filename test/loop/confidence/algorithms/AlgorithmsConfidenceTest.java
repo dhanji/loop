@@ -29,7 +29,13 @@ public class AlgorithmsConfidenceTest extends LoopTest {
   @Test
   public final void mergesort() {
     assertEquals(Arrays.asList(0, 1, 2, 5, 6, 19, 92, 144),
-        Loop.run("test/loop/confidence/algorithms/mergesort.loop", true));
+        Loop.run("test/loop/confidence/algorithms/mergesort.loop"));
+  }
+
+  @Test @SuppressWarnings("unchecked")
+  public final void shuntingYard() {
+    assertEquals(Arrays.asList(Arrays.asList("1", "2", "3"), Arrays.asList("+", "-")),
+        Loop.run("test/loop/confidence/algorithms/shunting_yard.loop"));
   }
 
   @Test

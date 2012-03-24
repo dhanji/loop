@@ -9,7 +9,7 @@ ASM
   - guard without else(?)
   - conflicting module imports
   - report errors in a list (like parser)
-  
+
 - Modules/packaging/import
 - Tail call optimization
 - immutable types
@@ -38,7 +38,7 @@ x Insert Sort
 - Skyline (range sorting)
 x Djikstra's algroithm
 - A* pathfinding
-- Djikstra's Shunting Yard
+x Djikstra's Shunting Yard
 - Sieve of Eratosthenes
 x Ransom Note
 x Naive Factorial
