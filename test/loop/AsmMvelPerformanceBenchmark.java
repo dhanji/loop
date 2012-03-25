@@ -24,8 +24,9 @@ import static org.junit.Assert.assertNotNull;
  */
 public class AsmMvelPerformanceBenchmark {
   // Number of cycles for the benchmark, should be > 200000 for anything useful.
-  private static final int RUNS = 50;
-  private static final int WARMUP_RUNS = 15000;
+//  private static final int RUNS = 500000;
+  private static final int RUNS = 1;
+  private static final int WARMUP_RUNS = RUNS > 100 ? 15000 : 0;
 
   @Before
   public final void before() {

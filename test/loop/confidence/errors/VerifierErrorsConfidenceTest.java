@@ -36,7 +36,7 @@ public class VerifierErrorsConfidenceTest extends LoopTest {
   public final void verifyUnknownFunctionCallInWhereBlock() {
     List<AnnotatedError> errorList = null;
     try {
-      Loop.run("test/loop/confidence/errors/verify_error_2.loop", true);
+      Loop.run("test/loop/confidence/errors/verify_error_2.loop");
     } catch (LoopCompileException e) {
       errorList = e.getErrors();
     }
@@ -50,7 +50,7 @@ public class VerifierErrorsConfidenceTest extends LoopTest {
   public final void verifyFunctionCallWithIncorrectArgLen() {
     List<AnnotatedError> errorList = null;
     try {
-      Loop.run("test/loop/confidence/errors/verify_error_3.loop", true);
+      Loop.run("test/loop/confidence/errors/verify_error_3.loop");
     } catch (LoopCompileException e) {
       errorList = e.getErrors();
     }
