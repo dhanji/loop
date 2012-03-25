@@ -2,6 +2,8 @@ package loop;
 
 import loop.ast.Assignment;
 import loop.ast.Call;
+import loop.ast.ClassDecl;
+import loop.ast.ConstructorCall;
 import loop.ast.Guard;
 import loop.ast.Node;
 import loop.ast.PatternRule;
@@ -9,6 +11,7 @@ import loop.ast.Variable;
 import loop.ast.script.FunctionDecl;
 import loop.ast.script.Unit;
 
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -54,6 +57,8 @@ public class Verifier {
     for (Node inner : functionDecl.whereBlock) {
       if (inner instanceof FunctionDecl)
         verify((FunctionDecl) inner);
+      else
+        verifyNode(inner);
     }
 
     functionStack.pop();
@@ -101,7 +106,44 @@ public class Verifier {
       Variable var = (Variable) node;
 //      if (!resolveVar(var.name))
 //        addError("Cannot resolve variable: " + var.name, var.sourceLine, var.sourceColumn);
+    } else if (node instanceof ConstructorCall) {
+      ConstructorCall call = (ConstructorCall) node;
+      if (!resolveType(call))
+        addError("Cannot resolve type (either as loop or Java): "
+            + (call.modulePart == null ? "" : call.modulePart) + call.name,
+            call.sourceLine, call.sourceColumn);
     }
+  }
+
+  private boolean resolveType(ConstructorCall call) {
+    ClassDecl classDecl = unit.resolve(call.name);
+    if (classDecl != null) {
+      return true;
+    }
+
+    String javaType;
+    if (call.modulePart != null)
+      javaType = call.modulePart + call.name;   // if it's an FQN
+    else
+      javaType = unit.resolveJavaType(call.name);  // resolve via require clause
+
+    if (javaType == null)
+      return false;
+
+    // Attempt to resolve as a Java type.
+    try {
+      Class<?> clazz = Class.forName(javaType);
+
+      int size = call.args().children().size();
+      for (Constructor<?> constructor : clazz.getConstructors()) {
+        if (constructor.getParameterTypes().length == size)
+          return true;
+      }
+    } catch (ClassNotFoundException e) {
+      return false;
+    }
+
+    return false;
   }
 
   private boolean resolveVar(String name) {

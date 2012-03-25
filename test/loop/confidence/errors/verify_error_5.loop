@@ -1,0 +1,8 @@
+# Scope resolution error for constructor call
+
+main ->
+  ''
+  where
+    wrong1: new java.util.Gate()
+    wrong2: new java.util.Date('hi', 'bye')
+    wrong3: new Date()

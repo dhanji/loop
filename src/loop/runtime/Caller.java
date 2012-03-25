@@ -24,6 +24,7 @@ import java.util.concurrent.ConcurrentMap;
 public class Caller {
   private static final Map<Class, Set<Class>> compatibleTypes = new HashMap<Class, Set<Class>>();
   private static final Map<Class, Class> convertibleTypes = new HashMap<Class, Class>();
+
   static {
     compatibleTypes.put(long.class, new HashSet<Class>(
         Arrays.asList(int.class, Short.class, short.class, Integer.class, Long.class, Byte.class,
@@ -82,6 +83,7 @@ public class Caller {
       if (null == ctor) {
         boolean cache = true;
 
+        Constructor ctor1 = null;
         // Choose the appropriate constructor.
         for (Constructor constructor : clazz.getConstructors()) {
           if (constructor.getParameterTypes().length == args.length) {
@@ -89,7 +91,7 @@ public class Caller {
 
             // Don't cache constructors if there are other ctors of the same length, as
             // they need to be resolved each time.
-            if (ctor != null && ctor.getParameterTypes().length == parameterTypes.length)
+            if (ctor1 != null && ctor1.getParameterTypes().length == parameterTypes.length)
               cache = false;
 
             boolean acceptable = true;
@@ -106,13 +108,14 @@ public class Caller {
             }
 
             if (acceptable) {
-              ctor = constructor;
+              ctor1 = constructor;
             }
           }
         }
 
-        if (ctor != null && cache)
-          staticConstructorCache.putIfAbsent(key, ctor);
+        if (ctor1 != null && cache)
+          staticConstructorCache.putIfAbsent(key, ctor1);
+        ctor = ctor1;
       }
 
       if (ctor == null)

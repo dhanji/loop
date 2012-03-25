@@ -1229,7 +1229,8 @@ public class Parser {
       throw new LoopCompileException();
     }
 
-    return new ConstructorCall(modulePart, typeName.iterator().next().value, arglist);
+    return new ConstructorCall(modulePart, typeName.iterator().next().value, arglist)
+        .sourceLocation(typeName);
   }
 
   /**

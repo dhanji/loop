@@ -73,4 +73,18 @@ public class VerifierErrorsConfidenceTest extends LoopTest {
 
     assertEquals(2, errorList.size());
   }
+
+  @Test
+  public final void verifyJavaConstructorCall() {
+    List<AnnotatedError> errorList = null;
+    try {
+      Loop.run("test/loop/confidence/errors/verify_error_5.loop");
+    } catch (LoopCompileException e) {
+      errorList = e.getErrors();
+    }
+
+    assertNotNull(errorList);
+
+    assertEquals(3, errorList.size());
+  }
 }
