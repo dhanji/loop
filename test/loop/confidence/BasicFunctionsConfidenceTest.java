@@ -29,6 +29,16 @@ public class BasicFunctionsConfidenceTest extends LoopTest {
   }
 
   @Test
+  public final void notEqual() {
+    assertEquals(true, Loop.run("test/loop/confidence/not_equal.loop"));
+  }
+
+  @Test
+  public final void notEqual2() {
+    assertEquals(true, Loop.run("test/loop/confidence/not_equal.loop"));
+  }
+
+  @Test
   public final void reverseListPatternMatchingGuarded1() {
     assertEquals(Arrays.asList(3, 2, 1), Loop.run("test/loop/confidence/reverse_guarded_1.loop"));
   }

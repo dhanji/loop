@@ -1,5 +1,5 @@
 require `java.util.Date`
-require `java.util.Gate`
+require `java.util.Gate`  # doesnt exist
 
 date(num) ->
   new Date(num)

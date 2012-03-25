@@ -63,6 +63,7 @@ public class Token {
     REQUIRE,
     MODULE,
 
+    IMMUTABLE,
     CLASS,
     NEW,
     OR,
@@ -125,23 +126,19 @@ public class Token {
       TOKEN_MAP.put("in", IN);
       TOKEN_MAP.put("new", NEW);
       TOKEN_MAP.put("class", CLASS);
+      TOKEN_MAP.put("immutable", IMMUTABLE);
 
       TOKEN_MAP.put("require", REQUIRE);
       TOKEN_MAP.put("module", MODULE);
 
 
-      TOKEN_MAP.put("||", OR);
       TOKEN_MAP.put("or", OR);
-      TOKEN_MAP.put("&&", AND);
       TOKEN_MAP.put("and", AND);
-      TOKEN_MAP.put("!", NOT);
       TOKEN_MAP.put("not", NOT);
 
 
       TOKEN_MAP.put("true", TRUE);
       TOKEN_MAP.put("false", FALSE);
-      TOKEN_MAP.put("yes", TRUE);
-      TOKEN_MAP.put("no", FALSE);
     }
 
     /**

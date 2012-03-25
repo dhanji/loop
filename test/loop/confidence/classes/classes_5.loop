@@ -1,0 +1,7 @@
+# An immutable type decl
+
+immutable class Star ->
+  name: 'Proxima Centauri'
+
+main ->
+  new Star()

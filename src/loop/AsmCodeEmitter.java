@@ -477,6 +477,16 @@ import java.util.concurrent.atomic.AtomicInteger;
         // Leave the object on the stack.
         methodVisitor.visitVarInsn(ALOAD, objectVar);
 
+        // Should we freeze this object?
+        if (classDecl.immutable) {
+          methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "loop/lang/LoopObject", "immutize",
+              "()Lloop/lang/ImmutableLoopObject;");
+
+          // Overwrite the old var in case there is a reference later on.
+          methodVisitor.visitVarInsn(ASTORE, objectVar);
+          methodVisitor.visitVarInsn(ALOAD, objectVar);
+        }
+
       } else {
         // Emit Java constructor call.
         String javaType;

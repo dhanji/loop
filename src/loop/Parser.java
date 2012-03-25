@@ -155,6 +155,7 @@ public class Parser {
    * Type declaration with inline constructors.
    */
   public ClassDecl classDecl() {
+    boolean isImmutable = match(Kind.IMMUTABLE) != null;
     if (match(Kind.CLASS) == null) {
       return null;
     }
@@ -170,7 +171,7 @@ public class Parser {
       throw new LoopCompileException();
     }
 
-    ClassDecl classDecl = new ClassDecl(className.iterator().next().value);
+    ClassDecl classDecl = new ClassDecl(className.iterator().next().value, isImmutable);
 
     Node line;
     do {

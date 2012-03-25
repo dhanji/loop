@@ -1,0 +1,10 @@
+# An mutable type decl which is immutized
+
+class Star ->
+  name: 'Proxima Centauri'
+
+main ->
+  [frozen, star]
+  where
+    star: new Star()
+    frozen: star.immutize()

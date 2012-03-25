@@ -44,4 +44,8 @@ public class LoopObject extends HashMap<Object, Object> {
   @Override public Set<Map.Entry<Object, Object>> entrySet() {
     return Collections.unmodifiableSet(super.entrySet());
   }
+
+  public ImmutableLoopObject immutize() {
+    return new ImmutableLoopObject(type, this);
+  }
 }

@@ -1,0 +1,7 @@
+# Not equals (really, negation)
+
+negate(x) ->
+  x not true
+
+main ->
+  true.negate().negate()

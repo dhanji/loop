@@ -1,0 +1,11 @@
+# Not equals
+
+negate(x) ->
+  x not true
+
+main ->
+  (a not b) == expected
+  where
+    a: 1
+    b: 1
+    expected: negate(true)

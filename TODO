@@ -12,7 +12,9 @@ ASM
 
 - Modules/packaging/import
 - Tail call optimization
-- immutable types
+x immutable types
+- Fix nested where block parser issues
+- Fix comments to close to function issues
 
 
 Stretch
@@ -35,10 +37,10 @@ Algorithms
 x Quicksort
 x MergeSort
 x Insert Sort
-- Skyline (range sorting)
 x Djikstra's algroithm
-- A* pathfinding
 x Djikstra's Shunting Yard
-- Sieve of Eratosthenes
 x Ransom Note
 x Naive Factorial
+- Skyline (range sorting)
+- A* pathfinding
+- Sieve of Eratosthenes

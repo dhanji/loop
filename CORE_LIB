@@ -1,0 +1,21 @@
+CORE LIBRARY
+------------
+
+Required functions in Prelude:
+
+- negate (flips true/false)
+- print
+
+
+list/string functions:
+- reverse
+- last
+- push
+- pop
+- head
+- tail
+
+
+Globals
+- ARGV (list of cli arguments)
+- ENV (easy access to system properties and what have you)

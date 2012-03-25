@@ -145,8 +145,11 @@ public class Caller {
     if (target == null)
       return null;
 
-    if (target instanceof Map)
-      return ((Map)target).get(method);
+    if (target instanceof Map) {
+      Object value = ((Map) target).get(method);
+      if (value != null)
+        return value;
+    }
 
     // This key can be improved to use a bitvector, for example.
     String name = target.getClass().getName();

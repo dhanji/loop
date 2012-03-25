@@ -1,0 +1,9 @@
+# An immutable type decl
+
+immutable class Star ->
+  name: 'Proxima Centauri'
+
+main ->
+  star.name = 'Shouldnt work!'
+  where
+    star: new Star()

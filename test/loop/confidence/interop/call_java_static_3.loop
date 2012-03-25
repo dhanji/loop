@@ -1,9 +1,0 @@
-# Calling Java and Loop functions.
-
-@do() ->
-  sys.currentTimeMillis()
-  where
-    sys: `java.lang.System`
-
-main ->
-  @do()

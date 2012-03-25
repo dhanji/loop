@@ -18,6 +18,13 @@ public class TypeDeclarationsParsingTest {
   }
 
   @Test
+  public final void immutableTypeDeclaration() {
+    compareType("Person",
+        "(immutable_class Person -> (= (comput (. name)) (comput (. 'dude'))))",
+        "immutable class Person ->\n  name: 'dude'\n");
+  }
+
+  @Test
   public final void multilineTypeDeclaration() {
     compareType("Person",
         "(class Person ->" +

@@ -14,15 +14,19 @@ public class ImmutableLoopObject extends LoopObject {
   private static final String IMMUTABILITY_ERROR =
       "Illegal attempt to create an object oriented language!";
 
-  public ImmutableLoopObject(LoopClass type) {
+  public ImmutableLoopObject(LoopClass type, LoopObject source) {
     super(type);
+
+    for (Map.Entry<Object, Object> entry : source.entrySet()) {
+      super.put(entry.getKey(), entry.getValue());
+    }
   }
 
   @Override public Object put(Object o, Object o1) {
     throw new LoopExecutionException(IMMUTABILITY_ERROR);
   }
 
-  @Override public void putAll(Map<? extends Object, ? extends Object> map) {
+  @Override public void putAll(Map<?, ?> map) {
     throw new LoopExecutionException(IMMUTABILITY_ERROR);
   }
 
