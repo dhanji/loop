@@ -20,7 +20,7 @@ import java.util.Set;
  * @author dhanji@gmail.com (Dhanji R. Prasanna)
  */
 public class Parser {
-  private final List<ParseError> errors = new ArrayList<ParseError>();
+  private final List<StaticError> errors = new ArrayList<StaticError>();
   private final List<Token> tokens;
   private Node last = null;
   private int i = 0;
@@ -51,12 +51,12 @@ public class Parser {
     this.tokens = tokens;
   }
 
-  public List<ParseError> getErrors() {
+  public List<StaticError> getErrors() {
     return errors;
   }
 
   public void addError(String message, Token token) {
-    errors.add(new ParseError(message, token));
+    errors.add(new StaticError(message, token));
   }
 
   /**
@@ -960,7 +960,7 @@ public class Parser {
       String functionName = (node instanceof Variable)
           ? ((Variable) node).name
           : ((PrivateField) node).name();
-      node = new Call(functionName, true, args);
+      node = new Call(functionName, true, args).sourceLocation(node);
     }
 
     CallChain chain = new CallChain();
@@ -970,8 +970,11 @@ public class Parser {
     boolean isJavaStaticRef = node instanceof JavaLiteral && ((JavaLiteral)node).staticFieldAccess == null;
     Node call, indexIntoList = null;
     while ((call = call()) != null || (indexIntoList = indexIntoList()) != null) {
-      if (call != null)
-        ((Call)call).javaStatic(isJavaStaticRef);
+      if (call != null) {
+        Call postfixCall = (Call) call;
+        postfixCall.javaStatic(isJavaStaticRef);
+        postfixCall.postfix(true);
+      }
       chain.add(call != null ? call : indexIntoList);
     }
 

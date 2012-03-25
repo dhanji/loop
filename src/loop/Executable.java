@@ -29,7 +29,7 @@ public class Executable {
   private Node node;
       // If a fragment and not a whole unit (mutually exclusive with unit)
 
-  private List<ParseError> parseErrors;
+  private List<StaticError> staticErrors;
   private TreeMap<SourceLocation, Node> emittedNodes;
   private Class<?> compiled;
   private boolean runMain;
@@ -65,18 +65,22 @@ public class Executable {
     try {
       unit = parser.script();
       unit.reduceAll();
-    } catch (LoopCompileException e) {
+    } catch (RuntimeException e) {
       // Ignored.
+      System.out.println("Parse errors exist.");
     }
+
     if (!parser.getErrors().isEmpty())
-      this.parseErrors = parser.getErrors();
+      this.staticErrors = parser.getErrors();
+    else
+      this.staticErrors = new Verifier(unit).verify();
 
     return unit;
   }
 
-  public void printParseErrorsIfNecessary() {
-    if (parseErrors != null)
-      printErrors(getParseErrors());
+  public void printStaticErrorsIfNecessary() {
+    if (staticErrors != null)
+      printErrors(getStaticErrors());
   }
 
   public void printErrors(List<AnnotatedError> errors) {
@@ -85,7 +89,7 @@ public class Executable {
       System.out.println((i + 1) + ") " + error.getMessage());
       System.out.println();
 
-      // Show some context around this file.
+      // Show some context around this line.
       int lineNumber = error.line() + 1;
       int column = error.column();
 
@@ -108,19 +112,19 @@ public class Executable {
     return runMain;
   }
 
-  public boolean hasParseErrors() {
-    return parseErrors != null;
+  public boolean hasErrors() {
+    return staticErrors != null;
   }
 
   public void compile() {
     Unit unit = parse(source);
-    if (hasParseErrors())
+    if (hasErrors())
       return;
 
     AsmCodeEmitter codeEmitter = new AsmCodeEmitter(unit);
     this.scope = unit;
 //    this.emittedNodes = codeEmitter.getEmittedNodeMap();
-    this.compiled = codeEmitter.write(unit, true);
+    this.compiled = codeEmitter.write(unit, false);
 
     requireImports(unit.imports());
 
@@ -133,10 +137,10 @@ public class Executable {
         try {
           Class.forName(requireDecl.javaLiteral);
         } catch (ClassNotFoundException e) {
-          if (parseErrors == null)
-            parseErrors = new ArrayList<ParseError>();
+          if (staticErrors == null)
+            staticErrors = new ArrayList<StaticError>();
 
-          parseErrors.add(new ParseError("Unable to find Java type for import: "
+          staticErrors.add(new StaticError("Unable to find Java type for import: "
               + requireDecl.javaLiteral, requireDecl.sourceLine, requireDecl.sourceColumn));
         }
     }
@@ -146,7 +150,7 @@ public class Executable {
     this.scope = scope;
     Parser parser = new Parser(new Tokenizer(source).tokenize());
     Node line = parser.line();
-    if (hasParseErrors())
+    if (hasErrors())
       return;
 
     this.node = new Reducer(line).reduce();
@@ -170,7 +174,7 @@ public class Executable {
     } else
       this.node = functionDecl;
 
-    if (hasParseErrors())
+    if (hasErrors())
       return;
 
     this.node = new Reducer(node).reduce();
@@ -205,8 +209,8 @@ public class Executable {
   }
 
   @SuppressWarnings("unchecked")
-  public List<AnnotatedError> getParseErrors() {
-    return (List) parseErrors;
+  public List<AnnotatedError> getStaticErrors() {
+    return (List) staticErrors;
   }
 
   public void printSourceFragment(final String message, int line, int column) {

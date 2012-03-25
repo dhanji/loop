@@ -1,0 +1,19 @@
+# Scope resolution error for function call
+
+main ->
+  scan([100,2,3])
+  where
+    scan(ls) =>
+      []                        : []
+      [x]       | x < 10   : [x]
+                | x > 10        : [10]
+      [x:xs]                    : scan(xs) + x
+      where
+        sub ->
+          mail()
+          where
+            scrub ->
+              sub()
+              where
+                dub ->
+                  scan([sub1()])

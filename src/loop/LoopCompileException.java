@@ -20,6 +20,6 @@ public class LoopCompileException extends RuntimeException {
   }
 
   public List<AnnotatedError> getErrors() {
-    return executable.getParseErrors();
+    return executable.getStaticErrors();
   }
 }

@@ -7,8 +7,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.StringReader;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -25,9 +23,6 @@ public class Loop {
     if (args.length == 0) {
       LoopShell.shell();
     }
-
-    Map<String, Object> map = new HashMap<String, Object>();
-    map.put("ARGV", Arrays.asList(args));
 
     if (args.length > 1)
       run(args[0], false);
@@ -137,8 +132,8 @@ public class Loop {
     try {
       executable = new Executable(new FileReader(new File(file)));
       executable.compile();
-      if (executable.hasParseErrors()) {
-        executable.printParseErrorsIfNecessary();
+      if (executable.hasErrors()) {
+        executable.printStaticErrorsIfNecessary();
 
         throw new LoopCompileException("Syntax errors exist", executable);
       }

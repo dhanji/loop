@@ -34,6 +34,14 @@ public abstract class Node {
     return (T) this;
   }
 
+  @SuppressWarnings("unchecked")
+  public <T extends Node> T sourceLocation(Node source) {
+    this.sourceLine = source.sourceLine;
+    this.sourceColumn = source.sourceColumn;
+
+    return (T) this;
+  }
+
   public List<Node> children() {
     return children;
   }

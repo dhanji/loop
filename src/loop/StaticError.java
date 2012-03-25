@@ -3,18 +3,18 @@ package loop;
 /**
  * @author dhanji@gmail.com (Dhanji R. Prasanna)
  */
-public class ParseError implements AnnotatedError {
+public class StaticError implements AnnotatedError {
   private final String message;
   private final int line;
   private final int column;
 
-  public ParseError(String message, Token token) {
+  public StaticError(String message, Token token) {
     this.message = message;
     this.line = token.line;
     this.column = token.column;
   }
 
-  public ParseError(String message, int line, int column) {
+  public StaticError(String message, int line, int column) {
     this.message = message;
     this.line = line;
     this.column = column;

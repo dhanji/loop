@@ -1,0 +1,10 @@
+# Scope resolution error for function call
+
+main ->
+  scan([100,2,3], 2)
+  where
+    scan(ls) =>
+      []                        : []
+      [x]       | scan() < 10   : [x]
+                | x > 10        : [10]
+      [x:xs]                    : sclan(xs, 1) + x
