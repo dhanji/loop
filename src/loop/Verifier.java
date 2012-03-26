@@ -4,12 +4,17 @@ import loop.ast.Assignment;
 import loop.ast.Call;
 import loop.ast.ClassDecl;
 import loop.ast.ConstructorCall;
+import loop.ast.DestructuringPair;
 import loop.ast.Guard;
+import loop.ast.MapPattern;
 import loop.ast.Node;
 import loop.ast.PatternRule;
+import loop.ast.RegexLiteral;
 import loop.ast.Variable;
+import loop.ast.script.ArgDeclList;
 import loop.ast.script.FunctionDecl;
 import loop.ast.script.Unit;
+import loop.runtime.regex.NamedPattern;
 
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
@@ -32,7 +37,7 @@ public class Verifier {
       "ARGV", "ENV"
   ));
   private final Unit unit;
-  private final Stack<FunctionDecl> functionStack = new Stack<FunctionDecl>();
+  private final Stack<FunctionContext> functionStack = new Stack<FunctionContext>();
 
   private List<StaticError> errors;
 
@@ -49,10 +54,8 @@ public class Verifier {
   }
 
   private void verify(FunctionDecl functionDecl) {
-    functionStack.push(functionDecl);
-    for (Node node : functionDecl.children()) {
-      verifyNode(node);
-    }
+    functionStack.push(new FunctionContext(functionDecl));
+    verifyNodes(functionDecl.children());
 
     for (Node inner : functionDecl.whereBlock) {
       if (inner instanceof FunctionDecl)
@@ -64,14 +67,28 @@ public class Verifier {
     functionStack.pop();
   }
 
+  private void verifyNodes(List<Node> nodes) {
+    for (Node child : nodes) {
+
+      if (child instanceof PatternRule) {
+        Stack<PatternRule> patternRuleStack = functionStack.peek().patternRuleStack;
+        patternRuleStack.push((PatternRule) child);
+        verifyNode(child);
+        patternRuleStack.pop();
+
+      } else if (child instanceof FunctionDecl) // Closures in function body.
+        verify((FunctionDecl)child);
+      else
+        verifyNode(child);
+    }
+  }
+
   private void verifyNode(Node node) {
     if (node == null)
       return;
 
     // Pre-order traversal.
-    for (Node child : node.children()) {
-      verifyNode(child);
-    }
+    verifyNodes(node.children());
 
     if (node instanceof Call) {
       Call call = (Call) node;
@@ -104,8 +121,8 @@ public class Verifier {
       verifyNode(guard.line);
     } else if (node instanceof Variable) {
       Variable var = (Variable) node;
-//      if (!resolveVar(var.name))
-//        addError("Cannot resolve variable: " + var.name, var.sourceLine, var.sourceColumn);
+      if (!resolveVar(var.name))
+        addError("Cannot resolve symbol: " + var.name, var.sourceLine, var.sourceColumn);
     } else if (node instanceof ConstructorCall) {
       ConstructorCall call = (ConstructorCall) node;
       if (!resolveType(call))
@@ -147,14 +164,55 @@ public class Verifier {
   }
 
   private boolean resolveVar(String name) {
-    ListIterator<FunctionDecl> iterator = functionStack.listIterator(functionStack.size());
+    ListIterator<FunctionContext> iterator = functionStack.listIterator(functionStack.size());
+    FunctionContext thisFunction = functionStack.peek();
+
+    // First of all, attempt to resolve as a patterm match.
+    if (thisFunction.function.patternMatching && !thisFunction.patternRuleStack.empty()) {
+      PatternRule patternRule = thisFunction.patternRuleStack.peek();
+      for (Node pattern : patternRule.patterns) {
+        if (pattern instanceof MapPattern) {
+          // Look in destructuring pairs
+          for (Node child : pattern.children()) {
+            Variable lhs = (Variable)((DestructuringPair)child).lhs;
+            if (name.equals(lhs.name))
+              return true;
+          }
+
+        } else if (pattern instanceof RegexLiteral) {
+          RegexLiteral regexLiteral = (RegexLiteral) pattern;
+          try {
+            NamedPattern compiled = NamedPattern.compile(regexLiteral.value);
+            if (compiled.groupNames().contains(name))
+              return true;
+
+          } catch (RuntimeException e) {
+            addError("Malformed regular expression: " + regexLiteral.value
+                + " (" + e.getMessage() + ")",
+                regexLiteral.sourceLine, regexLiteral.sourceColumn);
+          }
+        } else {
+          for (Node node : pattern.children()) {
+            if (node instanceof Variable && name.equals(((Variable) node).name))
+              return true;
+          }
+        }
+      }
+    }
+
+    // Attempt to resolve in args.
+    for (Node node : thisFunction.function.arguments().children()) {
+      ArgDeclList.Argument argument = (ArgDeclList.Argument) node;
+      if (name.equals(argument.name()))
+        return true;
+    }
 
     // Keep searching up the stack until we resolve this symbol or die trying!.
     while (iterator.hasPrevious()) {
-      FunctionDecl functionDecl = iterator.previous();
+      FunctionDecl functionDecl = iterator.previous().function;
       List<Node> whereBlock = functionDecl.whereBlock;
 
-      // First attempt to resolve in local function scope.
+      // Then attempt to resolve in local function scope.
       for (Node node : whereBlock) {
         if (node instanceof Assignment) {
           Assignment assignment = (Assignment) node;
@@ -164,13 +222,14 @@ public class Verifier {
       }
     }
 
-    return false;
+    // Finally this could be a function pointer.
+    return resolveCall(name) != null;
   }
 
   private FunctionDecl resolveCall(String name) {
-    ListIterator<FunctionDecl> iterator = functionStack.listIterator(functionStack.size());
+    ListIterator<FunctionContext> iterator = functionStack.listIterator(functionStack.size());
     while (iterator.hasPrevious()) {
-      FunctionDecl functionDecl = iterator.previous();
+      FunctionDecl functionDecl = iterator.previous().function;
       List<Node> whereBlock = functionDecl.whereBlock;
 
       // Well, first see if this is a direct call (usually catches recursion).
@@ -204,5 +263,16 @@ public class Verifier {
       errors = new ArrayList<StaticError>();
 
     errors.add(new StaticError(message, line, column));
+  }
+
+  public static class FunctionContext {
+    private final FunctionDecl function;
+    private Stack<PatternRule> patternRuleStack;
+
+    public FunctionContext(FunctionDecl function) {
+      this.function = function;
+      if (function.patternMatching)
+        this.patternRuleStack = new Stack<PatternRule>();
+    }
   }
 }
