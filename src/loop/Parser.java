@@ -281,7 +281,7 @@ public class Parser {
 
   private FunctionDecl patternMatchingFunctionDecl(FunctionDecl functionDecl) {
     chewEols();
-    PatternRule rule = new PatternRule();
+    PatternRule rule = new PatternRule().sourceLocation(functionDecl);
     do {
       withIndent();
 
@@ -303,9 +303,11 @@ public class Parser {
         pattern = term();
 
       // Try "otherwise" default fall thru.
-      if (pattern == null)
-        if (match(Token.Kind.STAR) != null)
-          pattern = new WildcardPattern();
+      if (pattern == null) {
+        List<Token> starToken = match(Kind.STAR);
+        if (starToken != null)
+          pattern = new WildcardPattern().sourceLocation(starToken);
+      }
 
       // Look for a where block at the end of this pattern matching decl.
       int currentToken = i;
@@ -321,6 +323,7 @@ public class Parser {
       }
 
       rule.patterns.add(pattern);
+      rule.sourceLocation(pattern);
 
       boolean guarded = false;
       while (match(Token.Kind.PIPE) != null) {
@@ -414,13 +417,15 @@ public class Parser {
   }
 
   private Node emptyMapPattern() {
-    return match(Token.Kind.LBRACKET, Token.Kind.ASSIGN, Token.Kind.RBRACKET) != null
-        ? new MapPattern() : null;
+    List<Token> startTokens = match(Kind.LBRACKET, Kind.ASSIGN, Kind.RBRACKET);
+    return startTokens != null
+        ? new MapPattern().sourceLocation(startTokens) : null;
   }
 
   private Node emptyListPattern() {
-    return match(Token.Kind.LBRACKET, Token.Kind.RBRACKET) != null
-        ? new ListDestructuringPattern() : null;
+    List<Token> startTokens = match(Kind.LBRACKET, Kind.RBRACKET);
+    return startTokens != null
+        ? new ListDestructuringPattern().sourceLocation(startTokens) : null;
   }
 
   /**
@@ -532,7 +537,7 @@ public class Parser {
       rhs = callChain;
     }
 
-    pattern.add(new DestructuringPair(term, rhs));
+    pattern.add(new DestructuringPair(term, rhs).sourceLocation(term));
 
     while (match(Token.Kind.COMMA) != null) {
       term = variable();
@@ -547,7 +552,7 @@ public class Parser {
         throw new RuntimeException("Expected term after '<-' in object pattern rule");
       if (rhs instanceof Variable) {
         // See if we can keep slurping a dot-chain.
-        CallChain callChain = new CallChain();
+        CallChain callChain = new CallChain().sourceLocation(rhs);
         callChain.add(rhs);
         while (match(Token.Kind.DOT) != null) {
           Node variable = variable();
@@ -559,7 +564,7 @@ public class Parser {
         rhs = callChain;
       }
 
-      pattern.add(new DestructuringPair(term, rhs));
+      pattern.add(new DestructuringPair(term, rhs).sourceLocation(term));
     }
 
     if (match(Token.Kind.RBRACKET) == null) {

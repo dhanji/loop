@@ -55,7 +55,13 @@ public class Verifier {
 
   private void verify(FunctionDecl functionDecl) {
     functionStack.push(new FunctionContext(functionDecl));
-    verifyNodes(functionDecl.children());
+
+    // some basic function signature verification.
+    if (functionDecl.patternMatching && functionDecl.arguments().children().isEmpty()) {
+      addError("Cannot have zero arguments in a pattern matching function" +
+          " (did you mean to use '->')", functionDecl.sourceLine, functionDecl.sourceColumn);
+    } else
+      verifyNodes(functionDecl.children());
 
     for (Node inner : functionDecl.whereBlock) {
       if (inner instanceof FunctionDecl)
@@ -114,7 +120,17 @@ public class Verifier {
       }
 
     } else if (node instanceof PatternRule) {
-      verifyNode(((PatternRule) node).rhs);
+      PatternRule patternRule = (PatternRule) node;
+      verifyNode(patternRule.rhs);
+
+      // Some sanity checking of pattern rules.
+      FunctionDecl function = functionStack.peek().function;
+      int argsSize = function.arguments().children().size();
+      int patternsSize = patternRule.patterns.size();
+      if (patternsSize != argsSize)
+        addError("Incorrect number of patterns in: '" + function.name() + "' (expected " + argsSize
+            + " found " + patternsSize + ")", patternRule.sourceLine, patternRule.sourceColumn);
+
     } else if (node instanceof Guard) {
       Guard guard = (Guard) node;
       verifyNode(guard.expression);

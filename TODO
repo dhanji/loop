@@ -2,19 +2,20 @@ TODO
 ----
 
 ASM
-- Basic verification of AST with symbol table
-  - resolve symbol in scope
-  - ensure function call arg-lengths
-  - ensure pattern lengths
-  - guard without else(?)
-  - conflicting module imports
-  - report errors in a list (like parser)
+x Basic verification of AST with symbol table
+  x resolve symbol in scope
+  x ensure function call arg-lengths
+  x ensure pattern lengths
+  x guard without else(?)
+  x report errors in a list (like parser)
+x immutable types
+x Fix nested where block parser issues
+x Fix comments to close to function issues
 
 - Modules/packaging/import
+  - conflicting module imports
+  - require as (stuff)
 - Tail call optimization
-x immutable types
-- Fix nested where block parser issues
-- Fix comments to close to function issues
 
 
 Stretch
@@ -22,12 +23,16 @@ Stretch
 
 x Null-safety (is this possible?)
 x symbols (interned strings)
-- line numbers
-- require as (stuff)
+- line numbers (for exceptions)
 - enumeration type
 - function inlining
 - Single inheritance
-- actor framework
+- process framework
+  - send message to 'process'
+  - call (synchronous sendAndWait)
+  - try/catch/finally
+  - balance processes across threadpools
+  - cron/timer process
 - Type classes/extension methods (better than interfaces/traits)
 
 
@@ -44,3 +49,6 @@ x Naive Factorial
 - Skyline (range sorting)
 - A* pathfinding
 - Sieve of Eratosthenes
+
+- Dining Philosophers
+- Fan out/fan in (map-reduce)

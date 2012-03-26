@@ -14,14 +14,20 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author dhanji@gmail.com (Dhanji R. Prasanna)
  */
 public class Executable {
+  private static final Pattern INDENT_REGEX = Pattern.compile("^(\\s+)");
+  private static final int MAX_BACKTRACK_LINES = 5;
+
   private volatile String source;      // Raw source code, discarded after compile.
   private final List<String> lines;    // Loop source code lines (for error tracing).
 
@@ -89,6 +95,70 @@ public class Executable {
       System.out.println((i + 1) + ") " + error.getMessage());
       System.out.println();
 
+      // Unwrap to previous line if column is 0, or line is empty.
+      int errorLineNumber = error.line(), column = error.column();
+      if (error.column() == 0 || lines.get(error.line()).trim().isEmpty()) {
+        errorLineNumber = Math.max(0, errorLineNumber - 1);
+        column = lines.get(errorLineNumber).length();
+      }
+
+      String thisLine = lines.get(errorLineNumber);
+
+      // Detect the nearest indent-drop above the error, but only if there is an indent.
+      int indent, startLine = errorLineNumber;
+
+      Matcher matcher = INDENT_REGEX.matcher(thisLine);
+      if (matcher.find()) {
+        indent = matcher.group(1).length();
+
+        // Find an indent-drop before this line.
+        ListIterator<String> lineIterator = lines.listIterator(errorLineNumber);
+        int backtrackCount = 0;
+        while (backtrackCount <= MAX_BACKTRACK_LINES && lineIterator.hasPrevious()) {
+          String previous = lineIterator.previous();
+          Matcher previousMatcher = INDENT_REGEX.matcher(previous);
+          if (!previousMatcher.find() || previousMatcher.group(1).length() < indent) {
+            startLine = Math.max(0, errorLineNumber - backtrackCount - 1);
+            break;
+          }
+
+          backtrackCount++;
+        }
+
+        // If we weren't able to find an indent drop within MAX_BACKTRACK_LINES,
+        // just show MAX_BACKTRACK_LINES of context.
+        if (startLine == errorLineNumber) {
+          startLine -= backtrackCount;
+        }
+
+      } // otherwise this is an unindented line anyway.
+
+      // Print from startLine to error line.
+      for (int lineNumber = startLine; lineNumber <= errorLineNumber; lineNumber++) {
+        String line = lines.get(lineNumber);
+        int lineNumberLabel = lineNumber + 1;
+
+        // if there is a change in line number label width, we need to change the indent
+        // so that everything lines up properly.
+        int leader = 2;
+        if (Math.floor(Math.log10(lineNumberLabel)) > Math.floor(Math.log10(lineNumber)))
+          leader--;
+
+        System.out.println(whitespace(leader) + lineNumberLabel + ":  " + line);
+      }
+
+      // Caret line (^)
+      int spaces = column + Integer.toString(errorLineNumber).length() + 1;
+      System.out.println("  " + whitespace(spaces) + "^\n");
+    }
+  }
+
+  public void _printErrors(List<AnnotatedError> errors) {
+    for (int i = 0, errorsSize = errors.size(); i < errorsSize; i++) {
+      AnnotatedError error = errors.get(i);
+      System.out.println((i + 1) + ") " + error.getMessage());
+      System.out.println();
+
       // Show some context around this line.
       int lineNumber = error.line() + 1;
       int column = error.column();
@@ -99,10 +169,21 @@ public class Executable {
         column = lines.get(Math.max(0, lineNumber - 1)).length();
       }
 
-      if (error.line() > 0)
-        System.out.println("  " + error.line() + ": " + lines.get(lineNumber - 2));
+      // Line #1
+      if (error.line() > 0) {
+        String lineOne = lines.get(lineNumber - 2);
+        // Print an extra line if this line is empty and the previous line is not.
+        if (lineOne.trim().isEmpty() && lineNumber - 3 >= 0) {
+          String lineZero = lines.get(lineNumber - 3);
+          System.out.println("  " + (error.line() - 1) + ": " + lineZero);
+        }
+        System.out.println("  " + error.line() + ": " + lineOne);
+      }
 
+      // Line #2
       System.out.println("  " + lineNumber + ": " + lines.get(Math.max(0, lineNumber - 1)));
+
+      // Caret line (^)
       int spaces = column + Integer.toString(lineNumber).length() + 1;
       System.out.println("  " + whitespace(spaces) + "^\n");
     }

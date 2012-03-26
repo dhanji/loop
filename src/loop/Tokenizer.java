@@ -137,6 +137,7 @@ public class Tokenizer {
       if (inComment) {
         if (c == '\n')
           inComment = false;
+
         start = i;
         continue;
       }

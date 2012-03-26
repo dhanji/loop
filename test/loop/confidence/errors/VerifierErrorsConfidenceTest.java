@@ -87,4 +87,18 @@ public class VerifierErrorsConfidenceTest extends LoopTest {
 
     assertEquals(3, errorList.size());
   }
+
+  @Test
+  public final void verifyPatternMatchingFunc() {
+    List<AnnotatedError> errorList = null;
+    try {
+      Loop.run("test/loop/confidence/errors/verify_error_6.loop");
+    } catch (LoopCompileException e) {
+      errorList = e.getErrors();
+    }
+
+    assertNotNull(errorList);
+
+    assertEquals(3, errorList.size());
+  }
 }

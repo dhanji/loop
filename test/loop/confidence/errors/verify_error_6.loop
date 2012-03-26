@@ -1,0 +1,12 @@
+# Scope resolution error for variables in pattern matching functions
+
+fail =>
+  []    : []
+
+scope(thing) =>
+  /stuff/  : x
+  *, *     : ''
+
+
+main ->
+  scope('hi')
