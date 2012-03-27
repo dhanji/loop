@@ -13,12 +13,19 @@ public class ScriptParsingTest {
   public final void require() {
     compare("require [a, b, c]", "require a.b.c\n");
     compare("require [a, b, c]", "require a.b.c  \n");
+    compare("require [a, b, c] as x", "require a.b.c as x  \n");
   }
 
   @Test
   public final void requireJavaLiteral() {
     compare("require `java.util.List`", "require `java.util.List`\n");
     compare("require `java.sql.Date`", "require `java.sql.Date`  \n");
+  }
+
+  @Test(expected = LoopCompileException.class)
+  public final void requireJavaLiteralCannotBeAliased() {
+    compare("require `java.util.List`", "require `java.util.List`\n");
+    compare("require `java.sql.Date`", "require `java.sql.Date` as d \n");
   }
 
   @Test(expected = RuntimeException.class)

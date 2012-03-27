@@ -643,7 +643,7 @@ public class Parser {
   }
 
   /**
-   * require := REQUIRE IDENT (DOT IDENT)* EOL
+   * require := REQUIRE IDENT (DOT IDENT)* (AS IDENT)? EOL
    */
   public RequireDecl require() {
     if (match(Token.Kind.REQUIRE) == null) {
@@ -653,8 +653,15 @@ public class Parser {
     List<Token> module = match(Kind.JAVA_LITERAL);
     if (null == module)
       module = match(Token.Kind.IDENT);
-    else
+    else {
+      if (match(Kind.EOL) == null) {
+        addError("Expected newline after require (are you trying to alias Java imports?)",
+            tokens.get(i - 1));
+        throw new LoopCompileException();
+      }
+
       return new RequireDecl(module.get(0).value).sourceLocation(module);
+    }
 
     if (null == module) {
       addError("Expected module identifier", tokens.get(i - 1));
@@ -664,6 +671,7 @@ public class Parser {
     List<String> requires = new ArrayList<String>();
     requires.add(module.get(0).value);
 
+    boolean aliased = false;
     while (match(Token.Kind.DOT) != null) {
       module = match(Token.Kind.IDENT);
       if (null == module) {
@@ -674,12 +682,23 @@ public class Parser {
       requires.add(module.get(0).value);
     }
 
+    List<Token> asToken = match(Kind.IDENT);
+    aliased = asToken != null && "as".equals(asToken.get(0).value);
+
+    List<Token> aliasTokens = match(Kind.IDENT);
+    if (aliased && aliasTokens == null) {
+      addError("Expected module alias after 'as'", tokens.get(i - 1));
+      throw new LoopCompileException();
+    }
+
+
     if (match(Token.Kind.EOL) == null) {
       addError("Expected newline after require declaration", tokens.get(i - 1));
       throw new LoopCompileException();
     }
 
-    return new RequireDecl(requires).sourceLocation(module);
+    return new RequireDecl(requires, aliased ? aliasTokens.get(0).value : null)
+        .sourceLocation(module);
   }
 
   /**
