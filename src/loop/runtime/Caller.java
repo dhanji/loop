@@ -4,7 +4,6 @@ import loop.LoopClassLoader;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
@@ -59,7 +58,7 @@ public class Caller {
     staticFieldCache = new ConcurrentHashMap<String, Field>();
   }
 
-  public static Object call(Object target, String method) {
+  public static Object call(Object target, String method) throws Exception {
     return call(target, method, EMPTY_ARRAY);
   }
 
@@ -73,65 +72,54 @@ public class Caller {
 
 
   @SuppressWarnings("unchecked")
-  public static Object instantiate(String type, Object... args) {
-    try {
-      Class<?> clazz = Class.forName(type);
+  public static Object instantiate(String type, Object... args) throws Exception {
+    Class<?> clazz = Class.forName(type);
 
-      String key = type + ':' + args.length;
-      Constructor ctor = staticConstructorCache.get(key);
+    String key = type + ':' + args.length;
+    Constructor ctor = staticConstructorCache.get(key);
 
-      if (null == ctor) {
-        boolean cache = true;
+    if (null == ctor) {
+      boolean cache = true;
 
-        Constructor ctor1 = null;
-        // Choose the appropriate constructor.
-        for (Constructor constructor : clazz.getConstructors()) {
-          if (constructor.getParameterTypes().length == args.length) {
-            Class[] parameterTypes = constructor.getParameterTypes();
+      Constructor ctor1 = null;
+      // Choose the appropriate constructor.
+      for (Constructor constructor : clazz.getConstructors()) {
+        if (constructor.getParameterTypes().length == args.length) {
+          Class[] parameterTypes = constructor.getParameterTypes();
 
-            // Don't cache constructors if there are other ctors of the same length, as
-            // they need to be resolved each time.
-            if (ctor1 != null && ctor1.getParameterTypes().length == parameterTypes.length)
-              cache = false;
+          // Don't cache constructors if there are other ctors of the same length, as
+          // they need to be resolved each time.
+          if (ctor1 != null && ctor1.getParameterTypes().length == parameterTypes.length)
+            cache = false;
 
-            boolean acceptable = true;
-            for (int i = 0, parameterTypesLength = parameterTypes.length;
-                 i < parameterTypesLength;
-                 i++) {
-              Class argType = parameterTypes[i];
-              Object arg = args[i];
+          boolean acceptable = true;
+          for (int i = 0, parameterTypesLength = parameterTypes.length;
+               i < parameterTypesLength;
+               i++) {
+            Class argType = parameterTypes[i];
+            Object arg = args[i];
 
-              if (arg != null && !isAssignable(argType, arg)) {
-                acceptable = false;
-                break;
-              }
-            }
-
-            if (acceptable) {
-              ctor1 = constructor;
+            if (arg != null && !isAssignable(argType, arg)) {
+              acceptable = false;
+              break;
             }
           }
-        }
 
-        if (ctor1 != null && cache)
-          staticConstructorCache.putIfAbsent(key, ctor1);
-        ctor = ctor1;
+          if (acceptable) {
+            ctor1 = constructor;
+          }
+        }
       }
 
-      if (ctor == null)
-        throw new RuntimeException("No suitable constructor matched");
-
-      return ctor.newInstance(args);
-
-    } catch (ClassNotFoundException e) {
-      throw new RuntimeException(e);
-    } catch (InvocationTargetException e) {
-      throw new RuntimeException(e);
-    } catch (InstantiationException e) {
-      throw new RuntimeException(e);
-    } catch (IllegalAccessException e) {
-      throw new RuntimeException(e);
+      if (ctor1 != null && cache)
+        staticConstructorCache.putIfAbsent(key, ctor1);
+      ctor = ctor1;
     }
+
+    if (ctor == null)
+      throw new RuntimeException("No suitable constructor matched");
+
+    return ctor.newInstance(args);
   }
 
   private static boolean isAssignable(Class argType, Object arg) {
@@ -144,7 +132,7 @@ public class Caller {
         || argType.isAssignableFrom(arg.getClass());
   }
 
-  public static Object call(Object target, String method, Object... args) {
+  public static Object call(Object target, String method, Object... args) throws Exception {
     if (target == null)
       return null;
 
@@ -203,17 +191,7 @@ public class Caller {
       dynamicMethodCache.putIfAbsent(key, toCall);
     }
 
-    try {
-      return toCall.invoke(target, args);
-    } catch (NullPointerException e) {
-      throw new RuntimeException(
-          "No such method could be resolved: " + method + " on type " + target
-              .getClass());
-    } catch (IllegalAccessException e) {
-      throw new RuntimeException(e.getCause());
-    } catch (InvocationTargetException e) {
-      throw new RuntimeException(e.getCause());
-    }
+    return toCall.invoke(target, args);
   }
 
   private static boolean signatureMatches(String method, Method candidate, Object[] args) {
@@ -236,15 +214,15 @@ public class Caller {
     return true;
   }
 
-  public static Object callStatic(String target, String method) {
+  public static Object callStatic(String target, String method) throws Exception {
     return callStatic(target, method, EMPTY_ARRAY);
   }
 
-  public static Object callClosure(Closure closure, String target) {
+  public static Object callClosure(Closure closure, String target) throws Exception {
     return callStatic(target, closure.name, closure.freeVariables);
   }
 
-  public static Object callClosure(Closure closure, String target, Object[] args) {
+  public static Object callClosure(Closure closure, String target, Object[] args) throws Exception {
     int argLen = args.length;
     int freeVarLen = closure.freeVariables.length;
     if (freeVarLen > 0) {
@@ -257,79 +235,65 @@ public class Caller {
     return callStatic(target, closure.name, args);
   }
 
-  public static Object callStatic(String target, String method, Object[] args) {
+  public static Object callStatic(String target, String method, Object[] args) throws Exception {
     Method toCall;
 
-    try {
-      final String key = target + ':' + method;
-      toCall = staticMethodCache.get(key);
+    final String key = target + ':' + method;
+    toCall = staticMethodCache.get(key);
+
+    if (toCall == null) {
+      final Class<?> clazz = Class.forName(target, true, LoopClassLoader.CLASS_LOADER);
+      for (Method candidate : clazz.getMethods()) {
+        if (candidate.getName().equals(method)) {
+          toCall = candidate;
+          break;
+        }
+      }
 
       if (toCall == null) {
-        final Class<?> clazz = Class.forName(target, true, LoopClassLoader.CLASS_LOADER);
-        for (Method candidate : clazz.getMethods()) {
+        for (Method candidate : clazz.getDeclaredMethods()) {
           if (candidate.getName().equals(method)) {
             toCall = candidate;
             break;
           }
         }
-
-        if (toCall == null) {
-          for (Method candidate : clazz.getDeclaredMethods()) {
-            if (candidate.getName().equals(method)) {
-              toCall = candidate;
-              break;
-            }
-          }
-        }
-
-        if (!toCall.isAccessible())
-          toCall.setAccessible(true);
-
-        staticMethodCache.put(key, toCall);
       }
 
-      return toCall.invoke(target, args);
-    } catch (NullPointerException e) {
-      throw new RuntimeException(
-          "No such method could be resolved: " + method + " on type " + target);
-    } catch (IllegalAccessException e) {
-      throw new RuntimeException(e.getCause());
-    } catch (InvocationTargetException e) {
-      throw new RuntimeException(e.getCause());
-    } catch (ClassNotFoundException e) {
-      throw new RuntimeException(e);
+      if (toCall == null)
+        throw new RuntimeException(
+            "Function not found: " + method + " in: " + target);
+
+      if (!toCall.isAccessible())
+        toCall.setAccessible(true);
+
+      staticMethodCache.put(key, toCall);
     }
+
+    return toCall.invoke(target, args);
   }
 
-  public static Object getStatic(String target, String field) {
+  public static Object getStatic(String target, String field) throws Exception {
     Field toCall;
 
-    try {
-      final String key = target + field;
-      toCall = staticFieldCache.get(key);
+    final String key = target + field;
+    toCall = staticFieldCache.get(key);
 
-      if (toCall == null) {
-        final Class<?> clazz = Class.forName(target, true, LoopClassLoader.CLASS_LOADER);
-        if (toCall == null) {
-          for (Field candidate : clazz.getDeclaredFields()) {
-            if (Modifier.isStatic(candidate.getModifiers()) && candidate.getName().equals(field)) {
-              toCall = candidate;
-              break;
-            }
-          }
+    if (toCall == null) {
+      final Class<?> clazz = Class.forName(target, true, LoopClassLoader.CLASS_LOADER);
+      for (Field candidate : clazz.getDeclaredFields()) {
+        if (Modifier.isStatic(candidate.getModifiers()) && candidate.getName().equals(field)) {
+          toCall = candidate;
+          break;
         }
-
-        staticFieldCache.put(key, toCall);
       }
 
-      return toCall.get(null);
-    } catch (NullPointerException e) {
-      throw new RuntimeException(
-          "No such method could be resolved: " + field + " on type " + target);
-    } catch (IllegalAccessException e) {
-      throw new RuntimeException(e.getCause());
-    } catch (ClassNotFoundException e) {
-      throw new RuntimeException(e);
+      if (toCall == null)
+        throw new RuntimeException(
+            "No such method could be resolved: " + field + " on type " + target);
+
+      staticFieldCache.put(key, toCall);
     }
+
+    return toCall.get(null);
   }
 }

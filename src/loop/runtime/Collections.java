@@ -41,7 +41,7 @@ public class Collections {
   }
 
   @SuppressWarnings("unchecked")
-  public static Object store(Object collection, Object property, Object value) {
+  public static Object store(Object collection, Object property, Object value) throws Exception {
     if (collection instanceof List) {
       List list = (List) collection;
       list.set((Integer) property, value);
