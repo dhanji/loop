@@ -25,7 +25,7 @@ public class LoopClassLoader extends ClassLoader {
     if (null != clazz)
       return clazz;
 
-    final byte[] bytes = rawClasses.get(name);
+    final byte[] bytes = rawClasses.remove(name);
     if (bytes != null) {
 
       // We don't define loop classes in the parent class loader.
