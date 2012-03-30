@@ -127,6 +127,11 @@ public class Loop {
     return loopCompile(file).getCompiled();
   }
 
+  /**
+   * Returns an executable that represents the compiled form of the Loop program.
+   *
+   * See {@link Executable} for more details on the compilation process.
+   */
   private static Executable loopCompile(String file) {
     Executable executable;
     try {

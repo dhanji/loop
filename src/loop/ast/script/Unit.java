@@ -1,10 +1,14 @@
 package loop.ast.script;
 
+import loop.AnnotatedError;
 import loop.Context;
+import loop.Executable;
 import loop.Reducer;
+import loop.StaticError;
 import loop.ast.ClassDecl;
 import loop.runtime.Scope;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -22,6 +26,9 @@ public class Unit implements Scope {
 
   private String name;
   private final Set<RequireDecl> imports = new LinkedHashSet<RequireDecl>();
+
+  // Resolved, compiled imports:
+  private final Set<Executable> deps = new LinkedHashSet<Executable>();
 
   private final Map<String, FunctionDecl> functions = new LinkedHashMap<String, FunctionDecl>();
   private final Map<String, ClassDecl> classes = new HashMap<String, ClassDecl>();
@@ -128,5 +135,33 @@ public class Unit implements Scope {
 
   public Set<RequireDecl> imports() {
     return imports;
+  }
+
+  public List<AnnotatedError> loadDeps() {
+    List<AnnotatedError> errors = null;
+    for (RequireDecl requireDecl : imports) {
+      if (requireDecl.moduleChain != null) {
+        List<Executable> executables = ModuleLoader.loadAndCompile(requireDecl.moduleChain);
+        if (executables == null) {
+          if (errors == null)
+            errors = new ArrayList<AnnotatedError>();
+
+          errors.add(new StaticError("Unable to locate module: " + requireDecl.moduleChain,
+              requireDecl.sourceLine, requireDecl.sourceColumn));
+        } else {
+          for (Executable executable : executables) {
+            if (executable.hasErrors()) {
+              if (errors == null)
+                errors = new ArrayList<AnnotatedError>();
+
+              errors.addAll(executable.getStaticErrors());
+            } else
+              deps.add(executable);
+          }
+        }
+      }
+    }
+
+    return errors;
   }
 }

@@ -18,6 +18,11 @@ public class FreeFunctionsParsingTest {
   }
 
   @Test
+  public final void simpleFunctionDeclarationWithRescue() {
+    compareFunction("func", "(func: () except handler -> (comput (. x) (+ (. 1))))", "func () except handler ->\n  x + 1\n");
+  }
+
+  @Test
   public final void manyFunctions() {
     String twoFunctionScript = "func () ->\n  x + 2\n\nfunc2 () ->\n  y.call()\n";
 

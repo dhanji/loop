@@ -16,6 +16,11 @@ import static org.junit.Assert.assertEquals;
  * @author dhanji@gmail.com (Dhanji R. Prasanna)
  */
 public class ModulesConfidenceTest extends LoopTest {
+  @Test(expected = LoopCompileException.class)
+  public final void requireFaultyLoopModule() {
+    assertEquals(new Date(10), Loop.run("test/loop/confidence/modules/require_loop_error_1.loop"));
+  }
+
   @Test
   public final void requireJavaClass() {
     assertEquals(new Date(10), Loop.run("test/loop/confidence/modules/require_java.loop"));

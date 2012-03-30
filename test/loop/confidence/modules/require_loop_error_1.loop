@@ -1,0 +1,8 @@
+require error_dep_1
+
+date(num) ->
+  ''
+
+
+main ->
+  date(10)

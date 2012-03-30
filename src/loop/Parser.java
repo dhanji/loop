@@ -20,7 +20,7 @@ import java.util.Set;
  * @author dhanji@gmail.com (Dhanji R. Prasanna)
  */
 public class Parser {
-  private final List<StaticError> errors = new ArrayList<StaticError>();
+  private final List<AnnotatedError> errors = new ArrayList<AnnotatedError>();
   private final List<Token> tokens;
   private Node last = null;
   private int i = 0;
@@ -51,7 +51,7 @@ public class Parser {
     this.tokens = tokens;
   }
 
-  public List<StaticError> getErrors() {
+  public List<AnnotatedError> getErrors() {
     return errors;
   }
 
@@ -235,6 +235,19 @@ public class Parser {
     String name = anonymous ? null : funcName.get(0).value;
     startTokens = funcName != null ? funcName : startTokens;
     FunctionDecl functionDecl = new FunctionDecl(name, arguments).sourceLocation(startTokens);
+
+    // Before we match the arrow and start the function, slurp up any exception handling logic.
+    List<Token> exceptHandlerTokens = match(Kind.IDENT, Kind.IDENT);
+    if (exceptHandlerTokens == null)
+      exceptHandlerTokens = match(Kind.IDENT, Kind.PRIVATE_FIELD);
+
+    if (exceptHandlerTokens != null) {
+      Token exceptToken = exceptHandlerTokens.get(0);
+      if (!"except".equals(exceptToken.value)) {
+        addError("Expected 'expect' keyword after function signature", exceptToken);
+      }
+      functionDecl.exceptionHandler = exceptHandlerTokens.get(1).value;
+    }
 
     // If it doesn't have a thin or fat arrow, then it's not a function either.
     if (match(Token.Kind.ARROW, Token.Kind.LBRACE) == null) {

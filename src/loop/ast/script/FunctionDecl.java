@@ -15,6 +15,7 @@ public class FunctionDecl extends Node {
   private final ArgDeclList arguments;
   public boolean patternMatching;
   public final boolean isPrivate;
+  public String exceptionHandler;
 
   public final List<Node> whereBlock = new ArrayList<Node>();
 
@@ -54,6 +55,8 @@ public class FunctionDecl extends Node {
 
   @Override
   public String toSymbol() {
-    return (name == null ? "<anonymous>" : name) + ": " + Parser.stringify(arguments) + " ->";
+    return (name == null ? "<anonymous>" : name) + ": " + Parser.stringify(arguments)
+        + (exceptionHandler == null ? "" : " except " + exceptionHandler)
+        + " ->";
   }
 }

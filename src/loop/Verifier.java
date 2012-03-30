@@ -27,7 +27,7 @@ import java.util.Stack;
 
 /**
  * Walks the reduced AST looking for scope, symbol and module/import errors. This phase is intended
- * to catch all obvious errors that a static analysis can reveal.
+ * to catch all obvious errors that static analysis can reveal.
  * <p/>
  * Nothing in this phase affects the semantics of the program. This phase can be completely skipped
  * with no ill-effects for semantically correct programs.
@@ -39,13 +39,13 @@ public class Verifier {
   private final Unit unit;
   private final Stack<FunctionContext> functionStack = new Stack<FunctionContext>();
 
-  private List<StaticError> errors;
+  private List<AnnotatedError> errors;
 
   public Verifier(Unit unit) {
     this.unit = unit;
   }
 
-  public List<StaticError> verify() {
+  public List<AnnotatedError> verify() {
     for (FunctionDecl functionDecl : unit.functions()) {
       verify(functionDecl);
     }
@@ -276,7 +276,7 @@ public class Verifier {
 
   private void addError(String message, int line, int column) {
     if (errors == null)
-      errors = new ArrayList<StaticError>();
+      errors = new ArrayList<AnnotatedError>();
 
     errors.add(new StaticError(message, line, column));
   }

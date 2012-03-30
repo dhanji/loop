@@ -22,6 +22,23 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
+ * Reprents an executable loop program (or script). An executable is produced
+ * from loop source code by pushing it through the following phases that represent
+ * "compilation".
+ *
+ * The output of each phase is used as input to the next phase.
+ *
+ * <ol>
+ *   <li>Tokenizer (Tokenizing) - converts the text of the program to well-understood tokens (sometimes called lexing)</li>
+ *   <li>Tokenizer (Normalizing) - inserts additional tokens as appropriate to convert context-sensitive
+ *      grammatical constructs to relatively regular constructs</li>
+ *   <li>Parser - processes the stream of tokens to create productions in the form of an AST</li>
+ *   <li>Reducer - strips the AST of redundant or crufty nodes to make a compact AST</li>
+ *   <li>Verifier - Analyzes the compact AST for scope, symbol and import errors and reports them</li>
+ *   <li>AsmCodeEmitter - Translates the compact AST into JVM bytecode (loadable Classes)</li>
+ *   <li>LoopClassLoader - Loads the raw bytecode into a special classloader during execution</li>
+ * </ol>
+ *
  * @author dhanji@gmail.com (Dhanji R. Prasanna)
  */
 public class Executable {
@@ -32,10 +49,9 @@ public class Executable {
   private final List<String> lines;    // Loop source code lines (for error tracing).
 
   private Scope scope;
-  private Node node;
-      // If a fragment and not a whole unit (mutually exclusive with unit)
+  private Node node; // If a fragment and not a whole unit (mutually exclusive with unit)
 
-  private List<StaticError> staticErrors;
+  private List<AnnotatedError> staticErrors;
   private TreeMap<SourceLocation, Node> emittedNodes;
   private Class<?> compiled;
   private boolean runMain;
@@ -71,6 +87,8 @@ public class Executable {
     try {
       unit = parser.script();
       unit.reduceAll();
+
+      this.scope = unit;
     } catch (RuntimeException e) {
       // Ignored.
       System.out.println("Parse errors exist.");
@@ -153,42 +171,6 @@ public class Executable {
     }
   }
 
-  public void _printErrors(List<AnnotatedError> errors) {
-    for (int i = 0, errorsSize = errors.size(); i < errorsSize; i++) {
-      AnnotatedError error = errors.get(i);
-      System.out.println((i + 1) + ") " + error.getMessage());
-      System.out.println();
-
-      // Show some context around this line.
-      int lineNumber = error.line() + 1;
-      int column = error.column();
-
-      // Unwrap to the previous line if the highlighted line is empty.
-      if (lineNumber > 0 && (lines.get(lineNumber - 1).trim().isEmpty() || column == 0)) {
-        lineNumber -= 1;
-        column = lines.get(Math.max(0, lineNumber - 1)).length();
-      }
-
-      // Line #1
-      if (error.line() > 0) {
-        String lineOne = lines.get(lineNumber - 2);
-        // Print an extra line if this line is empty and the previous line is not.
-        if (lineOne.trim().isEmpty() && lineNumber - 3 >= 0) {
-          String lineZero = lines.get(lineNumber - 3);
-          System.out.println("  " + (error.line() - 1) + ": " + lineZero);
-        }
-        System.out.println("  " + error.line() + ": " + lineOne);
-      }
-
-      // Line #2
-      System.out.println("  " + lineNumber + ": " + lines.get(Math.max(0, lineNumber - 1)));
-
-      // Caret line (^)
-      int spaces = column + Integer.toString(lineNumber).length() + 1;
-      System.out.println("  " + whitespace(spaces) + "^\n");
-    }
-  }
-
   public boolean runMain() {
     return runMain;
   }
@@ -202,24 +184,31 @@ public class Executable {
     if (hasErrors())
       return;
 
+    // Recursively loads and compiles all dependency modules.
+    List<AnnotatedError> depErrors = unit.loadDeps();
+    if (depErrors != null) {
+      this.staticErrors = depErrors;
+      return;
+    }
+
     AsmCodeEmitter codeEmitter = new AsmCodeEmitter(unit);
     this.scope = unit;
 //    this.emittedNodes = codeEmitter.getEmittedNodeMap();
     this.compiled = codeEmitter.write(unit, false);
 
-    requireImports(unit.imports());
+    requireJavaImports(unit.imports());
 
     this.source = null;
   }
 
-  private void requireImports(Set<RequireDecl> imports) {
+  private void requireJavaImports(Set<RequireDecl> imports) {
     for (RequireDecl requireDecl : imports) {
       if (requireDecl.javaLiteral != null)
         try {
           Class.forName(requireDecl.javaLiteral);
         } catch (ClassNotFoundException e) {
           if (staticErrors == null)
-            staticErrors = new ArrayList<StaticError>();
+            staticErrors = new ArrayList<AnnotatedError>();
 
           staticErrors.add(new StaticError("Unable to find Java type for import: "
               + requireDecl.javaLiteral, requireDecl.sourceLine, requireDecl.sourceColumn));
@@ -241,7 +230,7 @@ public class Executable {
     this.compiled = codeEmitter.write(node);
     this.source = null;
 
-    requireImports(scope.requires());
+    requireJavaImports(scope.requires());
   }
 
   public void compileClassOrFunction(Scope scope) {
@@ -264,7 +253,7 @@ public class Executable {
     this.compiled = codeEmitter.write(node);
     this.source = null;
 
-    requireImports(scope.requires());
+    requireJavaImports(scope.requires());
 
     if (functionDecl != null)
       scope.declare(functionDecl);

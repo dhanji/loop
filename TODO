@@ -2,35 +2,24 @@ TODO
 ----
 
 ASM
-x Basic verification of AST with symbol table
-  x resolve symbol in scope
-  x ensure function call arg-lengths
-  x ensure pattern lengths
-  x guard without else(?)
-  x report errors in a list (like parser)
-x immutable types
-x Fix nested where block parser issues
-x Fix comments to close to function issues
 
 - Modules/packaging/import
   - conflicting module imports
   - require as (stuff)
 - Tail call optimization
-
+- line numbers (for exceptions)
+- try/catch/finally
+- Update loop shell
 
 Stretch
 -------
 
-x Null-safety (is this possible?)
-x symbols (interned strings)
-- line numbers (for exceptions)
 - enumeration type
 - function inlining
 - Single inheritance
 - process framework
   - send message to 'process'
   - call (synchronous sendAndWait)
-  - try/catch/finally
   - balance processes across threadpools
   - cron/timer process
 - Type classes/extension methods (better than interfaces/traits)
