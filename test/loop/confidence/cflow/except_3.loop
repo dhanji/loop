@@ -1,0 +1,14 @@
+# Exception handler function
+
+require `java.lang.RuntimeException`
+require `java.io.IOException`
+
+handler(e) =>
+  ''                      : 'no worries'
+  IOException             : 'some worries'
+  *                       : 'stuff'
+  @ensure                 : 'doo!'
+
+
+main except handler ->
+  true

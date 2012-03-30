@@ -1,6 +1,7 @@
 package loop.confidence.cflow;
 
 import loop.Loop;
+import loop.LoopCompileException;
 import loop.LoopTest;
 import org.junit.Test;
 
@@ -46,11 +47,36 @@ public class ControlFlowConfidenceTest extends LoopTest {
     map.put(1, 1);
     map.put(2, 13);
 
-    assertEquals(map, Loop.run("test/loop/confidence/cflow/if-then-else_pmatch.loop", true));
+    assertEquals(map, Loop.run("test/loop/confidence/cflow/if-then-else_pmatch.loop"));
   }
 
   @Test
   public final void ifThenElseInInGuard() {
     assertEquals(Arrays.asList(2), Loop.run("test/loop/confidence/cflow/if-then-else_pmatch_2.loop"));
+  }
+
+  @Test
+  public final void exceptionHandlerDecl() {
+    assertEquals(true, Loop.run("test/loop/confidence/cflow/except_1.loop"));
+  }
+
+  @Test(expected = LoopCompileException.class)
+  public final void exceptionHandlerDeclWithErroneousExceptionClause() {
+    assertEquals(true, Loop.run("test/loop/confidence/cflow/except_2.loop"));
+  }
+
+  @Test(expected = LoopCompileException.class)
+  public final void exceptionHandlerDeclWithNonExceptionClause() {
+    assertEquals(true, Loop.run("test/loop/confidence/cflow/except_3.loop"));
+  }
+
+  @Test(expected = LoopCompileException.class)
+  public final void exceptionHandlerDeclWithImproperSignature() {
+    assertEquals(true, Loop.run("test/loop/confidence/cflow/except_4.loop"));
+  }
+
+  @Test(expected = LoopCompileException.class)
+  public final void exceptionHandlerDeclNotPatternMatching() {
+    assertEquals(true, Loop.run("test/loop/confidence/cflow/except_5.loop"));
   }
 }

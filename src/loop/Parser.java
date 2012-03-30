@@ -208,11 +208,11 @@ public class Parser {
   /**
    * Dual purpose parsing rule. Functions and anonymous functions.
    * <p/>
-   * anonymousFunctionDecl := ANONYMOUS_TOKEN argDeclList? ARROW EOL (INDENT+ line EOL)
+   * anonymousFunctionDecl := ANONYMOUS_TOKEN argDeclList? 'except' IDENT ARROW EOL (INDENT+ line EOL)
    * <p/>
-   * functionDecl := (PRIVATE_FIELD | IDENT) argDeclList? ARROW EOL (INDENT+ line EOL)
+   * functionDecl := (PRIVATE_FIELD | IDENT) argDeclList? 'except' IDENT ARROW EOL (INDENT+ line EOL)
    * <p/>
-   * patternFunctionDecl := (PRIVATE_FIELD | IDENT) argDeclList? HASHROCKET EOL (INDENT+ line EOL)*
+   * patternFunctionDecl := (PRIVATE_FIELD | IDENT) argDeclList? 'except' IDENT HASHROCKET EOL (INDENT+ line EOL)*
    */
   private FunctionDecl internalFunctionDecl(boolean anonymous) {
     List<Token> funcName = null;
@@ -243,7 +243,7 @@ public class Parser {
 
     if (exceptHandlerTokens != null) {
       Token exceptToken = exceptHandlerTokens.get(0);
-      if (!"except".equals(exceptToken.value)) {
+      if (!RestrictedKeywords.EXCEPT.equals(exceptToken.value)) {
         addError("Expected 'expect' keyword after function signature", exceptToken);
       }
       functionDecl.exceptionHandler = exceptHandlerTokens.get(1).value;
@@ -281,7 +281,7 @@ public class Parser {
 
       // A function body must be terminated by } (this is ensured by the token-stream rewriter)
       if (!endOfInput() && match(Token.Kind.RBRACE) == null) {
-        addError("Expected end of function, additional statements found", tokens.get(i));
+        addError("Expected end of function, additional statements found (did you mean '=>')", tokens.get(i));
         throw new LoopCompileException();
       } else
         shouldContinue = false;
@@ -684,7 +684,7 @@ public class Parser {
     List<String> requires = new ArrayList<String>();
     requires.add(module.get(0).value);
 
-    boolean aliased = false;
+    boolean aliased;
     while (match(Token.Kind.DOT) != null) {
       module = match(Token.Kind.IDENT);
       if (null == module) {
@@ -696,11 +696,11 @@ public class Parser {
     }
 
     List<Token> asToken = match(Kind.IDENT);
-    aliased = asToken != null && "as".equals(asToken.get(0).value);
+    aliased = asToken != null && RestrictedKeywords.AS.equals(asToken.get(0).value);
 
     List<Token> aliasTokens = match(Kind.IDENT);
     if (aliased && aliasTokens == null) {
-      addError("Expected module alias after 'as'", tokens.get(i - 1));
+      addError("Expected module alias after '" + RestrictedKeywords.AS +"'", tokens.get(i - 1));
       throw new LoopCompileException();
     }
 

@@ -1,0 +1,8 @@
+# Exception handler function
+
+handler(e) ->
+  'no worries'
+
+
+main except handler ->
+  true

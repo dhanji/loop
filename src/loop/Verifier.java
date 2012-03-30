@@ -9,8 +9,11 @@ import loop.ast.Guard;
 import loop.ast.MapPattern;
 import loop.ast.Node;
 import loop.ast.PatternRule;
+import loop.ast.PrivateField;
 import loop.ast.RegexLiteral;
+import loop.ast.TypeLiteral;
 import loop.ast.Variable;
+import loop.ast.WildcardPattern;
 import loop.ast.script.ArgDeclList;
 import loop.ast.script.FunctionDecl;
 import loop.ast.script.Unit;
@@ -55,6 +58,45 @@ public class Verifier {
 
   private void verify(FunctionDecl functionDecl) {
     functionStack.push(new FunctionContext(functionDecl));
+
+    // Attempt to resolve the exception handler in scope.
+    if (functionDecl.exceptionHandler != null) {
+      FunctionDecl exceptionHandler = resolveCall(functionDecl.exceptionHandler);
+      if (exceptionHandler == null)
+        addError("Cannot resolve exception handler: " + functionDecl.exceptionHandler,
+            functionDecl.sourceLine, functionDecl.sourceColumn);
+      else {
+        int argsSize = exceptionHandler.arguments().children().size();
+        // Verify exception handler template.
+        if (!exceptionHandler.patternMatching)
+          addError("Exception handler must be a pattern-matching function (did you mean '=>')",
+              exceptionHandler.sourceLine, exceptionHandler.sourceColumn);
+        else if (argsSize != 1) {
+          addError("Exception handler must take exactly 1 argument (this one takes "
+              + argsSize + ")", exceptionHandler.sourceLine, exceptionHandler.sourceColumn);
+        } else {
+          for (Node child : exceptionHandler.children()) {
+            PatternRule rule = (PatternRule) child;
+
+            // Should have only 1 arg pattern.
+            Node patternNode = rule.patterns.get(0);
+            if (patternNode instanceof PrivateField) {
+              if (!RestrictedKeywords.ENSURE.equals(((PrivateField) patternNode).name()))
+                addError("Illegal pattern rule in exception handler (did you mean '" +
+                    RestrictedKeywords.ENSURE + "')",
+                    patternNode.sourceLine, patternNode.sourceColumn);
+            } else if (patternNode instanceof TypeLiteral) {
+              TypeLiteral literal = (TypeLiteral) patternNode;
+              if (!resolveType(literal, Throwable.class))
+                addError("Cannot resolve exception type: " + literal.name, literal.sourceLine,
+                    literal.sourceColumn);
+            } else if (!(patternNode instanceof WildcardPattern))
+              addError("Illegal pattern rule in exception handler (only Exception types allowed)",
+                  patternNode.sourceLine, patternNode.sourceColumn);
+          }
+        }
+      }
+    }
 
     // some basic function signature verification.
     if (functionDecl.patternMatching && functionDecl.arguments().children().isEmpty()) {
@@ -145,6 +187,24 @@ public class Verifier {
         addError("Cannot resolve type (either as loop or Java): "
             + (call.modulePart == null ? "" : call.modulePart) + call.name,
             call.sourceLine, call.sourceColumn);
+    }
+  }
+
+  private boolean resolveType(TypeLiteral literal, Class<?> superType) {
+    // First resolve as Loop type. Then Java type.
+    ClassDecl classDecl = unit.resolve(literal.name);
+    if (classDecl != null)
+      return true;
+
+    String javaType = unit.resolveJavaType(literal.name);
+    if (javaType == null)
+      return false;
+
+    // Verify that it exists and that it is a throwable type.
+    try {
+      return superType.isAssignableFrom(Class.forName(javaType));
+    } catch (ClassNotFoundException e) {
+      return false;
     }
   }
 

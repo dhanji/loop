@@ -5,7 +5,7 @@ Required functions in Prelude:
 
 - negate (flips true/false)
 - print
-
+- raise (throws exception or string)
 
 list/string functions:
 - reverse
