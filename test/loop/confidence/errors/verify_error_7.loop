@@ -1,0 +1,11 @@
+# Dupe functions
+
+fail ->
+  []
+
+fail(thing) =>
+  /stuff/  : thing
+
+
+main ->
+  true

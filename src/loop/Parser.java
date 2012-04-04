@@ -59,6 +59,10 @@ public class Parser {
     errors.add(new StaticError(message, token));
   }
 
+  public void addError(String message, int line, int column) {
+    errors.add(new StaticError(message, line, column));
+  }
+
   /**
    * if := IF computation
    * <p/>
@@ -133,10 +137,24 @@ public class Parser {
 
       chewEols();
 
-      if (null != function)
+      if (null != function) {
+        if (unit.get(function.name()) != null) {
+          addError("Duplicate function definition: " + function.name(),
+              function.sourceLine,
+              function.sourceColumn);
+          throw new LoopCompileException();
+        }
+
         unit.declare(function);
-      else if (null != classDecl)
+      } else if (null != classDecl) {
+        if (unit.getType(classDecl.name) != null) {
+          addError("Duplicate type definition: " + classDecl.name,
+              classDecl.sourceLine, classDecl.sourceColumn);
+          throw new LoopCompileException();
+        }
+
         unit.declare(classDecl);
+      }
 
     } while (function != null || classDecl != null);
 
@@ -171,7 +189,8 @@ public class Parser {
       throw new LoopCompileException();
     }
 
-    ClassDecl classDecl = new ClassDecl(className.iterator().next().value, isImmutable);
+    ClassDecl classDecl = new ClassDecl(className.iterator().next().value, isImmutable)
+        .sourceLocation(className);
 
     Node line;
     do {

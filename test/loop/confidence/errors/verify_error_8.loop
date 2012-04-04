@@ -1,0 +1,10 @@
+# Dupes
+
+class Star ->
+  name
+
+class Star ->
+  age
+
+main ->
+  true

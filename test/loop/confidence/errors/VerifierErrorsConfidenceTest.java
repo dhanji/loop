@@ -101,4 +101,32 @@ public class VerifierErrorsConfidenceTest extends LoopTest {
 
     assertEquals(3, errorList.size());
   }
+
+  @Test
+  public final void verifyDuplicateFunctions() {
+    List<AnnotatedError> errorList = null;
+    try {
+      Loop.run("test/loop/confidence/errors/verify_error_7.loop");
+    } catch (LoopCompileException e) {
+      errorList = e.getErrors();
+    }
+
+    assertNotNull(errorList);
+
+    assertEquals(1, errorList.size());
+  }
+
+  @Test
+  public final void verifyDuplicateTypes() {
+    List<AnnotatedError> errorList = null;
+    try {
+      Loop.run("test/loop/confidence/errors/verify_error_8.loop");
+    } catch (LoopCompileException e) {
+      errorList = e.getErrors();
+    }
+
+    assertNotNull(errorList);
+
+    assertEquals(1, errorList.size());
+  }
 }
