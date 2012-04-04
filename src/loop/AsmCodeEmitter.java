@@ -51,6 +51,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
@@ -788,7 +789,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
       // Before we emit the body of this method into the class scope, let's
       // see if this is closure, and if it is, emit it as a function reference.
-      List<Variable> freeVariables = null;
+      List<Variable> freeVariables;
       if (isClosure) {
         MethodVisitor currentVisitor = methodStack.peek();
 
@@ -831,6 +832,10 @@ import java.util.concurrent.atomic.AtomicInteger;
           currentVisitor.visitMethodInsn(INVOKESPECIAL, "loop/runtime/Closure", "<init>", "(Ljava/lang/String;)V");
       }
 
+
+      //******* BEGIN FUNCTION SIGNATURE ********
+
+
       // Start writing this function in its own scope.
       StringBuilder args = new StringBuilder("(");
       List<Node> children = functionDecl.arguments().children();
@@ -854,6 +859,8 @@ import java.util.concurrent.atomic.AtomicInteger;
           null);
       methodStack.push(methodVisitor);
 
+      //******* BEGIN WHERE BLOCK LOCALS ********
+
       // Emit static definitions in all parent where blocks.
       for (int i1 = 0, functionStackSize = functionStack.size(); i1 < functionStackSize - 1; i1++) {
         FunctionDecl parent = functionStack.get(i1).thisFunction;
@@ -871,6 +878,8 @@ import java.util.concurrent.atomic.AtomicInteger;
           scopeNestedFunction(functionDecl, innerContext, (FunctionDecl) helper);
         emit(helper);
       }
+
+      //******* BEGIN PATTERN HELPER LOCALS ********
 
       // Set up some helper local vars to make it easier to pattern match certain types (lists).
       if (functionDecl.patternMatching) {
@@ -946,6 +955,37 @@ import java.util.concurrent.atomic.AtomicInteger;
           }
         }
       }
+      //******* BEGIN FUNCTION BODY ********
+
+      //******* BEGIN TRY ********
+      Map<String, Label> catchBlocks = new LinkedHashMap<String, Label>();
+      FunctionDecl exceptionHandler = null;
+      if (functionDecl.exceptionHandler != null) {
+        exceptionHandler = scope.resolveFunction(functionDecl.exceptionHandler);
+
+        Label tryStart = new Label();
+
+        // Determine exception types.
+        Label firstCatchStart = null;
+        for (String type : exceptionHandler.handledExceptions()) {
+          Label catchStart = new Label();
+          catchBlocks.put(type, catchStart);
+
+          if (null == firstCatchStart)
+            firstCatchStart = catchStart;
+
+          // Resolve java exception type, against imported types.
+          String resolvedType = scope.resolveJavaType(type);
+          if (resolvedType != null)
+            type = resolvedType;
+
+          methodVisitor.visitTryCatchBlock(tryStart, firstCatchStart, catchStart, type.replace('.', '/'));
+        }
+        methodVisitor.visitLabel(tryStart);
+      }
+
+      //******* BEGIN INSTRUCTIONS ********
+
 
       emitChildren(node);
 
@@ -957,6 +997,21 @@ import java.util.concurrent.atomic.AtomicInteger;
 
       methodVisitor.visitLabel(innerContext.endOfFunction);
       methodVisitor.visitInsn(ARETURN);
+
+      //******* END FUNCTION BODY ********
+
+      if (functionDecl.exceptionHandler != null) {
+        for (Map.Entry<String, Label> typeLabel : catchBlocks.entrySet()) {
+          methodVisitor.visitLabel(typeLabel.getValue());
+
+          // Emit call to handler.
+          // TODO probably need to resolve this to the correct module.
+          methodVisitor.visitMethodInsn(INVOKESTATIC, scope.getModuleName(),
+              exceptionHandler.scopedName(), "(Ljava/lang/Object;)Ljava/lang/Object;");
+          methodVisitor.visitInsn(ARETURN);
+        }
+      }
+
       methodVisitor.visitMaxs(0, 0);
       methodVisitor.visitEnd();
 

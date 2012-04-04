@@ -63,13 +63,13 @@ public class TokenizerTest {
 
     tokens = new Tokenizer("class aClass").tokenize();
     Assert.assertFalse(Arrays.asList(
-        new Token("class", Token.Kind.CLASS, 0, 0),
+        new Token("class", Token.Kind.IDENT, 0, 0),
         new Token("aClass", Token.Kind.TYPE_IDENT, 0, 0)).equals(tokens));
 
     tokens = new Tokenizer("immutable class aClass").tokenize();
     Assert.assertFalse(Arrays.asList(
         new Token("immutable", Token.Kind.IMMUTABLE, 0, 0),
-        new Token("class", Token.Kind.CLASS, 0, 0),
+        new Token("class", Token.Kind.IDENT, 0, 0),
         new Token("aClass", Token.Kind.TYPE_IDENT, 0, 0)).equals(tokens));
   }
 

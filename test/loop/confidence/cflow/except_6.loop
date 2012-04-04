@@ -1,0 +1,13 @@
+# Exception handler function
+
+require `java.lang.RuntimeException`
+require `loop.LoopExecutionException`
+
+handler(e) =>
+  LoopExecutionException  : e.getClass().name
+  RuntimeException        : 'no worries'
+  *                       : 'starrrr'
+
+
+main except handler ->
+  `loop.Loop`.error('test')

@@ -4,11 +4,10 @@ require `java.lang.RuntimeException`
 require `java.io.IOException`
 
 handler(e) =>
-  RuntimeException        : 'no worries'
+  RuntimeException        : e.getClass().name
   IOException             : 'some worries'
-  *                       : 'stuff'
-  @ensure                 : 'doo!'
+  *                       : e
 
 
 main except handler ->
-  true
+  `loop.Loop`.error('test')

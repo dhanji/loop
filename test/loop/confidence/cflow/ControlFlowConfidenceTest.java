@@ -2,6 +2,7 @@ package loop.confidence.cflow;
 
 import loop.Loop;
 import loop.LoopCompileException;
+import loop.LoopExecutionException;
 import loop.LoopTest;
 import org.junit.Test;
 
@@ -57,7 +58,14 @@ public class ControlFlowConfidenceTest extends LoopTest {
 
   @Test
   public final void exceptionHandlerDecl() {
-    assertEquals(true, Loop.run("test/loop/confidence/cflow/except_1.loop"));
+    assertEquals(LoopExecutionException.class.getName(),
+        Loop.run("test/loop/confidence/cflow/except_1.loop"));
+  }
+
+  @Test
+  public final void exceptionHandlerDeclOrdering() {
+    assertEquals(LoopExecutionException.class.getName(),
+        Loop.run("test/loop/confidence/cflow/except_6.loop"));
   }
 
   @Test(expected = LoopCompileException.class)

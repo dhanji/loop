@@ -4,6 +4,7 @@ import loop.LoopClassLoader;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
@@ -58,7 +59,7 @@ public class Caller {
     staticFieldCache = new ConcurrentHashMap<String, Field>();
   }
 
-  public static Object call(Object target, String method) throws Exception {
+  public static Object call(Object target, String method) throws Throwable {
     return call(target, method, EMPTY_ARRAY);
   }
 
@@ -132,7 +133,7 @@ public class Caller {
         || argType.isAssignableFrom(arg.getClass());
   }
 
-  public static Object call(Object target, String method, Object... args) throws Exception {
+  public static Object call(Object target, String method, Object... args) throws Throwable {
     if (target == null)
       return null;
 
@@ -191,7 +192,11 @@ public class Caller {
       dynamicMethodCache.putIfAbsent(key, toCall);
     }
 
-    return toCall.invoke(target, args);
+    try {
+      return toCall.invoke(target, args);
+    } catch (InvocationTargetException e) {
+      throw e.getCause();
+    }
   }
 
   private static boolean signatureMatches(String method, Method candidate, Object[] args) {
@@ -214,15 +219,15 @@ public class Caller {
     return true;
   }
 
-  public static Object callStatic(String target, String method) throws Exception {
+  public static Object callStatic(String target, String method) throws Throwable {
     return callStatic(target, method, EMPTY_ARRAY);
   }
 
-  public static Object callClosure(Closure closure, String target) throws Exception {
+  public static Object callClosure(Closure closure, String target) throws Throwable {
     return callStatic(target, closure.name, closure.freeVariables);
   }
 
-  public static Object callClosure(Closure closure, String target, Object[] args) throws Exception {
+  public static Object callClosure(Closure closure, String target, Object[] args) throws Throwable {
     int argLen = args.length;
     int freeVarLen = closure.freeVariables.length;
     if (freeVarLen > 0) {
@@ -235,7 +240,7 @@ public class Caller {
     return callStatic(target, closure.name, args);
   }
 
-  public static Object callStatic(String target, String method, Object[] args) throws Exception {
+  public static Object callStatic(String target, String method, Object[] args) throws Throwable {
     Method toCall;
 
     final String key = target + ':' + method;
@@ -269,7 +274,11 @@ public class Caller {
       staticMethodCache.put(key, toCall);
     }
 
-    return toCall.invoke(target, args);
+    try {
+      return toCall.invoke(target, args);
+    } catch (InvocationTargetException e) {
+      throw e.getCause();
+    }
   }
 
   public static Object getStatic(String target, String field) throws Exception {

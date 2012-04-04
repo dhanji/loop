@@ -2,7 +2,10 @@ package loop.ast.script;
 
 import loop.Parser;
 import loop.ast.Node;
+import loop.ast.PatternRule;
+import loop.ast.TypeLiteral;
 import loop.ast.Variable;
+import loop.ast.WildcardPattern;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +30,26 @@ public class FunctionDecl extends Node {
     this.name = name;
     this.isPrivate = name == null || name.startsWith("@");
     this.arguments = arguments == null ? new ArgDeclList() : arguments;
+  }
+
+  /**
+   * If this is an exception handler, returns a list of exception types
+   * that are handled. Corresponds 1:1 with pattern rules in the exception
+   * handler declaration.
+   */
+  public List<String> handledExceptions() {
+    List<String> exceptions = new ArrayList<String>(children.size());
+    for (Node child : children) {
+      assert child instanceof PatternRule;
+
+      Node pattern = ((PatternRule) child).patterns.get(0);
+      if (pattern instanceof TypeLiteral)
+        exceptions.add(((TypeLiteral) pattern).name);
+      else if (pattern instanceof WildcardPattern)
+        exceptions.add("java.lang.Exception");
+    }
+
+    return exceptions;
   }
 
   public boolean isAnonymous() {
