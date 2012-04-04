@@ -96,10 +96,12 @@ public class Executable {
 
     if (!parser.getErrors().isEmpty())
       this.staticErrors = parser.getErrors();
-    else
-      this.staticErrors = new Verifier(unit).verify();
 
     return unit;
+  }
+
+  public boolean verify(Unit unit) {
+    return null == (this.staticErrors = new Verifier(unit).verify());
   }
 
   public void printStaticErrorsIfNecessary() {
@@ -191,6 +193,10 @@ public class Executable {
       return;
     }
 
+    // Run the verifier just before we emit code.
+    if (!verify(unit))
+      return;
+
     AsmCodeEmitter codeEmitter = new AsmCodeEmitter(unit);
     this.scope = unit;
 //    this.emittedNodes = codeEmitter.getEmittedNodeMap();
@@ -281,6 +287,10 @@ public class Executable {
   @SuppressWarnings("unchecked")
   public List<AnnotatedError> getStaticErrors() {
     return (List) staticErrors;
+  }
+
+  public Scope getScope() {
+    return scope;
   }
 
   public void printSourceFragment(final String message, int line, int column) {

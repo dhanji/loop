@@ -90,7 +90,7 @@ public class Unit implements Scope {
   }
 
   @Override
-  public FunctionDecl resolveFunction(String fullyQualifiedName) {
+  public FunctionDecl resolveFunctionOnStack(String fullyQualifiedName) {
     // First resolve in local scope if possible.
     Context context = scopes.peek();
     if (context != null) {
@@ -102,15 +102,25 @@ public class Unit implements Scope {
       if (fullyQualifiedName.equals(context.thisFunction.name()))
         return context.thisFunction;
     }
-    return functions.get(fullyQualifiedName);
+    return resolveFunction(fullyQualifiedName, true);
   }
 
   @Override public void declare(RequireDecl require) {
     imports.add(require);
   }
 
-  public FunctionDecl get(String name) {
-    return functions.get(name);
+  @Override public FunctionDecl resolveFunction(String name, boolean scanDeps) {
+    FunctionDecl functionDecl = functions.get(name);
+    if (functionDecl == null) {
+      // Resolve in deps.
+      for (Executable dep : deps) {
+        functionDecl = dep.getScope().resolveFunction(name, false);
+
+        if (functionDecl != null)
+          return functionDecl;
+      }
+    }
+    return functionDecl;
   }
 
   public ClassDecl getType(String name) {
@@ -119,6 +129,9 @@ public class Unit implements Scope {
 
   public void declare(FunctionDecl node) {
     functions.put(node.name(), node);
+
+    // Set this function's module name.
+    node.moduleName = name;
   }
 
   @Override public Set<RequireDecl> requires() {

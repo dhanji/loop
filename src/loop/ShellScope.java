@@ -26,6 +26,10 @@ class ShellScope implements Scope {
     return "_shell_";
   }
 
+  @Override public FunctionDecl resolveFunction(String name, boolean scanDeps) {
+    return resolveFunctionOnStack(name);
+  }
+
   @Override public void declare(RequireDecl require) {
     requires.add(require);
   }
@@ -66,7 +70,7 @@ class ShellScope implements Scope {
   }
 
   @Override
-  public FunctionDecl resolveFunction(String fullyQualifiedName) {
+  public FunctionDecl resolveFunctionOnStack(String fullyQualifiedName) {
     // First resolve in local scope if possible.
     Context context = scopes.peek();
     if (context != null) {

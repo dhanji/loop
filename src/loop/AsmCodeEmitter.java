@@ -301,7 +301,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
       MethodVisitor methodVisitor = methodStack.peek();
       Context context = functionStack.peek();
-      FunctionDecl resolvedFunction = scope.resolveFunction(call.name());
+      FunctionDecl resolvedFunction = scope.resolveFunctionOnStack(call.name());
       boolean isStatic = resolvedFunction != null, isClosure = false;
 
       // The parse-tree knows if we are calling a java method statically.
@@ -348,8 +348,16 @@ import java.util.concurrent.atomic.AtomicInteger;
       }
 
       // push method name onto stack
-      if (!isClosure)
+      if (!isClosure) {
+        // Emit the module name of the containing class for the resolved function, BUT only
+        // if it is not in the same module as us.
+        if (resolvedFunction != null
+            && resolvedFunction.moduleName != null
+            && !scope.getModuleName().equals(resolvedFunction.moduleName))
+          methodVisitor.visitLdcInsn(resolvedFunction.moduleName);
+
         methodVisitor.visitLdcInsn(name);
+      }
 
       if (argSize > 0) {
         int arrayVar = context.localVarIndex(context.newLocalVariable());
@@ -660,7 +668,7 @@ import java.util.concurrent.atomic.AtomicInteger;
         index = context.localVarIndex(var.name);
 
       // It could be a function-reference. In which case emit it as a closure.
-      FunctionDecl functionDecl = scope.resolveFunction(var.name);
+      FunctionDecl functionDecl = scope.resolveFunctionOnStack(var.name);
       if (functionDecl != null) {
         MethodVisitor methodVisitor = methodStack.peek();
         methodVisitor.visitTypeInsn(NEW, "loop/runtime/Closure");
@@ -961,7 +969,7 @@ import java.util.concurrent.atomic.AtomicInteger;
       Map<String, Label> catchBlocks = new LinkedHashMap<String, Label>();
       FunctionDecl exceptionHandler = null;
       if (functionDecl.exceptionHandler != null) {
-        exceptionHandler = scope.resolveFunction(functionDecl.exceptionHandler);
+        exceptionHandler = scope.resolveFunctionOnStack(functionDecl.exceptionHandler);
 
         Label tryStart = new Label();
 

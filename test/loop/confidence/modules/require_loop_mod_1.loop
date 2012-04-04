@@ -1,4 +1,4 @@
-#require prelude
+require prelude
 
 main ->
-  [1, 2, 3].size()
+  last([1, 2, 3])

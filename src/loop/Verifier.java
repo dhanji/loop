@@ -323,13 +323,10 @@ public class Verifier {
     }
 
 
-    // Then attempt to resolve in module.
-    FunctionDecl target = unit.get(name);
+    // Then attempt to resolve in module(s).
+    FunctionDecl target = unit.resolveFunction(name, true /* resolve in deps */);
     if (target != null)
       return target;
-
-    // Finally, attempt to resolve in imported modules.
-    // ...
 
     return null;
   }

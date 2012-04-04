@@ -3,6 +3,7 @@ package loop.confidence.modules;
 import loop.Loop;
 import loop.LoopCompileException;
 import loop.LoopTest;
+import loop.ast.script.ModuleLoader;
 import org.junit.Test;
 
 import java.util.Date;
@@ -23,9 +24,11 @@ public class ModulesConfidenceTest extends LoopTest {
 
   @Test
   public final void requireLoopModule() {
+    // Set the search path, first.
+    ModuleLoader.searchPaths = new String[] { "test/loop/confidence/modules" };
+
     assertEquals(3, Loop.run("test/loop/confidence/modules/require_loop_mod_1.loop"));
   }
-
 
   @Test
   public final void requireJavaClass() {

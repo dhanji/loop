@@ -13,7 +13,7 @@ import java.util.Set;
 public interface Scope {
   ClassDecl resolve(String fullyQualifiedName);
 
-  FunctionDecl resolveFunction(String fullyQualifiedName);
+  FunctionDecl resolveFunctionOnStack(String fullyQualifiedName);
 
   void declare(RequireDecl require);
 
@@ -30,4 +30,6 @@ public interface Scope {
   String resolveJavaType(String name);
 
   String getModuleName();
+
+  FunctionDecl resolveFunction(String name, boolean scanDeps);
 }

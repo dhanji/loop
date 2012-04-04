@@ -113,7 +113,7 @@ public class FreeFunctionsParsingTest {
     Unit unit = parser.script();
     Assert.assertNotNull("Parser returned no output", unit);
 
-    FunctionDecl function = unit.get(functionName);
+    FunctionDecl function = unit.resolveFunction(functionName, false);
     Assert.assertNotNull("No such function " + functionName, function);
 
 

@@ -138,7 +138,7 @@ public class Parser {
       chewEols();
 
       if (null != function) {
-        if (unit.get(function.name()) != null) {
+        if (unit.resolveFunction(function.name(), false) != null) {
           addError("Duplicate function definition: " + function.name(),
               function.sourceLine,
               function.sourceColumn);
@@ -1002,7 +1002,7 @@ public class Parser {
 
     // If not an ternary IF, maybe a term?
     if (null == node)
-      node = term();
+    node = term();
 
     // Production failed.
     if (null == node) {
