@@ -1,0 +1,6 @@
+
+*.ipr
+*.iws
+.idea
+reverse.loop
+target/
