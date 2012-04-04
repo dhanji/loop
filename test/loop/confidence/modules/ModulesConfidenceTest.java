@@ -22,6 +22,12 @@ public class ModulesConfidenceTest extends LoopTest {
   }
 
   @Test
+  public final void requireLoopModule() {
+    assertEquals(3, Loop.run("test/loop/confidence/modules/require_loop_mod_1.loop"));
+  }
+
+
+  @Test
   public final void requireJavaClass() {
     assertEquals(new Date(10), Loop.run("test/loop/confidence/modules/require_java.loop"));
   }

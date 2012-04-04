@@ -305,4 +305,8 @@ public class Caller {
 
     return toCall.get(null);
   }
+
+  public static void raise(String message) {
+    throw new RuntimeException(message);
+  }
 }

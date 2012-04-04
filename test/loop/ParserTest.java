@@ -33,7 +33,7 @@ public class ParserTest {
     compare("(comput (. new Star(()= name: (comput (. 'Proxima Centauri')) mass: (comput (. 123)))))",
         "new Star(name: 'Proxima Centauri', mass: 123)");
     compare("(comput (. new java.util.Date()))", "new java.util.Date()");
-    compare("(comput (. new java.util.HashMap(()= (comput map))))", "new java.util.HashMap({:})");
+    compare("(comput (. new java.util.HashMap(()= (comput (. map)))))", "new java.util.HashMap({:})");
     compare("(comput (. new loop.MyType(()= a: (comput (. 1)) b: (comput (. 2)))))",
         "new loop.MyType(a: 1, b: 2)");
   }
@@ -75,18 +75,18 @@ public class ParserTest {
 
   @Test
   public final void messyListComprehensions() {
-    compare("(comput (list (comput (. x) (/ (. 2)) (cpr for x in (comput (list (comput (. 1)) (comput (. 2)) (comput (. 3))))" +
-        " if (comput (. x) (> (. 2)))))))",
+    compare("(comput (. (list (comput (. x) (/ (. 2)) (cpr for x in (comput (. (list (comput (. 1)) (comput (. 2)) (comput (. 3)))))" +
+        " if (comput (. x) (> (. 2))))))))",
         "[x/2 for x in [1, 2, 3] if x > 2]");
-    compare("(comput (comput (. x) (/ (. 2)) (cpr for x in (comput (list (comput (. 1)) (comput (. 2)) (comput (. 3))))" +
+    compare("(comput (comput (. x) (/ (. 2)) (cpr for x in (comput (. (list (comput (. 1)) (comput (. 2)) (comput (. 3)))))" +
         " if (comput (. x) (> (. 2))))))",
         "(x/2 for x in [1, 2, 3] if x > 2)");
-    compare("(= (comput (. ls)) (comput (comput (. x) (/ (. 2)) (cpr for x in (comput (list (comput (. 1)) (comput (. 2)) (comput (. 3))))" +
+    compare("(= (comput (. ls)) (comput (comput (. x) (/ (. 2)) (cpr for x in (comput (. (list (comput (. 1)) (comput (. 2)) (comput (. 3)))))" +
         " if (comput (. x) (> (. 2)))))))",
         "ls = (x/2 for x in [1, 2, 3] if x > 2)");
 
     // without group.
-    compare("(= (comput (. ls)) (comput (. x) (/ (. 2)) (cpr for x in (comput (list (comput (. 1)) (comput (. 2)) (comput (. 3))))" +
+    compare("(= (comput (. ls)) (comput (. x) (/ (. 2)) (cpr for x in (comput (. (list (comput (. 1)) (comput (. 2)) (comput (. 3)))))" +
         " if (comput (. x) (> (. 2))))))",
         "ls = x/2 for x in [1, 2, 3] if x > 2");
   }
@@ -102,8 +102,8 @@ public class ParserTest {
     compare("(comput (comput (. a b c)) (+ (. d e)))", "(a.b.c) + d.e");
     compare("(comput (. 1) (+ (comput (. 2) (+ (. 3)))) (+ (. 4)))", "1 + (2 + 3) + 4");
     compare("(comput (. func(()= (comput (comput (. @hi())" +
-        " (+ (list (comput (comput (. 1) (- (. x [(comput (. 1))]))))))))))" +
-        " (+ (comput (. a()) (+ (map (comput (. 1)) (comput (comput (. my()) (- (. expr e))))))))" +
+        " (+ (. (list (comput (comput (. 1) (- (. x [(comput (. 1))])))))))))))" +
+        " (+ (comput (. a()) (+ (. (map (comput (. 1)) (comput (comput (. my()) (- (. expr e)))))))))" +
         " (+ (comput (. 4) (- (comput (. 2))))))",
         "func((@hi() + [(1 - x[1])] )) + (a() + {1 : (my() - expr.e)}) + (4 - (2))");
   }
@@ -129,9 +129,9 @@ public class ParserTest {
 
   @Test
   public final void ternaryIfInFunction() {
-    compare("(comput (. func(()= (comput (. 1)) (comput (if-then-else (comput (. x)) (comput (. y)) (comput (. z)))))))",
+    compare("(comput (. func(()= (comput (. 1)) (comput (. (if-then-else (comput (. x)) (comput (. y)) (comput (. z))))))))",
         "func(1, if x then y else z)");
-    compare("(comput (map (comput (. 1)) (comput (if-then-else (comput (. x)) (comput (. y)) (comput (. z)))) (comput (. 2)) (comput (. 12) (+ (. 1)))))",
+    compare("(comput (. (map (comput (. 1)) (comput (. (if-then-else (comput (. x)) (comput (. y)) (comput (. z))))) (comput (. 2)) (comput (. 12) (+ (. 1))))))",
         "{1 : if x then y else z, 2 : 12 + 1}");
   }
 
@@ -162,7 +162,7 @@ public class ParserTest {
 
   @Test
   public final void freeStandingIfThenElse() {
-    compare("(comput (if-then-else (comput (. x) (> (. 2))) (comput (. do())) (comput (. dont()))))",
+    compare("(comput (. (if-then-else (comput (. x) (> (. 2))) (comput (. do())) (comput (. dont())))))",
         "if x > 2 then do() else dont()");
 
 //    compare("if (comput (. x) (> (. 2))) then (= (comput (. x)) (comput (. 5))) else (= (comput (. x)) (comput (. 10)))",
@@ -171,74 +171,74 @@ public class ParserTest {
 
   @Test
   public final void lists() {
-    compare("(comput list)", "[]");
-    compare("(comput (list (comput (. 1)) (comput (. 2))))", "[1, 2]");
-    compare("(comput (list (comput (. x y)) (comput (. a) (+ (. 1))) (comput (. b anon()) (/ (. list [(comput (. 1))])))))",
+    compare("(comput (. list))", "[]");
+    compare("(comput (. (list (comput (. 1)) (comput (. 2)))))", "[1, 2]");
+    compare("(comput (. (list (comput (. x y)) (comput (. a) (+ (. 1))) (comput (. b anon()) (/ (. list [(comput (. 1))]))))))",
         "[x.y, a + 1, b.anon() / list[1]]");
-    compare("(comput (list (comput list) (comput list) (comput (list (comput list) (comput list)))))",
+    compare("(comput (. (list (comput (. list)) (comput (. list)) (comput (. (list (comput (. list)) (comput (. list))))))))",
         "[[], [], [[], []]]");
   }
 
   @Test
   public final void sets() {
-    compare("(comput set)", "{}");
-    compare("(comput (set (comput (. 1)) (comput (. 2))))", "{1, 2}");
-    compare("(comput (set (comput (. x y)) (comput (. a) (+ (. 1))) (comput (. b anon()) (/ (. list [(comput (. 1))])))))",
+    compare("(comput (. set))", "{}");
+    compare("(comput (. (set (comput (. 1)) (comput (. 2)))))", "{1, 2}");
+    compare("(comput (. (set (comput (. x y)) (comput (. a) (+ (. 1))) (comput (. b anon()) (/ (. list [(comput (. 1))]))))))",
         "{x.y, a + 1, b.anon() / list[1]}");
-    compare("(comput (set (comput list) (comput set) (comput (set (comput list) (comput list)))))",
+    compare("(comput (. (set (comput (. list)) (comput (. set)) (comput (. (set (comput (. list)) (comput (. list))))))))",
         "{[], {}, {[], []}}");
   }
 
   @Test
   public final void trees() {
     // An empty treemap just contains a colon between two brackets.
-    compare("(comput tree)", "[:]");
-    compare("(comput tree)", "[   :]");
-    compare("(comput tree)", "[   :  ]");
+    compare("(comput (. tree))", "[:]");
+    compare("(comput (. tree))", "[   :]");
+    compare("(comput (. tree))", "[   :  ]");
 
-    compare("(comput (tree (comput (. 1)) (comput (. 2))))", "[1 : 2]");
-    compare("(comput (tree (comput (. 1)) (comput (. 2))))", "[1:2]");
-    compare("(comput (tree (comput (. x y)) (comput (. '22'))))", "[x.y : '22']");
-    compare("(comput (tree (comput (. x y)) (comput (. '22'))))", "[x.y: '22']");
+    compare("(comput (. (tree (comput (. 1)) (comput (. 2)))))", "[1 : 2]");
+    compare("(comput (. (tree (comput (. 1)) (comput (. 2)))))", "[1:2]");
+    compare("(comput (. (tree (comput (. x y)) (comput (. '22')))))", "[x.y : '22']");
+    compare("(comput (. (tree (comput (. x y)) (comput (. '22')))))", "[x.y: '22']");
   }
 
   @Test
   public final void maps() {
     // An empty hashmap just contains a hashrocket between two brackets.
-    compare("(comput map)", "{:}");
-    compare("(comput map)", "{   :}");
-    compare("(comput map)", "{   :  }");
+    compare("(comput (. map))", "{:}");
+    compare("(comput (. map))", "{   :}");
+    compare("(comput (. map))", "{   :  }");
 
-    compare("(comput (map (comput (. 1)) (comput (. 2))))", "{1 : 2}");
-    compare("(comput (map (comput (. 1)) (comput (. 2))))", "{1:2}");
-    compare("(comput (map (comput (. x y)) (comput (. '22'))))", "{x.y : '22'}");
-    compare("(comput (map (comput (. x y)) (comput (. '22'))))", "{x.y: '22'}");
+    compare("(comput (. (map (comput (. 1)) (comput (. 2)))))", "{1 : 2}");
+    compare("(comput (. (map (comput (. 1)) (comput (. 2)))))", "{1:2}");
+    compare("(comput (. (map (comput (. x y)) (comput (. '22')))))", "{x.y : '22'}");
+    compare("(comput (. (map (comput (. x y)) (comput (. '22')))))", "{x.y: '22'}");
   }
 
   @Test
   public final void messyMaps() {
     compare("(comput " +
-        "(map " +
+        "(. (map " +
 
         // Pairs:
         "(comput (. 1)) (comput (. 2)) " +
         "(comput (. 2)) (comput (. 3)) " +
         "(comput (. 4)) (comput (. 5 f())) " +
         "(comput (. f())) (comput (. @g) (+ (. 1)))" +
-        "))",
+        ")))",
 
         "{1:2, 2:3, 4: 5.f(), f() : @g + 1}");
 
     // Assign this map to a variable.
     compare("(= (comput (. map)) (comput " +
-        "(map " +
+        "(. (map " +
 
         // Pairs:
         "(comput (. 1)) (comput (. 2)) " +
         "(comput (. 2)) (comput (. 3)) " +
         "(comput (. 4)) (comput (. 5 f())) " +
         "(comput (. f())) (comput (. @g) (+ (. 1))))" +
-        "))",
+        ")))",
 
         "map: {1:2, 2:3, 4: 5.f(), f() : @g + 1}");
   }

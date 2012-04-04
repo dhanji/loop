@@ -8,7 +8,7 @@ ASM
   - require as (stuff)
 - Tail call optimization
 - line numbers (for exceptions)
-- try/catch/finally
+x try/catch/finally
 - Update loop shell
 
 

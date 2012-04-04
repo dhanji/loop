@@ -61,7 +61,7 @@ public class ReducerTest {
 
   @Test
   public final void messyListComprehensions() {
-    compare("(list (comput (cpr x (/ 2) for x in (list 1 2 3) if (comput x (> 2)))))",
+    compare("(. (list (comput (cpr x (/ 2) for x in (list 1 2 3) if (comput x (> 2))))))",
         "[x/2 for x in [1, 2, 3] if x > 2]");
     compare("(comput (comput (cpr x (/ 2) for x in (list 1 2 3) if (comput x (> 2)))) (+ y))",
         "(x/2 for x in [1, 2, 3] if x > 2) + y");

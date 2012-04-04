@@ -994,16 +994,15 @@ public class Parser {
       node = ternaryIf();
     }
 
-    if (null != node) {
-      return node;
+    if (null == node) {
+      node = anonymousFunctionDecl();
+      if (null != node)
+        return node;
     }
 
-    node = anonymousFunctionDecl();
-    if (null != node)
-      return node;
-
     // If not an ternary IF, maybe a term?
-    node = term();
+    if (null == node)
+      node = term();
 
     // Production failed.
     if (null == node) {

@@ -16,7 +16,7 @@ public class PatternMatchingFunctionsParsingTest {
   public final void reverseListInPatternMatchingForm() {
     compareFunction("reverse",
         "(reverse: (()= list) -> \n" +
-        "  => [] : (comput list) \n" +
+        "  => [] : (comput (. list)) \n" +
         "  => ([] x xs) : (comput (. reverse(()= (comput (. xs)))) (+ (. x))))",
         "reverse(list) =>\n" +
             "  []          : []\n" +
@@ -27,7 +27,7 @@ public class PatternMatchingFunctionsParsingTest {
   public final void listPatternMatchingMultipleSegments() {
     compareFunction("reverse",
         "(reverse: (()= list) -> \n" +
-        "  => [] : (comput list) \n" +
+        "  => [] : (comput (. list)) \n" +
         "  => ([] x xs) : (comput (. reverse(()= (comput (. xs)))) (+ (. x))) \n" +
         "  => ([] x y xs ys) : (comput (. reverse(()= (comput (. xs)))) (+ (. x))))",
         "reverse(list) =>\n" +
@@ -40,7 +40,7 @@ public class PatternMatchingFunctionsParsingTest {
   public final void listPatternMatchingMixedSegments() {
     compareFunction("reverse",
         "(reverse: (()= list) -> \n" +
-        "  => [] : (comput list) \n" +
+        "  => [] : (comput (. list)) \n" +
         "  => ([] 'hello x' xs) : (comput (. reverse(()= (comput (. xs)))) (+ (. x))) \n" +
         "  => ([] 0 x 1 xs ys) : (comput (. reverse(()= (comput (. xs)))) (+ (. x))))",
         "reverse(list) =>\n" +
@@ -53,7 +53,7 @@ public class PatternMatchingFunctionsParsingTest {
   public final void listPatternMatchingOtherwise() {
     compareFunction("reverse",
         "(reverse: (()= list) -> \n" +
-        "  => [] : (comput list) \n" +
+        "  => [] : (comput (. list)) \n" +
         "  => ([] 'hello x' xs) : (comput (. reverse(()= (comput (. xs)))) (+ (. x))) \n" +
         "  => wildcard : (comput (. reverse(()= (comput (. xs)))) (+ (. x))))",
         "reverse(list) =>\n" +

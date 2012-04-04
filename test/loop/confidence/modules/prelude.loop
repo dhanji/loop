@@ -1,0 +1,7 @@
+module prelude
+
+raise(msg) ->
+  `loop.runtime.Caller`.raise(msg)
+
+last(ls) ->
+  ls[ls.size() - 1]
