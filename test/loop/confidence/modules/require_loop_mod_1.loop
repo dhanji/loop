@@ -1,4 +1,4 @@
 require prelude
 
 main ->
-  last([1, 2, 3])
+  [1, 2, 30].last()

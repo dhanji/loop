@@ -1,0 +1,7 @@
+require prelude
+
+handle(e) =>
+  *     : e.message
+
+main except handle ->
+  raise('now is the winter of our discontent!')

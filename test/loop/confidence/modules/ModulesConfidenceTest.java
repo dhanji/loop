@@ -24,10 +24,19 @@ public class ModulesConfidenceTest extends LoopTest {
 
   @Test
   public final void requireLoopModule() {
-    // Set the search path, first.
+    // Set the search path for prelude, first.
     ModuleLoader.searchPaths = new String[] { "test/loop/confidence/modules" };
 
-    assertEquals(3, Loop.run("test/loop/confidence/modules/require_loop_mod_1.loop"));
+    assertEquals(30, Loop.run("test/loop/confidence/modules/require_loop_mod_1.loop"));
+  }
+
+  @Test
+  public final void requireLoopModuleRaiseAndCatchException() {
+    // Set the search path for prelude, first.
+    ModuleLoader.searchPaths = new String[] { "test/loop/confidence/modules" };
+
+    assertEquals("now is the winter of our discontent!",
+        Loop.run("test/loop/confidence/modules/require_loop_mod_2.loop"));
   }
 
   @Test
