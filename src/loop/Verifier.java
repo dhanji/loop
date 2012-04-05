@@ -21,11 +21,8 @@ import loop.runtime.regex.NamedPattern;
 
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Set;
 import java.util.Stack;
 
 /**
@@ -36,9 +33,6 @@ import java.util.Stack;
  * with no ill-effects for semantically correct programs.
  */
 public class Verifier {
-  private static final Set<String> GLOBALS = new HashSet<String>(Arrays.asList(
-      "ARGV", "ENV"
-  ));
   private final Unit unit;
   private final Stack<FunctionContext> functionStack = new Stack<FunctionContext>();
 

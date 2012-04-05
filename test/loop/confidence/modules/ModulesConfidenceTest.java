@@ -22,6 +22,13 @@ public class ModulesConfidenceTest extends LoopTest {
     assertEquals(new Date(10), Loop.run("test/loop/confidence/modules/require_loop_error_1.loop"));
   }
 
+  @Test(expected = LoopCompileException.class)
+  public final void requireLoopModuleTwiceCausesVerifyError() {
+    ModuleLoader.searchPaths = new String[] { "test/loop/confidence/modules" };
+
+    assertEquals(10, Loop.run("test/loop/confidence/modules/require_loop_error_2.loop"));
+  }
+
   @Test
   public final void requireLoopModule() {
     // Set the search path for prelude, first.

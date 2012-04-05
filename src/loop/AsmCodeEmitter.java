@@ -589,7 +589,9 @@ import java.util.concurrent.atomic.AtomicInteger;
               "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Boolean;");
           break;
         case AND:
-          methodVisitor.visitInsn(IAND);
+          methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/runtime/Operations", "and",
+              "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Boolean;");
+//          methodVisitor.visitInsn(IAND);
           break;
         case OR:
           methodVisitor.visitInsn(IOR);

@@ -167,4 +167,12 @@ public class Operations {
 
     return !arg0.equals(arg1);
   }
+
+  public static Boolean and(Object arg0, Object arg1) {
+    return ((Boolean) arg0) && ((Boolean) arg1);
+  }
+
+  public static Boolean or(Object arg0, Object arg1) {
+    return ((Boolean) arg0) || ((Boolean) arg1);
+  }
 }

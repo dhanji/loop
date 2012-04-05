@@ -3,13 +3,14 @@ TODO
 
 ASM
 
-- Modules/packaging/import
-  - conflicting module imports
+x Modules/packaging/import
+  x conflicting module imports
   - require as (stuff)
 - Tail call optimization
 - line numbers (for exceptions)
 x try/catch/finally
 - Update loop shell
+- Fix boolean and/or
 
 
 Stretch

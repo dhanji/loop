@@ -1,0 +1,5 @@
+require prelude
+require prelude
+
+main ->
+  10
