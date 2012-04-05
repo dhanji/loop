@@ -3,17 +3,17 @@ CORE LIBRARY
 
 Required functions in Prelude:
 
-- negate (flips true/false)
-- print
-- raise (throws exception or string)
+x negate (flips true/false)
+x print
+x raise (throws exception or string)
 
 list/string functions:
-- reverse
-- last
-- push
-- pop
-- head
-- tail
+x reverse
+x last
+x push
+x pop
+x head
+x tail
 
 
 Globals

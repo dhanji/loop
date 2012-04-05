@@ -1,0 +1,4 @@
+require prelude
+
+main ->
+  [1, 2, 30].reverse() == [30, 2, 1]

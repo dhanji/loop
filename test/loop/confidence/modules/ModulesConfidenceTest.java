@@ -40,6 +40,15 @@ public class ModulesConfidenceTest extends LoopTest {
   }
 
   @Test
+  public final void preludeConfidence1() {
+    // Set the search path for prelude, first.
+    ModuleLoader.searchPaths = new String[] { "test/loop/confidence/modules" };
+
+    assertEquals(true,
+        Loop.run("test/loop/confidence/modules/prelude_conf_1.loop"));
+  }
+
+  @Test
   public final void requireJavaClass() {
     assertEquals(new Date(10), Loop.run("test/loop/confidence/modules/require_java.loop"));
   }
