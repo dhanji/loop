@@ -1,0 +1,4 @@
+require prelude_proxy_err
+
+main ->
+  [1, 2, 4].last()

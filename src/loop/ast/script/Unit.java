@@ -8,6 +8,7 @@ import loop.StaticError;
 import loop.ast.ClassDecl;
 import loop.runtime.Scope;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -111,7 +112,7 @@ public class Unit implements Scope {
 
   @Override public FunctionDecl resolveFunction(String name, boolean scanDeps) {
     FunctionDecl functionDecl = functions.get(name);
-    if (functionDecl == null) {
+    if (functionDecl == null && scanDeps) {
       // Resolve in deps.
       for (Executable dep : deps) {
         functionDecl = dep.getScope().resolveFunction(name, false);
@@ -150,7 +151,7 @@ public class Unit implements Scope {
     return imports;
   }
 
-  public List<AnnotatedError> loadDeps() {
+  public List<AnnotatedError> loadDeps(File file) {
     List<AnnotatedError> errors = null;
     for (RequireDecl requireDecl : imports) {
       if (requireDecl.moduleChain != null) {
@@ -168,6 +169,13 @@ public class Unit implements Scope {
                 errors = new ArrayList<AnnotatedError>();
 
               errors.addAll(executable.getStaticErrors());
+            } else if (ModuleDecl.DEFAULT.name.equals(executable.getScope().getModuleName())) {
+              if (errors == null)
+                errors = new ArrayList<AnnotatedError>();
+
+              errors.add(new StaticError("Imported file is missing a 'module' declaration" + ": "
+                  + executable.file().getName()
+                  + "\n\nrequired in: " + file.getName(), 0, 0));
             } else
               deps.add(executable);
           }

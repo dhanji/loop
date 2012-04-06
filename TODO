@@ -6,6 +6,7 @@ ASM
 x Modules/packaging/import
   x conflicting module imports
   - require as (stuff)
+  - always require prelude
 - Tail call optimization
 - line numbers (for exceptions)
 x try/catch/finally
@@ -19,12 +20,13 @@ Stretch
 - enumeration type
 - function inlining
 - Single inheritance
-- process framework
+- process subsystem
   - send message to 'process'
   - call (synchronous sendAndWait)
   - balance processes across threadpools
   - cron/timer process
 - Type classes/extension methods (better than interfaces/traits)
+- "ribbon" web framework based on Netty + process subsystem
 
 
 Algorithms

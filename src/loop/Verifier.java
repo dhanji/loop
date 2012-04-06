@@ -316,7 +316,6 @@ public class Verifier {
       }
     }
 
-
     // Then attempt to resolve in module(s).
     FunctionDecl target = unit.resolveFunction(name, true /* resolve in deps */);
     if (target != null)

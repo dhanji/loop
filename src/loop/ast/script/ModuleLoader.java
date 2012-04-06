@@ -59,7 +59,7 @@ public class ModuleLoader {
     List<Executable> executables = new ArrayList<Executable>();
     for (File toLoadFile : toLoad) {
       try {
-        Executable executable = new Executable(new FileReader(toLoadFile));
+        Executable executable = new Executable(new FileReader(toLoadFile), toLoadFile);
         executable.compile();
 
         executables.add(executable);

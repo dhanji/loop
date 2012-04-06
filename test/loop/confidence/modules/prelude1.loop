@@ -1,4 +1,4 @@
-module prelude
+module prelude1
 
 print(object) ->
   `System.out`.println(object)

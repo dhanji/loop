@@ -12,9 +12,12 @@ public class ModuleDecl extends Node {
   public static final ModuleDecl DEFAULT = new ModuleDecl(Arrays.asList("_default"));
 
   public final List<String> moduleChain;
+  public final String name;
 
   public ModuleDecl(List<String> moduleChain) {
     this.moduleChain = moduleChain;
+    String name = moduleChain.toString().replaceAll(", ", ".");
+    this.name = name.substring(1, name.length() - 1);
   }
 
   @Override

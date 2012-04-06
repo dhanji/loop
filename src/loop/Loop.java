@@ -31,7 +31,7 @@ public class Loop {
   }
 
   public static Object run(String file) {
-    return run(file, false);
+    return run(file, false, true);
   }
 
   public static Object run(String file, boolean print) {
@@ -135,7 +135,8 @@ public class Loop {
   private static Executable loopCompile(String file) {
     Executable executable;
     try {
-      executable = new Executable(new FileReader(new File(file)));
+      File script = new File(file);
+      executable = new Executable(new FileReader(script), script);
       executable.compile();
       if (executable.hasErrors()) {
         executable.printStaticErrorsIfNecessary();

@@ -1,0 +1,4 @@
+require prelude_proxy
+
+main ->
+  last([1, 2, 4])

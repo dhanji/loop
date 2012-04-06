@@ -1,0 +1,6 @@
+module prelude_proxy
+
+require prelude1
+
+hi() ->
+  'hi'

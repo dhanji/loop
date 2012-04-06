@@ -1,0 +1,4 @@
+require prelude1
+
+hi() ->
+  'hi'

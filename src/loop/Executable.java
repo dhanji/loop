@@ -9,6 +9,7 @@ import loop.ast.script.Unit;
 import loop.runtime.Scope;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
@@ -55,8 +56,15 @@ public class Executable {
   private TreeMap<SourceLocation, Node> emittedNodes;
   private Class<?> compiled;
   private boolean runMain;
+  private final File file;
 
   public Executable(Reader source) {
+    this(source, null);
+  }
+
+  public Executable(Reader source, File file) {
+    this.file = file;
+
     List<String> lines = new ArrayList<String>();
     StringBuilder builder;
     try {
@@ -173,6 +181,10 @@ public class Executable {
     }
   }
 
+  public File file() {
+    return file;
+  }
+
   public boolean runMain() {
     return runMain;
   }
@@ -187,7 +199,7 @@ public class Executable {
       return;
 
     // Recursively loads and compiles all dependency modules.
-    List<AnnotatedError> depErrors = unit.loadDeps();
+    List<AnnotatedError> depErrors = unit.loadDeps(file);
     if (depErrors != null) {
       this.staticErrors = depErrors;
       return;
