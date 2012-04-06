@@ -136,7 +136,7 @@ public class Loop {
     Executable executable;
     try {
       File script = new File(file);
-      executable = new Executable(new FileReader(script), script);
+      executable = new Executable(new FileReader(script), script.getName());
       executable.compile();
       if (executable.hasErrors()) {
         executable.printStaticErrorsIfNecessary();

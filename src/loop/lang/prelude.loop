@@ -1,0 +1,31 @@
+module prelude
+
+print(object) ->
+  `System.out`.println(object)
+
+negate(b) ->
+  b not true
+
+raise(msg) ->
+  `loop.runtime.Caller`.raise(msg)
+
+# list/string extensions
+
+last(ls) ->
+  ls[ls.size() - 1]
+
+pop(ls) ->
+  ls.remove(ls.size() - 1)
+
+push(ls, val) ->
+  ls.add(val)
+
+head(ls) ->
+  ls[0]
+
+tail(ls) ->
+  ls[1..]
+
+reverse(ls) =>
+  []      : []
+  [x:xs]  : reverse(xs) + [x]

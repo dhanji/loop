@@ -1,11 +1,16 @@
 package loop.ast.script;
 
 import loop.Executable;
+import loop.lang.LoopClass;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,10 +30,10 @@ import java.util.List;
 public class ModuleLoader {
   private static final String[] LOOP_FILES = new String[]{".loop"};
 
-  public static volatile String[] searchPaths = new String[] { "." };
+  public static volatile String[] searchPaths = new String[]{"."};
 
   public static void reset() {
-    searchPaths = new String[] { "." };
+    searchPaths = new String[]{"."};
   }
 
   public static List<Executable> loadAndCompile(List<String> moduleChain) {
@@ -43,37 +48,48 @@ public class ModuleLoader {
 
     String moduleName = nameBuilder.toString();
 
-    // Try the search path in order until we find this module (or not).
-    List<File> toLoad = null;
-    for (String searchPath : searchPaths) {
-      toLoad = search(searchPath + "/" + moduleName);
+    List<Reader> toLoad = null;
+    // First try to load this module from our resource package (i.e. boot loader)
+    InputStream resourceStream = LoopClass.class.getResourceAsStream(moduleName + ".loop");
+    if (null != resourceStream) {
+      toLoad = new ArrayList<Reader>();
 
-      if (toLoad != null)
-        break;
+      toLoad.add(new InputStreamReader(resourceStream));
+    } else {
+      // Try the search path in order until we find this module (or not).
+      // A module may be composed of many concrete submodules. So we return
+      // many executables.
+      for (String searchPath : searchPaths) {
+        toLoad = search(searchPath + "/" + moduleName);
+
+        if (toLoad != null)
+          break;
+      }
     }
 
-    if (toLoad == null)
+    if (toLoad == null || toLoad.isEmpty())
       return null;
 
 
     List<Executable> executables = new ArrayList<Executable>();
-    for (File toLoadFile : toLoad) {
+    for (Reader toLoadFile : toLoad) {
+      Executable executable = new Executable(toLoadFile, moduleName);
       try {
-        Executable executable = new Executable(new FileReader(toLoadFile), toLoadFile);
-        executable.compile();
-
-        executables.add(executable);
-      } catch (FileNotFoundException e) {
-        return null;
+        toLoadFile.close();
+      } catch (IOException e) {
+        // Ignore.
       }
+
+      executable.compile();
+      executables.add(executable);
     }
 
     return executables;
   }
 
   @SuppressWarnings("unchecked")
-  private static List<File> search(String name) {
-    List<File> toLoad = new ArrayList<File>();
+  private static List<Reader> search(String name) {
+    List<Reader> toLoad = new ArrayList<Reader>();
 
     // Look in current dir.
     File file = new File(name + ".loop");
@@ -93,7 +109,11 @@ public class ModuleLoader {
       } else
         return null;
     } else
-      toLoad.add(file);
+      try {
+        toLoad.add(new FileReader(file));
+      } catch (FileNotFoundException e) {
+        // This should never happen.
+      }
 
     return toLoad;
   }

@@ -1,3 +1,4 @@
+require prelude as hidden
 require prelude_proxy
 
 main ->

@@ -9,7 +9,6 @@ import loop.ast.script.Unit;
 import loop.runtime.Scope;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
@@ -56,13 +55,13 @@ public class Executable {
   private TreeMap<SourceLocation, Node> emittedNodes;
   private Class<?> compiled;
   private boolean runMain;
-  private final File file;
+  private final String file;
 
   public Executable(Reader source) {
     this(source, null);
   }
 
-  public Executable(Reader source, File file) {
+  public Executable(Reader source, String file) {
     this.file = file;
 
     List<String> lines = new ArrayList<String>();
@@ -181,7 +180,7 @@ public class Executable {
     }
   }
 
-  public File file() {
+  public String file() {
     return file;
   }
 

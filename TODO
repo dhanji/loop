@@ -6,19 +6,19 @@ ASM
 x Modules/packaging/import
   x conflicting module imports
   - require as (stuff)
-  - always require prelude
+  x always require prelude
 - Tail call optimization
 - line numbers (for exceptions)
 x try/catch/finally
-- Update loop shell
 x Fix boolean and/or
+- Update loop shell
 
 
 Stretch
 -------
 
+- force call as Java with :: scope resolution operator
 - enumeration type
-- function inlining
 - Single inheritance
 - process subsystem
   - send message to 'process'
