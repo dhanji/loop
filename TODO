@@ -11,7 +11,7 @@ x Modules/packaging/import
 - line numbers (for exceptions)
 x try/catch/finally
 - Update loop shell
-- Fix boolean and/or
+x Fix boolean and/or
 
 
 Stretch

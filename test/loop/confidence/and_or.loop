@@ -1,0 +1,7 @@
+# Boolean ops
+
+main ->
+  false or ((a not b) == false) and (1 == 1) and (true == true)
+  where
+    a: 1
+    b: 1

@@ -39,6 +39,11 @@ public class BasicFunctionsConfidenceTest extends LoopTest {
   }
 
   @Test
+  public final void booleanOps() {
+    assertEquals(true, Loop.run("test/loop/confidence/and_or.loop"));
+  }
+
+  @Test
   public final void notEqual() {
     assertEquals(true, Loop.run("test/loop/confidence/not_equal.loop"));
   }
