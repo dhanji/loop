@@ -1,6 +1,5 @@
 package loop;
 
-import loop.runtime.Tracer;
 import org.mvel2.PropertyAccessException;
 
 import java.io.File;
@@ -8,7 +7,6 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.StringReader;
 import java.util.Map;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -83,36 +81,11 @@ public class Loop {
       else
         return executable.getCompiled();
     } catch (PropertyAccessException e) {
-      String message = e.getMessage();
-      String loopError;
-      boolean printStackTrace = false;
+      e.printStackTrace();
 
-      if (message.contains("unresolvable property")) {
-        Matcher matcher = UNKNOWN_MVEL_PATTERN.matcher(message);
-        String ident = "<unknown>";
-        if (matcher.find())
-          ident = matcher.group(1);
-        loopError = "I don't know the identifier: '" + ident + "'   =(";
-      } else if (message.contains("unable to resolve method"))
-        loopError = "I don't know that method =(";
-      else if (message.contains("null pointer exception"))
-        loopError = "Oh noes, you can't dereference a null value returned from Java code!";
-      else {
-        if (e.getCause() != null)
-          loopError = e.getCause().getClass().getSimpleName() + ": " + e.getCause().getMessage();
-        else
-          loopError = message;
-          e.printStackTrace();
-      }
-
-      // Show the source code fragment where this error occurred.
-      executable.printSourceFragment(loopError, e.getLineNumber(), e.getColumn());
-      if (printStackTrace) {
-        Tracer.printCurrentTrace(executable, e, System.out);
-        Tracer.complete();
-      }
-
-      return (e.getCause() == null ? new LoopError(e.getMessage()) : new LoopError((Exception) e.getCause().getCause()));
+      return (e.getCause() == null
+          ? new LoopError(e.getMessage())
+          : new LoopError((Exception) e.getCause().getCause()));
     } catch (LoopCompileException e) {
       throw e;
     } catch (Exception e) {
@@ -129,7 +102,7 @@ public class Loop {
 
   /**
    * Returns an executable that represents the compiled form of the Loop program.
-   *
+   * <p/>
    * See {@link Executable} for more details on the compilation process.
    */
   private static Executable loopCompile(String file) {

@@ -1,2 +1,0 @@
-func(x: Integer) ->
-  1 + x + 2 + 3 + 4

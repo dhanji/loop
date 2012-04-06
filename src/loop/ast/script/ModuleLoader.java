@@ -3,16 +3,20 @@ package loop.ast.script;
 import loop.Executable;
 import loop.lang.LoopClass;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.Reader;
+import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * Loads loop source files as individual modules. Module resolution is as follows:
@@ -30,7 +34,10 @@ import java.util.List;
 public class ModuleLoader {
   private static final String[] LOOP_FILES = new String[]{".loop"};
 
-  public static volatile String[] searchPaths = new String[]{"."};
+  public static volatile String[] searchPaths = new String[]{ "." };
+
+  private static final ConcurrentMap<String, String> corelibCache =
+      new ConcurrentHashMap<String, String>();
 
   public static void reset() {
     searchPaths = new String[]{"."};
@@ -49,12 +56,26 @@ public class ModuleLoader {
     String moduleName = nameBuilder.toString();
 
     List<Reader> toLoad = null;
-    // First try to load this module from our resource package (i.e. boot loader)
-    InputStream resourceStream = LoopClass.class.getResourceAsStream(moduleName + ".loop");
-    if (null != resourceStream) {
-      toLoad = new ArrayList<Reader>();
 
-      toLoad.add(new InputStreamReader(resourceStream));
+
+    // First try to load this module from our resource package (i.e. boot loader)
+    if (moduleName.equals("prelude") || moduleName.startsWith("loop.")) {
+      String cached = corelibCache.get(moduleName);
+      if (cached == null) {
+        InputStream resourceStream = LoopClass.class.getResourceAsStream(moduleName + ".loop");
+        if (null == resourceStream)
+          return null;
+
+        try {
+          cached = IOUtils.toString(resourceStream).intern();
+        } catch (IOException e) {
+          return null;
+        }
+
+        corelibCache.putIfAbsent(moduleName, cached);
+      }
+
+      toLoad = Arrays.<Reader>asList(new StringReader(cached));
     } else {
       // Try the search path in order until we find this module (or not).
       // A module may be composed of many concrete submodules. So we return

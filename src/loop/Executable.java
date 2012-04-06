@@ -1,6 +1,5 @@
 package loop;
 
-import loop.MvelCodeEmitter.SourceLocation;
 import loop.ast.ClassDecl;
 import loop.ast.Node;
 import loop.ast.script.FunctionDecl;
@@ -12,12 +11,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
-import java.util.SortedMap;
-import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -52,7 +48,6 @@ public class Executable {
   private Node node; // If a fragment and not a whole unit (mutually exclusive with unit)
 
   private List<AnnotatedError> staticErrors;
-  private TreeMap<SourceLocation, Node> emittedNodes;
   private Class<?> compiled;
   private boolean runMain;
   private final String file;
@@ -302,31 +297,5 @@ public class Executable {
 
   public Scope getScope() {
     return scope;
-  }
-
-  public void printSourceFragment(final String message, int line, int column) {
-    SourceLocation start = new SourceLocation(line - 1, column);
-    SourceLocation end = new SourceLocation(line, 0);
-    SortedMap<SourceLocation, Node> range = emittedNodes.subMap(start, end);
-    if (range.isEmpty())
-      return;
-
-    final Node errorLocation = range.values().iterator().next();
-    printErrors(Arrays.<AnnotatedError>asList(new AnnotatedError() {
-      @Override
-      public String getMessage() {
-        return message;
-      }
-
-      @Override
-      public int line() {
-        return errorLocation.sourceLine;
-      }
-
-      @Override
-      public int column() {
-        return errorLocation.sourceColumn;
-      }
-    }));
   }
 }
