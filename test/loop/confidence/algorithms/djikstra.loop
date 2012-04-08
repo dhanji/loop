@@ -8,5 +8,5 @@ find(node, goal, path) =>
 main ->
   find(root, goal, [])[0]
   where
-    goal: [ 'name': 'goal', 'adjacent' : [:] ]
+    goal: [ 'name': 'goal', 'adjacent' : [] ]
     root: [ 'name': 'root', 'adjacent' : [[ 'name': 'a', 'adjacent' : [goal] ]] ]

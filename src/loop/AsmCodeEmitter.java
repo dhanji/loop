@@ -478,6 +478,9 @@ import java.util.concurrent.atomic.AtomicInteger;
             emit(arg.arg);
             methodVisitor.visitMethodInsn(INVOKEINTERFACE, "java/util/Map", "put",
                 "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
+
+            // Puts return crap which we need to discard.
+            methodVisitor.visitInsn(POP);
           }
 
           // Now emit any remaining defaults.
@@ -487,6 +490,9 @@ import java.util.concurrent.atomic.AtomicInteger;
             emit(field.getValue());
             methodVisitor.visitMethodInsn(INVOKEINTERFACE, "java/util/Map", "put",
                 "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
+
+            // Puts return crap which we need to discard.
+            methodVisitor.visitInsn(POP);
           }
         }
 

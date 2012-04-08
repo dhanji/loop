@@ -1,0 +1,33 @@
+# Recursive functional A* pathfinding/graph search algorithm.
+
+class Node ->
+  name
+  adjacent: []
+  heuristic
+
+
+find(node, goal, path) =>
+  [ linked <- node.adjacent ], *, *  : (if linked.contains(goal)
+                                        then path + [node.name]
+                                        else (find(i, goal, path + [node.name]) for i in sort(linked)))
+  where
+    sort(ls) =>
+      []        : []
+      [x:xs]    : (sort(i for i in xs if i.heuristic < x.heuristic) + [x]
+                 + sort(i for i in xs if i.heuristic > x.heuristic))
+
+main ->
+  find(root, goal, [], 0)[0][0]   # bit hacky, we get back path levels of list nesting =/
+  where
+    goal: new Node(name: 'goal', heuristic: 0)
+    root: new Node(name: 'root', heuristic: 10)
+    n1  : new Node(name: 'n1', heuristic: 9)
+    n2  : new Node(name: 'n2', heuristic: 10)
+    n3  : new Node(name: 'n3', heuristic: 12)
+    n4  : new Node(name: 'n4', heuristic: 4)
+    path: ([ root.adjacent.add(n1),
+             root.adjacent.add(n2),
+             root.adjacent.add(n3),
+             n1.adjacent.add(n4),
+             n3.adjacent.add(goal),
+             n4.adjacent.add(goal) ])

@@ -55,4 +55,10 @@ public class AlgorithmsConfidenceTest extends LoopTest {
     assertEquals(Arrays.asList("root", "a"),
         Loop.run("test/loop/confidence/algorithms/djikstra.loop"));
   }
+
+//  @Test
+  public final void aStar() {
+    assertEquals(Arrays.asList("root", "n1", "n4"),
+        Loop.run("test/loop/confidence/algorithms/a_star.loop"));
+  }
 }
