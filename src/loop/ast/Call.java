@@ -10,13 +10,13 @@ public class Call extends Node {
   public final boolean isFunction;
 
   private CallArguments args;
-  private static final String PRINT = "System.out.println";
   private boolean javaStatic;
-  private boolean postfix = false;
+  private boolean postfix;
+  private boolean callJava;
+  private String namespace;
 
   public Call(String name, boolean function, CallArguments args) {
-    // HACK! rewrites print calls to Java sout
-    this.name = "print".equals(name) ? PRINT : name;
+    this.name = name;
     this.isFunction = function;
     this.args = args;
   }
@@ -33,8 +33,18 @@ public class Call extends Node {
     this.javaStatic = javaStatic;
   }
 
-  public void postfix(boolean postfix) {
+  public String namespace() {
+    return namespace;
+  }
+
+  public void namespace(String namespace) {
+    this.namespace = namespace;
+  }
+
+  public Call postfix(boolean postfix) {
     this.postfix = postfix;
+
+    return this;
   }
 
   public boolean isPostfix() {
@@ -43,6 +53,16 @@ public class Call extends Node {
 
   public boolean isJavaStatic() {
     return javaStatic;
+  }
+
+  public boolean callJava() {
+    return callJava;
+  }
+
+  public Call callJava(boolean callJava) {
+    this.callJava = callJava;
+
+    return this;
   }
 
   @Override

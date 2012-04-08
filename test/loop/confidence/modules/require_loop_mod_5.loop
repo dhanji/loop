@@ -1,0 +1,4 @@
+require prelude_proxy as pre
+
+main ->
+  pre.hi()

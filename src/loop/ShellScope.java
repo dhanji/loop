@@ -30,6 +30,10 @@ class ShellScope implements Scope {
     return resolveFunctionOnStack(name);
   }
 
+  @Override public FunctionDecl resolveNamespacedFunction(String name, String namespace) {
+    throw new RuntimeException();
+  }
+
   @Override public void declare(RequireDecl require) {
     requires.add(require);
   }

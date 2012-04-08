@@ -42,6 +42,14 @@ public class ModulesConfidenceTest extends LoopTest {
   }
 
   @Test
+  public final void requireAliasedLoopModule() {
+    // Set the search path for prelude, first.
+    ModuleLoader.searchPaths = new String[] { "test/loop/confidence/modules" };
+
+    assertEquals("hi", Loop.run("test/loop/confidence/modules/require_loop_mod_5.loop"));
+  }
+
+  @Test
   public final void requireLoopModuleTransitivelyErrorsIfMissingModuleDecl() {
     // Set the search path for prelude, first.
     ModuleLoader.searchPaths = new String[] { "test/loop/confidence/modules" };

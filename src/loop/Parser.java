@@ -22,6 +22,8 @@ import java.util.Set;
 public class Parser {
   private final List<AnnotatedError> errors = new ArrayList<AnnotatedError>();
   private final List<Token> tokens;
+
+  private Set<String> aliasedModules;
   private Node last = null;
   private int i = 0;
 
@@ -45,6 +47,7 @@ public class Parser {
     RIGHT_ASSOCIATIVE.add(Token.Kind.GREATER);
 
     LEFT_ASSOCIATIVE.add(Token.Kind.DOT);
+    LEFT_ASSOCIATIVE.add(Token.Kind.UNARROW);
   }
 
   public Parser(List<Token> tokens) {
@@ -70,7 +73,7 @@ public class Parser {
    * <p/>
    * computation := chain (op chain)+ chain := term call*
    * <p/>
-   * call := DOT IDENT (LPAREN RPAREN)?
+   * call := DOT|UNARROW IDENT (LPAREN RPAREN)?
    * <p/>
    * term := (literal | variable) literal := (regex | string | number) variable := IDENT
    * <p/>
@@ -681,7 +684,7 @@ public class Parser {
   }
 
   /**
-   * require := REQUIRE IDENT (DOT IDENT)* (AS IDENT)? EOL
+   * require := REQUIRE IDENT (DOT IDENT)* ('as' IDENT)? EOL
    */
   public RequireDecl require() {
     if (match(Token.Kind.REQUIRE) == null) {
@@ -724,9 +727,17 @@ public class Parser {
     aliased = asToken != null && RestrictedKeywords.AS.equals(asToken.get(0).value);
 
     List<Token> aliasTokens = match(Kind.IDENT);
-    if (aliased && aliasTokens == null) {
-      addError("Expected module alias after '" + RestrictedKeywords.AS +"'", tokens.get(i - 1));
-      throw new LoopCompileException();
+    if (aliased) {
+      if (aliasedModules == null)
+        aliasedModules = new HashSet<String>();
+
+      if (aliasTokens == null) {
+        addError("Expected module alias after '" + RestrictedKeywords.AS +"'", tokens.get(i - 1));
+        throw new LoopCompileException();
+      }
+
+      // Cache the aliases for some smart parsing of namespaced function calls.
+      aliasedModules.add(aliasTokens.get(0).value);
     }
 
 
@@ -1039,6 +1050,19 @@ public class Parser {
       chain.add(call != null ? call : indexIntoList);
     }
 
+    // Smart prediction of whether this is a namespaced call or not.
+    if (aliasedModules != null
+        && !isJavaStaticRef
+        && chain.children().size() == 2
+        && node instanceof Variable) {
+      Variable namespace = (Variable) node;
+      if (aliasedModules.contains(namespace.name)) {
+        ((Call)chain.children().get(1)).namespace(namespace.name);
+
+        chain.children().remove(0);
+      }
+    }
+
     return chain;
   }
 
@@ -1239,13 +1263,19 @@ public class Parser {
   /**
    * A method call production rule.
    * <p/>
-   * call := DOT (IDENT | PRIVATE_FIELD) arglist?
+   * call := DOT|UNARROW (IDENT | PRIVATE_FIELD) arglist?
    */
   private Node call() {
     List<Token> call = match(Token.Kind.DOT, Token.Kind.IDENT);
 
     if (null == call)
       call = match(Token.Kind.DOT, Token.Kind.PRIVATE_FIELD);
+
+    boolean forceJava = false;
+    if (null == call) {
+      call = match(Token.Kind.UNARROW, Token.Kind.IDENT);
+      forceJava = true;
+    }
 
     // Production failed.
     if (null == call) {
@@ -1256,6 +1286,7 @@ public class Parser {
 
     // Use the ident as name, and it is a method if there are () at end.
     return new Call(call.get(1).value, null != callArguments, callArguments)
+        .callJava(forceJava)
         .sourceLocation(call);
   }
 

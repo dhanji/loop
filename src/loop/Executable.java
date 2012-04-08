@@ -94,6 +94,8 @@ public class Executable {
     } catch (RuntimeException e) {
       // Ignored.
       System.out.println("Parse errors exist.");
+      if (!(e instanceof LoopCompileException))
+        e.printStackTrace();
     }
 
     if (!parser.getErrors().isEmpty())

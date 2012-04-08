@@ -1,7 +1,6 @@
 package loop;
 
 import loop.ast.script.Unit;
-import org.junit.Before;
 import org.junit.Test;
 import org.mvel2.MVEL;
 import org.mvel2.ParserContext;
@@ -22,16 +21,11 @@ import static org.junit.Assert.assertNotNull;
  *
  * @author dhanji@gmail.com (Dhanji R. Prasanna)
  */
-public class AsmMvelPerformanceBenchmark {
+public class AsmMvelPerformanceBenchmark extends LoopTest {
   // Number of cycles for the benchmark, should be > 200000 for anything useful.
 //  private static final int RUNS = 500000;
   private static final int RUNS = 1;
   private static final int WARMUP_RUNS = RUNS > 100 ? 15000 : 0;
-
-  @Before
-  public final void before() {
-    LoopClassLoader.reset();
-  }
 
   @Test
   public final void quicksort() throws Exception {

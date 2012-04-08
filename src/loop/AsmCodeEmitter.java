@@ -301,7 +301,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 
       MethodVisitor methodVisitor = methodStack.peek();
       Context context = functionStack.peek();
-      FunctionDecl resolvedFunction = scope.resolveFunctionOnStack(call.name());
+
+      FunctionDecl resolvedFunction;
+      if (call.namespace() != null)
+        resolvedFunction = scope.resolveNamespacedFunction(call.name(), call.namespace());
+      else
+        resolvedFunction = call.callJava() ? null : scope.resolveFunctionOnStack(call.name());
+
+      // All Loop functions are Java static.
       boolean isStatic = resolvedFunction != null, isClosure = false;
 
       // The parse-tree knows if we are calling a java method statically.
@@ -320,7 +327,7 @@ import java.util.concurrent.atomic.AtomicInteger;
       } else
         name = normalizeMethodName(call.name());
 
-      // Compute if we should "call as postfix method"
+      // Compute if we should "call as postfix method" (can be overridden with <- operator)
       List<Node> arguments = call.args() == null ? Collections.<Node>emptyList() : call.args().children();
       int callAsPostfixVar = -1;
 

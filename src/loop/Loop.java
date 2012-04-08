@@ -1,7 +1,5 @@
 package loop;
 
-import org.mvel2.PropertyAccessException;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -80,12 +78,6 @@ public class Loop {
         return executable.getCompiled().getDeclaredMethod("main").invoke(null);
       else
         return executable.getCompiled();
-    } catch (PropertyAccessException e) {
-      e.printStackTrace();
-
-      return (e.getCause() == null
-          ? new LoopError(e.getMessage())
-          : new LoopError((Exception) e.getCause().getCause()));
     } catch (LoopCompileException e) {
       throw e;
     } catch (Exception e) {

@@ -1,0 +1,8 @@
+# Calling Java method.
+
+toLowerCase(str) ->
+  str
+
+
+main ->
+  'HELLO'.toLowerCase()

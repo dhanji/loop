@@ -21,6 +21,8 @@ import java.util.Stack;
 
 /**
  * A compilation unit containing imports classes, functions, etc. Represents a single file.
+ *
+ * @NotThreadSafe
  */
 public class Unit implements Scope {
   private final ModuleDecl module;
@@ -30,6 +32,7 @@ public class Unit implements Scope {
 
   // Resolved, compiled imports:
   private final Set<Executable> deps = new LinkedHashSet<Executable>();
+  private final Map<String, Executable> aliasedDeps = new HashMap<String, Executable>();
 
   private final Map<String, FunctionDecl> functions = new LinkedHashMap<String, FunctionDecl>();
   private final Map<String, ClassDecl> classes = new HashMap<String, ClassDecl>();
@@ -112,7 +115,8 @@ public class Unit implements Scope {
 
   @Override public void declare(RequireDecl require) {
     if (require.alias != null && "prelude".equals(require.moduleChain.get(0))) {
-      // Remove prelude if aliased (for now).
+
+      // Remove prelude if it is aliased.
       imports.remove(require);
       return;
     }
@@ -132,6 +136,14 @@ public class Unit implements Scope {
       }
     }
     return functionDecl;
+  }
+
+  @Override public FunctionDecl resolveNamespacedFunction(String name, String namespace) {
+    Executable executable = aliasedDeps.get(namespace);
+    if (null == executable)
+      return null;
+
+    return executable.getScope().resolveFunction(name, false);
   }
 
   public ClassDecl getType(String name) {
@@ -186,8 +198,15 @@ public class Unit implements Scope {
               errors.add(new StaticError("Imported file is missing a 'module' declaration" + ": "
                   + executable.file()
                   + "\n\nrequired in: " + file, 0, 0));
-            } else
+            } else {
+              if (requireDecl.alias != null) {
+
+                // remove aliased module after it is loaded.
+                aliasedDeps.put(requireDecl.alias, executable);
+                imports.remove(requireDecl);
+              }
               deps.add(executable);
+            }
           }
         }
       }

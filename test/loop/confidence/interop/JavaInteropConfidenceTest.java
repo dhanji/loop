@@ -24,6 +24,16 @@ public class JavaInteropConfidenceTest extends LoopTest {
   }
 
   @Test
+  public final void forceCallAsJava() {
+    assertEquals("hello", Loop.run("test/loop/confidence/interop/postfix_call_2.loop"));
+  }
+
+  @Test
+  public final void callAsLoopOverridingJava() {
+    assertEquals("HELLO", Loop.run("test/loop/confidence/interop/postfix_call_3.loop"));
+  }
+
+  @Test
   public final void callJavaStaticFunction() {
     assertTrue(1327205727145L /* epoch time when this test was written */ < Long.parseLong(
         Loop.run("test/loop/confidence/interop/call_java_static.loop").toString()));

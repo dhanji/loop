@@ -18,6 +18,10 @@ public class LoopClassLoader extends ClassLoader {
       throw new RuntimeException("Illegal attempt to define duplicate class");
   }
 
+  public boolean isLoaded(String javaClass) {
+    return loaded.containsKey(javaClass);
+  }
+
   @Override
   protected Class findClass(String name)
       throws ClassNotFoundException {
@@ -43,7 +47,6 @@ public class LoopClassLoader extends ClassLoader {
   }
 
   public static void reset() {
-    Caller.reset();
     CLASS_LOADER = new LoopClassLoader();
     Thread.currentThread().setContextClassLoader(CLASS_LOADER);
   }

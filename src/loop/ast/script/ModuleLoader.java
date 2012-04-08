@@ -1,7 +1,9 @@
 package loop.ast.script;
 
 import loop.Executable;
+import loop.LoopClassLoader;
 import loop.lang.LoopClass;
+import loop.runtime.Caller;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
@@ -36,11 +38,20 @@ public class ModuleLoader {
 
   public static volatile String[] searchPaths = new String[]{ "." };
 
+  // For faster loading of core modules.
   private static final ConcurrentMap<String, String> corelibCache =
       new ConcurrentHashMap<String, String>();
 
+  // Prevents cyclical reloading of identical modules.
+  private static final ConcurrentMap<String, List<Executable>> loadedModules =
+      new ConcurrentHashMap<String, List<Executable>>();
+
   public static void reset() {
     searchPaths = new String[]{"."};
+
+    loadedModules.clear();
+    Caller.reset();
+    LoopClassLoader.reset();
   }
 
   public static List<Executable> loadAndCompile(List<String> moduleChain) {
@@ -54,9 +65,12 @@ public class ModuleLoader {
     }
 
     String moduleName = nameBuilder.toString();
+    List<Executable> executables = loadedModules.get(moduleName);
+
+    if (null != executables)
+      return executables;
 
     List<Reader> toLoad = null;
-
 
     // First try to load this module from our resource package (i.e. boot loader)
     if (moduleName.equals("prelude") || moduleName.startsWith("loop.")) {
@@ -92,7 +106,7 @@ public class ModuleLoader {
       return null;
 
 
-    List<Executable> executables = new ArrayList<Executable>();
+    executables = new ArrayList<Executable>();
     for (Reader toLoadFile : toLoad) {
       Executable executable = new Executable(toLoadFile, moduleName);
       try {
@@ -105,7 +119,9 @@ public class ModuleLoader {
       executables.add(executable);
     }
 
-    return executables;
+    List<Executable> other = loadedModules.putIfAbsent(moduleName, executables);
+
+    return other != null ? other : executables;
   }
 
   @SuppressWarnings("unchecked")

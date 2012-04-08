@@ -32,4 +32,6 @@ public interface Scope {
   String getModuleName();
 
   FunctionDecl resolveFunction(String name, boolean scanDeps);
+
+  FunctionDecl resolveNamespacedFunction(String name, String namespace);
 }
