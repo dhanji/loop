@@ -13,6 +13,7 @@ public class Call extends Node {
   private boolean javaStatic;
   private boolean postfix;
   private boolean callJava;
+  private boolean tailCall;
   private String namespace;
 
   public Call(String name, boolean function, CallArguments args) {
@@ -27,6 +28,14 @@ public class Call extends Node {
 
   public String name() {
     return name;
+  }
+
+  public void tailCall(boolean isTailCall) {
+    this.tailCall = isTailCall;
+  }
+
+  public boolean isTailCall() {
+    return tailCall;
   }
 
   public void javaStatic(boolean javaStatic) {

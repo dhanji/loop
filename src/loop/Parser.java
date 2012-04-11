@@ -1051,15 +1051,16 @@ public class Parser {
     }
 
     // Smart prediction of whether this is a namespaced call or not.
+    List<Node> children = chain.children();
     if (aliasedModules != null
         && !isJavaStaticRef
-        && chain.children().size() == 2
+        && children.size() == 2
         && node instanceof Variable) {
       Variable namespace = (Variable) node;
       if (aliasedModules.contains(namespace.name)) {
-        ((Call)chain.children().get(1)).namespace(namespace.name);
+        ((Call) children.get(1)).namespace(namespace.name);
 
-        chain.children().remove(0);
+        children.remove(0);
       }
     }
 

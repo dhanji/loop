@@ -26,13 +26,17 @@ public class Reducer {
       ast = onlyChildOf(ast);
     }
 
-    return reduce(ast);
+    return reduce(ast, true);
   }
 
-  private Node reduce(Node bloated) {
+  private Node reduce(Node bloated, boolean tailPath) {
     List<Node> reduced = new ArrayList<Node>();
-    for (Node node : bloated.children()) {
-      node = reduce(node);
+    List<Node> children = bloated.children();
+    int childrenSize = children.size();
+
+    for (int i = 0; i < childrenSize; i++) {
+      Node node = children.get(i);
+      node = reduce(node, tailPath && isTailPath(i, childrenSize, node));
 
       // Unwrap any redundant wrappers.
       if (shouldUnwrap(node)) {
@@ -43,19 +47,29 @@ public class Reducer {
       reduced.add(node);
     }
 
+    // Use this special tree-detection to tell if there are any tail calls.
+    if (tailPath && bloated instanceof CallChain) {
+      Node last = children.get(childrenSize - 1);
+      if (last instanceof Call) {
+        // A "last" call is not a tail call if it is preceded by a binary operator.
+//        if (childrenSize == 1 || ! (children.get(childrenSize - 2) instanceof BinaryOp))
+          ((Call) last).tailCall(true);
+      }
+    }
+
     // Reduce non-children sub-nodes (many of these in various special cases).
     if (bloated instanceof IndexIntoList) {
       IndexIntoList indexIntoList = (IndexIntoList) bloated;
 
       // See if the nodes themselves merit reduction.
       if (null != indexIntoList.from()) {
-        reduce(indexIntoList.from());
+        reduce(indexIntoList.from(), false);
         if (shouldUnwrap(indexIntoList.from())) {
           indexIntoList.from(onlyChildOf(indexIntoList.from()));
         }
       }
       if (null != indexIntoList.to()) {
-        reduce(indexIntoList.to());
+        reduce(indexIntoList.to(), false);
         if (shouldUnwrap(indexIntoList.to())) {
           indexIntoList.to(onlyChildOf(indexIntoList.to()));
         }
@@ -63,14 +77,14 @@ public class Reducer {
     } else if (bloated instanceof Comprehension) {
       Comprehension comprehension = (Comprehension) bloated;
 
-      reduce(comprehension.inList());
+      reduce(comprehension.inList(), false);
       if (shouldUnwrap(comprehension.inList())) {
         comprehension.inList(onlyChildOf(comprehension.inList()));
       }
 
       // the filter clause is optional.
       if (null != comprehension.filter()) {
-        reduce(comprehension.filter());
+        reduce(comprehension.filter(), false);
         if (shouldUnwrap(comprehension.filter())) {
           comprehension.filter(onlyChildOf(comprehension.filter()));
         }
@@ -79,29 +93,29 @@ public class Reducer {
       Call call = (Call) bloated;
 
       if (call.args() != null) {
-        reduce(call.args());
+        reduce(call.args(), false);
       }
     }  else if (bloated instanceof ConstructorCall) {
       ConstructorCall call = (ConstructorCall) bloated;
 
       if (call.args() != null) {
-        reduce(call.args());
+        reduce(call.args(), false);
       }
     } else if (bloated instanceof PatternRule) {
       PatternRule rule = (PatternRule) bloated;
 
       if (null != rule.rhs)
-        reduce(rule.rhs);
+        reduce(rule.rhs, true);
     } else if (bloated instanceof Guard) {
       Guard guard = (Guard) bloated;
 
-      reduce(guard.expression);
-      reduce(guard.line);
+      reduce(guard.expression, false);
+      reduce(guard.line, true);
     } else if (bloated instanceof FunctionDecl) {
       FunctionDecl decl = (FunctionDecl) bloated;
       if (!decl.whereBlock.isEmpty()) {
         for (Node node : decl.whereBlock) {
-          reduce(node);
+          reduce(node, true);
         }
       }
     }
@@ -113,6 +127,10 @@ public class Reducer {
     reduceComprehension(reduced);
 
     return bloated;
+  }
+
+  private static boolean isTailPath(int i, int childrenSize, Node node) {
+    return i == childrenSize - 1 && (!(node instanceof BinaryOp));
   }
 
   private void reduceComprehension(List<Node> reduced) {

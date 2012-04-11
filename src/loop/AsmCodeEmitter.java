@@ -311,6 +311,12 @@ import java.util.concurrent.atomic.AtomicInteger;
       // All Loop functions are Java static.
       boolean isStatic = resolvedFunction != null, isClosure = false;
 
+      // Is this a tail-recursive function?
+      boolean isTailRecursive = call.isTailCall()
+          && call.namespace() == null
+          && !call.isJavaStatic()
+          && context.thisFunction.equals(resolvedFunction);
+
       // The parse-tree knows if we are calling a java method statically.
       if (!isStatic)
         isStatic = call.isJavaStatic();
@@ -344,6 +350,24 @@ import java.util.concurrent.atomic.AtomicInteger;
           // Save the top of the stack for use as the first argument.
           methodVisitor.visitVarInsn(ASTORE, callAsPostfixVar);
         }
+      }
+
+      // TAIL CALL ELIMINATION:
+      // Store the call-args into the args of this function and short-circuit the call.
+      if (isTailRecursive) {
+        List<Node> children = call.args().children();
+        for (int i = 0, childrenSize = children.size(); i < childrenSize; i++) {
+          Node arg = children.get(i);
+          emit(arg);                                        // value
+
+          // Store into the local vars representing the arguments to the recursive function.
+          methodVisitor.visitVarInsn(ASTORE, i);
+        }
+
+        // Loop.
+        methodVisitor.visitJumpInsn(GOTO, context.startOfFunction);
+
+        return;
       }
 
       // push name of containing type if this is a static call.
@@ -883,6 +907,8 @@ import java.util.concurrent.atomic.AtomicInteger;
           null,
           null);
       methodStack.push(methodVisitor);
+
+      methodVisitor.visitLabel(innerContext.startOfFunction);
 
       //******* BEGIN WHERE BLOCK LOCALS ********
 

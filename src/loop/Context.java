@@ -24,6 +24,7 @@ public class Context {
 
   final Map<String, FunctionDecl> localFunctions = new HashMap<String, FunctionDecl>();
 
+  final Label startOfFunction = new Label();
   final Label endOfFunction = new Label();
 
   public Context(FunctionDecl thisFunction) {
