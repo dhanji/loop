@@ -1,0 +1,7 @@
+# Simple recursive count upto n
+
+forward(i, num) ->
+  if i not num then forward(i + 1, num) else num
+
+main ->
+  forward(0, 500000)

@@ -36,6 +36,20 @@ public class BasicFunctionsConfidenceTest extends LoopTest {
   }
 
   @Test
+  public final void counterIfThenElseTailCallElimination() {
+    // Such a high number would normally throw a StackOverflowError. But using TCO,
+    // we can count this high with just one stack frame.
+    assertEquals(500000, Loop.run("test/loop/confidence/forward_if-then-else.loop"));
+  }
+
+  @Test
+  public final void counterIfThenElseTailCallElimination2() {
+    // Such a high number would normally throw a StackOverflowError. But using TCO,
+    // we can count this high with just one stack frame.
+    assertEquals(500000, Loop.run("test/loop/confidence/forward_if-then-else2.loop"));
+  }
+
+  @Test
   public final void dynamicPostfixCalling1() {
     assertEquals(3, Loop.run("test/loop/confidence/postfix_calling_adv_1.loop"));
   }

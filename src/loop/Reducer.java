@@ -36,7 +36,7 @@ public class Reducer {
 
     for (int i = 0; i < childrenSize; i++) {
       Node node = children.get(i);
-      node = reduce(node, tailPath && isTailPath(i, childrenSize, node));
+      node = reduce(node, tailPath && isTailPath(i, childrenSize, bloated));
 
       // Unwrap any redundant wrappers.
       if (shouldUnwrap(node)) {
@@ -52,7 +52,6 @@ public class Reducer {
       Node last = children.get(childrenSize - 1);
       if (last instanceof Call) {
         // A "last" call is not a tail call if it is preceded by a binary operator.
-//        if (childrenSize == 1 || ! (children.get(childrenSize - 2) instanceof BinaryOp))
           ((Call) last).tailCall(true);
       }
     }
@@ -130,7 +129,12 @@ public class Reducer {
   }
 
   private static boolean isTailPath(int i, int childrenSize, Node node) {
-    return i == childrenSize - 1 && (!(node instanceof BinaryOp));
+
+    // It's the tail path, if this is the last node and it is not a descendent of a binary op.
+    return (i == childrenSize - 1 && (!(node instanceof BinaryOp)))
+
+        // Or this is the "then" part of an if-then-else
+        || (node instanceof TernaryExpression && i == 1);
   }
 
   private void reduceComprehension(List<Node> reduced) {
