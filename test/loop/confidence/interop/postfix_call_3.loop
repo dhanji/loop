@@ -1,4 +1,4 @@
-# Calling Java method.
+# Calling Loop method, overriding Java.
 
 toLowerCase(str) ->
   str

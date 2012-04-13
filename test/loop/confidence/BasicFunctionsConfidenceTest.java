@@ -71,7 +71,7 @@ public class BasicFunctionsConfidenceTest extends LoopTest {
 
   @Test
   public final void notEqual2() {
-    assertEquals(true, Loop.run("test/loop/confidence/not_equal.loop"));
+    assertEquals(true, Loop.run("test/loop/confidence/not_equal_2.loop"));
   }
 
   @Test
