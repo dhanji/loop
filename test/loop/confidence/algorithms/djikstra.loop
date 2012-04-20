@@ -9,4 +9,6 @@ main ->
   find(root, goal, [])[0]
   where
     goal: [ 'name': 'goal', 'adjacent' : [] ]
-    root: [ 'name': 'root', 'adjacent' : [[ 'name': 'a', 'adjacent' : [goal] ]] ]
+    root: [ 'name': 'root',
+            'adjacent' : [{ 'name': 'a',
+                            'adjacent' : [goal] }] ]

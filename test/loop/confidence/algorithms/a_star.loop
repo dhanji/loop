@@ -25,9 +25,9 @@ main ->
     n2  : new Node(name: 'n2', heuristic: 10)
     n3  : new Node(name: 'n3', heuristic: 12)
     n4  : new Node(name: 'n4', heuristic: 4)
-    path: ([ root.adjacent.add(n1),
+    path: [ root.adjacent.add(n1),
              root.adjacent.add(n2),
              root.adjacent.add(n3),
              n1.adjacent.add(n4),
              n3.adjacent.add(goal),
-             n4.adjacent.add(goal) ])
+             n4.adjacent.add(goal) ]
