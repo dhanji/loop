@@ -210,12 +210,23 @@ public class Tokenizer {
   private List<Token> cleanTokens(List<Token> tokens) {
     // Analyze token stream and remove line breaks inside groups and such.
     int groups = 0;
+    Stack<Token.Kind> groupStack = new Stack<Token.Kind>();
+
     for (ListIterator<Token> iterator = tokens.listIterator(); iterator.hasNext();) {
       Token token = iterator.next();
-      if (Token.Kind.LPAREN == token.kind)
+
+      if (Token.Kind.LPAREN == token.kind
+          || Token.Kind.LBRACE == token.kind
+          || Token.Kind.LBRACKET == token.kind) {
+        groupStack.push(token.kind);
         groups++;
-      else if (Token.Kind.RPAREN == token.kind)
+      } else if (Token.Kind.RPAREN == token.kind
+          || Token.Kind.RBRACE == token.kind
+          || Token.Kind.RBRACKET == token.kind) {
+        if (!groupStack.empty() && groupStack.peek() == token.kind)
+          groupStack.pop();
         groups--;
+      }
 
       // Remove token.
       if (groups > 0
@@ -224,7 +235,7 @@ public class Tokenizer {
     }
 
     // Iterate again and dress function bodies with { }
-    Stack<Token.Kind> groupStack = new Stack<Token.Kind>();
+    groupStack = new Stack<Token.Kind>();
     for (ListIterator<Token> iterator = tokens.listIterator(); iterator.hasNext();) {
       Token token = iterator.next();
 

@@ -154,7 +154,7 @@ public class SyntaxErrorsConfidenceTest {
 
     assertNotNull(errorList);
 
-    assertEquals(1, errorList.size());
+    assertEquals(2, errorList.size());
   }
 
   @Test
