@@ -24,7 +24,7 @@ Stretch
 -------
 
 - line numbers (for exceptions)
-- Make ! and ? part of ident tokens
+x Make ! and ? part of ident tokens
 - enumeration type
 - process subsystem
   - send message to 'process'

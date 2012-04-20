@@ -1,9 +1,6 @@
 package loop.ast.script;
 
 import loop.ast.Node;
-import loop.type.Type;
-
-import java.util.List;
 
 /**
  * Represents a declaration of arguments of a function.

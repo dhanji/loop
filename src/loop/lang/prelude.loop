@@ -1,7 +1,7 @@
 module prelude
 
 print(object) ->
-  `System.out`.println(object)
+  `java.lang.System::out`.println(object)
 
 negate(b) ->
   b not true

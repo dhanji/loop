@@ -1,0 +1,16 @@
+# Use of ! and ? in identifiers
+
+clear!(ls) ->
+  ls
+  where
+    val: ls.clear()
+
+negative?(x) ->
+  x not true
+
+main ->
+  (a not b) == expected == [1].clear!().isEmpty()
+  where
+    a: 1
+    b: 1
+    expected: true.negative?()

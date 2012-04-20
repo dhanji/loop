@@ -4,7 +4,7 @@ import jline.console.ConsoleReader;
 import jline.console.completer.Completer;
 import jline.console.completer.FileNameCompleter;
 import loop.lang.LoopObject;
-import org.mvel2.ast.Function;
+import sun.org.mozilla.javascript.internal.Function;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -135,8 +135,8 @@ public class LoopShell {
 
   private static void printResult(Object result) {
     if (result instanceof Function) {
-      Function fun = (Function) result;
-      System.out.println("#function:" + fun.getName() + "()");
+//      Function fun = (Function) result;
+//      System.out.println("#function:" + fun.getName() + "()");
     } else
       System.out.println(result == null ? "Nothing" : result);
   }

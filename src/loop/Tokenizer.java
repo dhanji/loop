@@ -54,8 +54,6 @@ public class Tokenizer {
     DELIMITERS['*'] = SEQUENCE_TOKEN;
     DELIMITERS['>'] = SEQUENCE_TOKEN;
     DELIMITERS['<'] = SEQUENCE_TOKEN;
-    DELIMITERS['!'] = SEQUENCE_TOKEN;
-    DELIMITERS['?'] = SEQUENCE_TOKEN;
 
     // SINGLE token delimiters are one char in length in any context
     DELIMITERS['\n'] = SINGLE_TOKEN;
