@@ -8,25 +8,29 @@ x Modules/packaging/import
   x require as (stuff)
   x always require prelude
   - resolve types too
-x Tail call optimization (eliminate tail-recursive calls)
-- line numbers (for exceptions)
-x try/catch/finally
-x Fix boolean and/or
 - Update loop shell
+- Elide line break tokens inside [] and {}
+- Parse expressions directly in body and emit to static initializer
+- Fix doubles!
 
+- Docs
+- About
+- FAQ
+- Mailing list
+- Get started page
+- Release a build!
 
 Stretch
 -------
 
-x force call as Java with <- scope resolution operator
+- line numbers (for exceptions)
+- Make ! and ? part of ident tokens
 - enumeration type
-- Single inheritance
 - process subsystem
   - send message to 'process'
   - call (synchronous sendAndWait)
   - balance processes across threadpools
   - cron/timer process
-- Type classes/extension methods (better than interfaces/traits)
 - "ribbon" web framework based on Netty + process subsystem
 
 
