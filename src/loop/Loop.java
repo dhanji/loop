@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.StringReader;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -27,7 +28,10 @@ public class Loop {
   }
 
   public static Object run(String file) {
-    return run(file, false, true);
+    Executable unit = loopCompile(file);
+    unit.runMain(true);
+
+    return safeEval(unit);
   }
 
   public static Object run(String file, boolean print) {
@@ -78,9 +82,16 @@ public class Loop {
         return executable.getCompiled().getDeclaredMethod("main").invoke(null);
       else
         return executable.getCompiled();
-    } catch (LoopCompileException e) {
-      throw e;
-    } catch (Exception e) {
+    } catch (InvocationTargetException e) {
+      // Unwrap Java stack trace using our special wrapper exception.
+      Throwable cause = e.getCause();
+      StackTraceSanitizer.clean(cause);
+
+      throw (RuntimeException) cause;
+
+    } catch (NoSuchMethodException e) {
+      throw new RuntimeException(e);
+    } catch (IllegalAccessException e) {
       throw new RuntimeException(e);
     }
   }

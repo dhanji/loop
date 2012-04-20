@@ -20,11 +20,12 @@ import java.util.Set;
 import java.util.Stack;
 
 /**
- * A compilation unit containing imports classes, functions, etc. Represents a single file.
+ * A compilation unit containing imports classes, functions, etc. Represents a single fileName.
  *
  * @NotThreadSafe
  */
 public class Unit implements Scope {
+  private final String fileName;
   private final ModuleDecl module;
 
   private String name;
@@ -38,7 +39,8 @@ public class Unit implements Scope {
   private final Map<String, ClassDecl> classes = new HashMap<String, ClassDecl>();
   private final Stack<Context> scopes = new Stack<Context>();
 
-  public Unit(ModuleDecl module) {
+  public Unit(String fileName, ModuleDecl module) {
+    this.fileName = fileName;
     this.module = module;
 
     StringBuilder builder = new StringBuilder();
@@ -67,6 +69,10 @@ public class Unit implements Scope {
 
   @Override public void popScope() {
     scopes.pop();
+  }
+
+  public String getFileName() {
+    return fileName;
   }
 
   @Override public String resolveJavaType(String name) {

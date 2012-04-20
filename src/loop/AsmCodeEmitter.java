@@ -152,6 +152,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 
     // We always emit functions as static into a containing Java class.
     String javaClass = unit.name();
+
+    String fileName = unit.getFileName();
+    if (fileName != null) {
+      if (!fileName.endsWith(".loop"))
+        fileName += ".loop";
+      classWriter.visitSource(fileName, null);
+    }
     classWriter.visit(V1_6, ACC_PUBLIC, javaClass, null, "java/lang/Object", new String[0]);
 
     for (FunctionDecl functionDecl : unit.functions()) {
@@ -178,7 +185,7 @@ import java.util.concurrent.atomic.AtomicInteger;
   }
 
   public Class<?> write(FunctionDecl node) {
-    Unit unit = new Unit(ModuleDecl.DEFAULT);
+    Unit unit = new Unit(null, ModuleDecl.DEFAULT);
     unit.declare(node);
     unit.reduceAll();
 
@@ -227,7 +234,9 @@ import java.util.concurrent.atomic.AtomicInteger;
   }
 
   private void trackLineAndColumn(Node node) {
-    emittedNodeMap.put(new SourceLocation(line, column), node);
+    Label line = new Label();
+    methodStack.peek().visitLabel(line);
+    methodStack.peek().visitLineNumber(node.sourceLine, line);
   }
 
   private void emitChildren(Node node) {
@@ -907,6 +916,7 @@ import java.util.concurrent.atomic.AtomicInteger;
           null,
           null);
       methodStack.push(methodVisitor);
+      trackLineAndColumn(functionDecl);
 
       methodVisitor.visitLabel(innerContext.startOfFunction);
 

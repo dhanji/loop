@@ -58,7 +58,7 @@ public class TypeDeclarationsParsingTest {
 
   static void compareType(String typeName, String expected, String input) {
     Parser parser = new Parser(new Tokenizer(input).tokenize());
-    Unit unit = parser.script();
+    Unit unit = parser.script(null);
     Assert.assertNotNull("Parser returned no output", unit);
 
     ClassDecl clazz = unit.getType(typeName);

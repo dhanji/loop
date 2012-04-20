@@ -9,6 +9,7 @@ import loop.runtime.Scope;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
@@ -87,7 +88,7 @@ public class Executable {
     Parser parser = new Parser(new Tokenizer(input).tokenize());
     Unit unit = null;
     try {
-      unit = parser.script();
+      unit = parser.script(file);
       unit.reduceAll();
 
       this.scope = unit;
@@ -113,11 +114,11 @@ public class Executable {
       printErrors(getStaticErrors());
   }
 
-  public void printErrors(List<AnnotatedError> errors) {
+  public void printErrorsTo(PrintStream out, List<AnnotatedError> errors) {
     for (int i = 0, errorsSize = errors.size(); i < errorsSize; i++) {
       AnnotatedError error = errors.get(i);
-      System.out.println((i + 1) + ") " + error.getMessage());
-      System.out.println();
+      out.println((i + 1) + ") " + error.getMessage());
+      out.println();
 
       // Unwrap to previous line if column is 0, or line is empty.
       int errorLineNumber = error.line(), column = error.column();
@@ -168,13 +169,17 @@ public class Executable {
         if (Math.floor(Math.log10(lineNumberLabel)) > Math.floor(Math.log10(lineNumber)))
           leader--;
 
-        System.out.println(whitespace(leader) + lineNumberLabel + ":  " + line);
+        out.println(whitespace(leader) + lineNumberLabel + ":  " + line);
       }
 
       // Caret line (^)
       int spaces = column + Integer.toString(errorLineNumber).length() + 1;
-      System.out.println("  " + whitespace(spaces) + "^\n");
+      out.println("  " + whitespace(spaces) + "^\n");
     }
+  }
+
+  public void printErrors(List<AnnotatedError> errors) {
+    printErrorsTo(System.out, errors);
   }
 
   public String file() {

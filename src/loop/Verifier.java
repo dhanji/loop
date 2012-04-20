@@ -32,7 +32,7 @@ import java.util.Stack;
  * Nothing in this phase affects the semantics of the program. This phase can be completely skipped
  * with no ill-effects for semantically correct programs.
  */
-public class Verifier {
+class Verifier {
   private final Unit unit;
   private final Stack<FunctionContext> functionStack = new Stack<FunctionContext>();
 

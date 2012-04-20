@@ -110,7 +110,7 @@ public class FreeFunctionsParsingTest {
 
   static void compareFunction(String functionName, String expected, String input) {
     Parser parser = new Parser(new Tokenizer(input).tokenize());
-    Unit unit = parser.script();
+    Unit unit = parser.script(null);
     Assert.assertNotNull("Parser returned no output", unit);
 
     FunctionDecl function = unit.resolveFunction(functionName, false);

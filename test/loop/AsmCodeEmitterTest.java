@@ -20,11 +20,13 @@ import static org.junit.Assert.assertTrue;
  * @author dhanji@gmail.com (Dhanji R. Prasanna)
  */
 public class AsmCodeEmitterTest extends LoopTest {
+  private String file = null;
+
   @Test
   public final void emitBasicCall()
       throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
     Parser parser = new Parser(new Tokenizer("puts ->\n  'HELLO'.toLowerCase()").tokenize());
-    Unit unit = parser.script();
+    Unit unit = parser.script(file);
     unit.reduceAll();
 
     Class<?> generated = new AsmCodeEmitter(unit).write(unit);
@@ -39,7 +41,7 @@ public class AsmCodeEmitterTest extends LoopTest {
   public final void emitBasicCallWithArgs()
       throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
     Parser parser = new Parser(new Tokenizer("puts(str) ->\n  str.toLowerCase().toUpperCase().toLowerCase()").tokenize());
-    Unit unit = parser.script();
+    Unit unit = parser.script(file);
     unit.reduceAll();
 
     Class<?> generated = new AsmCodeEmitter(unit).write(unit);
@@ -53,7 +55,7 @@ public class AsmCodeEmitterTest extends LoopTest {
   @Test
   public final void emitCallLoopFunctionWithArgs() throws Exception {
     Parser parser = new Parser(new Tokenizer("puts(str) ->\n  str.toLowerCase()\n\nmain() ->\n  puts('HELLO')\n").tokenize());
-    Unit unit = parser.script();
+    Unit unit = parser.script(file);
     unit.reduceAll();
 
     Class<?> generated = new AsmCodeEmitter(unit).write(unit);
@@ -68,7 +70,7 @@ public class AsmCodeEmitterTest extends LoopTest {
   @Test
   public final void emitCallLoopFunctionWithPrimitives() throws Exception {
     Parser parser = new Parser(new Tokenizer("puts(num) ->\n  num\n\nmain() ->\n  puts(20)\n").tokenize());
-    Unit unit = parser.script();
+    Unit unit = parser.script(file);
     unit.reduceAll();
 
     Class<?> generated = new AsmCodeEmitter(unit).write(unit);
@@ -83,7 +85,7 @@ public class AsmCodeEmitterTest extends LoopTest {
   @Test
   public final void emitNumericAddition() throws Exception {
     Parser parser = new Parser(new Tokenizer("add(x, y) ->\n  x + y\n").tokenize());
-    Unit unit = parser.script();
+    Unit unit = parser.script(file);
     unit.reduceAll();
 
     Class<?> generated = new AsmCodeEmitter(unit).write(unit);
@@ -98,7 +100,7 @@ public class AsmCodeEmitterTest extends LoopTest {
   @Test
   public final void emitNumericSubtraction() throws Exception {
     Parser parser = new Parser(new Tokenizer("sub(x, y) ->\n  x - y\n").tokenize());
-    Unit unit = parser.script();
+    Unit unit = parser.script(file);
     unit.reduceAll();
 
     Class<?> generated = new AsmCodeEmitter(unit).write(unit);
@@ -112,7 +114,7 @@ public class AsmCodeEmitterTest extends LoopTest {
   @Test
   public final void emitNumericArithmetic() throws Exception {
     Parser parser = new Parser(new Tokenizer("sub(x, y) ->\n  ((100 + x - y) * 10 / 2) % 40\n").tokenize());
-    Unit unit = parser.script();
+    Unit unit = parser.script(file);
     unit.reduceAll();
 
     Class<?> generated = new AsmCodeEmitter(unit).write(unit);
@@ -127,7 +129,7 @@ public class AsmCodeEmitterTest extends LoopTest {
   @Test
   public final void emitEquals() throws Exception {
     Parser parser = new Parser(new Tokenizer("sub(x, y) ->\n  x == y\n").tokenize());
-    Unit unit = parser.script();
+    Unit unit = parser.script(file);
     unit.reduceAll();
 
     Class<?> generated = new AsmCodeEmitter(unit).write(unit);
@@ -142,7 +144,7 @@ public class AsmCodeEmitterTest extends LoopTest {
   @Test
   public final void emitInlineListDef() throws Exception {
     Parser parser = new Parser(new Tokenizer("fun() ->\n  [1, 2, 3]\n").tokenize());
-    Unit unit = parser.script();
+    Unit unit = parser.script(file);
     unit.reduceAll();
 
     Class<?> generated = new AsmCodeEmitter(unit).write(unit);
@@ -156,7 +158,7 @@ public class AsmCodeEmitterTest extends LoopTest {
   @Test
   public final void emitInlineSetDef() throws Exception {
     Parser parser = new Parser(new Tokenizer("fun() ->\n  {1, 2, 3}\n").tokenize());
-    Unit unit = parser.script();
+    Unit unit = parser.script(file);
     unit.reduceAll();
 
     Class<?> generated = new AsmCodeEmitter(unit).write(unit);
@@ -171,7 +173,7 @@ public class AsmCodeEmitterTest extends LoopTest {
   @Test
   public final void emitIndexIntoList() throws Exception {
     Parser parser = new Parser(new Tokenizer("fun(ls) ->\n  ls[1]\n").tokenize());
-    Unit unit = parser.script();
+    Unit unit = parser.script(file);
     unit.reduceAll();
 
     Class<?> generated = new AsmCodeEmitter(unit).write(unit);
@@ -186,7 +188,7 @@ public class AsmCodeEmitterTest extends LoopTest {
   @Test
   public final void emitIndexIntoList2() throws Exception {
     Parser parser = new Parser(new Tokenizer("fun(ls) ->\n  ls[1..3]\n").tokenize());
-    Unit unit = parser.script();
+    Unit unit = parser.script(file);
     unit.reduceAll();
 
     Class<?> generated = new AsmCodeEmitter(unit).write(unit);
@@ -200,7 +202,7 @@ public class AsmCodeEmitterTest extends LoopTest {
   @Test
   public final void emitIndexIntoList3() throws Exception {
     Parser parser = new Parser(new Tokenizer("fun(ls) ->\n  ls[1..]\n").tokenize());
-    Unit unit = parser.script();
+    Unit unit = parser.script(file);
     unit.reduceAll();
 
     Class<?> generated = new AsmCodeEmitter(unit).write(unit);
@@ -215,7 +217,7 @@ public class AsmCodeEmitterTest extends LoopTest {
   @Test
   public final void emitIndexIntoList4() throws Exception {
     Parser parser = new Parser(new Tokenizer("fun(ls) ->\n  ls[..2]\n").tokenize());
-    Unit unit = parser.script();
+    Unit unit = parser.script(file);
     unit.reduceAll();
 
     Class<?> generated = new AsmCodeEmitter(unit).write(unit);
@@ -230,7 +232,7 @@ public class AsmCodeEmitterTest extends LoopTest {
   @Test
   public final void emitInlineMapDef() throws Exception {
     Parser parser = new Parser(new Tokenizer("fun() ->\n  [1: 'a', 2: 'b', 3: 'c']\n").tokenize());
-    Unit unit = parser.script();
+    Unit unit = parser.script(file);
     unit.reduceAll();
 
     Class<?> generated = new AsmCodeEmitter(unit).write(unit);
@@ -249,7 +251,7 @@ public class AsmCodeEmitterTest extends LoopTest {
   @Test
   public final void emitListAddition() throws Exception {
     Parser parser = new Parser(new Tokenizer("add(x, y) ->\n  x + y\n").tokenize());
-    Unit unit = parser.script();
+    Unit unit = parser.script(file);
     unit.reduceAll();
 
     Class<?> generated = new AsmCodeEmitter(unit).write(unit);
@@ -265,7 +267,7 @@ public class AsmCodeEmitterTest extends LoopTest {
   @Test
   public final void emitStringSlice() throws Exception {
     Parser parser = new Parser(new Tokenizer("slice(str) ->\n  str[1..3]\n").tokenize());
-    Unit unit = parser.script();
+    Unit unit = parser.script(file);
     unit.reduceAll();
 
     Class<?> generated = new AsmCodeEmitter(unit).write(unit);
@@ -286,7 +288,7 @@ public class AsmCodeEmitterTest extends LoopTest {
         "  1         : 'one'\n" +
         "  2         : 'two'\n"
     ).tokenize());
-    Unit unit = parser.script();
+    Unit unit = parser.script(file);
     unit.reduceAll();
 
     Class<?> generated = new AsmCodeEmitter(unit).write(unit, true);
@@ -312,7 +314,7 @@ public class AsmCodeEmitterTest extends LoopTest {
         "      two ->\n" +
         "        'two'\n"
     ).tokenize());
-    Unit unit = parser.script();
+    Unit unit = parser.script(file);
     unit.reduceAll();
 
     Class<?> generated = new AsmCodeEmitter(unit).write(unit, true);
@@ -335,7 +337,7 @@ public class AsmCodeEmitterTest extends LoopTest {
         "@two() ->\n" +
         "  'two'\n"
     ).tokenize());
-    Unit unit = parser.script();
+    Unit unit = parser.script(file);
     unit.reduceAll();
 
     Class<?> generated = new AsmCodeEmitter(unit).write(unit);
@@ -358,7 +360,7 @@ public class AsmCodeEmitterTest extends LoopTest {
         "  *                    | str == 'yoyo'  : 'ma'\n" +
         "                       | else           : 'nothing'\n"
     ).tokenize());
-    Unit unit = parser.script();
+    Unit unit = parser.script(file);
     unit.reduceAll();
 
     Class<?> generated = new AsmCodeEmitter(unit).write(unit);
@@ -384,7 +386,7 @@ public class AsmCodeEmitterTest extends LoopTest {
         "            | ls == 2  : 'two'\n" +
         "            | else     : 'other'\n"
     ).tokenize());
-    Unit unit = parser.script();
+    Unit unit = parser.script(file);
     unit.reduceAll();
 
     Class<?> generated = new AsmCodeEmitter(unit).write(unit, true);
@@ -407,7 +409,7 @@ public class AsmCodeEmitterTest extends LoopTest {
         "  []         : []\n" +
         "  [x:xs]     : reverse(xs) + [x]\n"
     ).tokenize());
-    Unit unit = parser.script();
+    Unit unit = parser.script(file);
     unit.reduceAll();
 
     Class<?> generated = new AsmCodeEmitter(unit).write(unit, true);
@@ -429,7 +431,7 @@ public class AsmCodeEmitterTest extends LoopTest {
         "             | else  : []\n" +
         "  [x:xs]             : reverse(xs) + [x]\n"
     ).tokenize());
-    Unit unit = parser.script();
+    Unit unit = parser.script(file);
     unit.reduceAll();
 
     Class<?> generated = new AsmCodeEmitter(unit).write(unit);
@@ -448,7 +450,7 @@ public class AsmCodeEmitterTest extends LoopTest {
         "lower(obj) =>\n" +
         "  [ x <- obj.name]         : x.toLowerCase()\n"
     ).tokenize());
-    Unit unit = parser.script();
+    Unit unit = parser.script(file);
     unit.reduceAll();
 
     Class<?> generated = new AsmCodeEmitter(unit).write(unit);
@@ -473,7 +475,7 @@ public class AsmCodeEmitterTest extends LoopTest {
         "  List[ x <- obj.name]        : x.toUpperCase()\n" +
         "  Map[ x <- obj.name]         : x.toLowerCase()\n"
     ).tokenize());
-    Unit unit = parser.script();
+    Unit unit = parser.script(file);
     unit.reduceAll();
 
     Class<?> generated = new AsmCodeEmitter(unit).write(unit, true);
@@ -499,7 +501,7 @@ public class AsmCodeEmitterTest extends LoopTest {
         "  List        : obj.name.toUpperCase()\n" +
         "  Map         : obj.name.toLowerCase()\n"
     ).tokenize());
-    Unit unit = parser.script();
+    Unit unit = parser.script(file);
     unit.reduceAll();
 
     Class<?> generated = new AsmCodeEmitter(unit).write(unit, true);
@@ -526,7 +528,7 @@ public class AsmCodeEmitterTest extends LoopTest {
         "          'two')\n" +
         "\n"
     ).tokenize());
-    Unit unit = parser.script();
+    Unit unit = parser.script(file);
     unit.reduceAll();
 
     Class<?> generated = new AsmCodeEmitter(unit).write(unit);
@@ -549,7 +551,7 @@ public class AsmCodeEmitterTest extends LoopTest {
         "          a + b)\n" +
         "\n"
     ).tokenize());
-    Unit unit = parser.script();
+    Unit unit = parser.script(file);
     unit.reduceAll();
 
     Class<?> generated = new AsmCodeEmitter(unit).write(unit, true);
@@ -575,7 +577,7 @@ public class AsmCodeEmitterTest extends LoopTest {
         "    c: 4\n" +
         "\n"
     ).tokenize());
-    Unit unit = parser.script();
+    Unit unit = parser.script(file);
     unit.reduceAll();
 
     Class<?> generated = new AsmCodeEmitter(unit).write(unit, true);
@@ -596,7 +598,7 @@ public class AsmCodeEmitterTest extends LoopTest {
         "  'HELLO'.lower()\n" +
         "\n"
     ).tokenize());
-    Unit unit = parser.script();
+    Unit unit = parser.script(file);
     unit.reduceAll();
 
     Class<?> generated = new AsmCodeEmitter(unit).write(unit);
@@ -615,7 +617,7 @@ public class AsmCodeEmitterTest extends LoopTest {
         "  obj.toLowerCase().toLowerCase()\n" +
         "\n"
     ).tokenize());
-    Unit unit = parser.script();
+    Unit unit = parser.script(file);
     unit.reduceAll();
 
     Class<?> generated = new AsmCodeEmitter(unit).write(unit);
@@ -635,7 +637,7 @@ public class AsmCodeEmitterTest extends LoopTest {
         "    day: 24\n" +
         "    week: 7 * day\n" +
         "    year: 52 * week\n").tokenize());
-    Unit unit = parser.script();
+    Unit unit = parser.script(file);
     unit.reduceAll();
 
     Class<?> generated = new AsmCodeEmitter(unit).write(unit);
@@ -651,7 +653,7 @@ public class AsmCodeEmitterTest extends LoopTest {
   @Test
   public final void emitMapIndexInto() throws Exception {
     Parser parser = new Parser(new Tokenizer("slice(map) ->\n  map['num']\n").tokenize());
-    Unit unit = parser.script();
+    Unit unit = parser.script(file);
     unit.reduceAll();
 
     Class<?> generated = new AsmCodeEmitter(unit).write(unit);
@@ -670,7 +672,7 @@ public class AsmCodeEmitterTest extends LoopTest {
   @Test
   public final void emitInterpolatedString() throws Exception {
     Parser parser = new Parser(new Tokenizer("fun(name) ->\n  \"Hi, @{name.toUpperCase()}! @{name.toLowerCase()}\"\n").tokenize());
-    Unit unit = parser.script();
+    Unit unit = parser.script(file);
     unit.reduceAll();
 
     Class<?> generated = new AsmCodeEmitter(unit).write(unit);
@@ -685,7 +687,7 @@ public class AsmCodeEmitterTest extends LoopTest {
   @Test
   public final void emitJavaConstructor() throws Exception {
     Parser parser = new Parser(new Tokenizer("main() ->\n  new java.util.Date(1)\n").tokenize());
-    Unit unit = parser.script();
+    Unit unit = parser.script(file);
     unit.reduceAll();
 
     Class<?> generated = new AsmCodeEmitter(unit).write(unit, true);
@@ -709,7 +711,7 @@ public class AsmCodeEmitterTest extends LoopTest {
         "\n" +
         "main() ->\n" +
         "  new Star(name: 'Proxima', mass: 123)\n").tokenize());
-    Unit unit = parser.script();
+    Unit unit = parser.script(file);
     unit.reduceAll();
 
     Class<?> generated = new AsmCodeEmitter(unit).write(unit);
@@ -735,7 +737,7 @@ public class AsmCodeEmitterTest extends LoopTest {
   @Test
   public final void emitJavaNullaryConstructor() throws Exception {
     Parser parser = new Parser(new Tokenizer("main() ->\n  new java.util.Date()\n").tokenize());
-    Unit unit = parser.script();
+    Unit unit = parser.script(file);
     unit.reduceAll();
 
     Class<?> generated = new AsmCodeEmitter(unit).write(unit);
@@ -751,7 +753,7 @@ public class AsmCodeEmitterTest extends LoopTest {
   @Test
   public final void emitJavaBeanPropertyCall() throws Exception {
     Parser parser = new Parser(new Tokenizer("main() ->\n  new java.util.Date(1).time\n").tokenize());
-    Unit unit = parser.script();
+    Unit unit = parser.script(file);
     unit.reduceAll();
 
     Class<?> generated = new AsmCodeEmitter(unit).write(unit);
@@ -767,7 +769,7 @@ public class AsmCodeEmitterTest extends LoopTest {
   @Test
   public final void emitListComprehension() throws Exception {
     Parser parser = new Parser(new Tokenizer("sum(ls) ->\n  i for i in ls if i < 25\n").tokenize());
-    Unit unit = parser.script();
+    Unit unit = parser.script(file);
     unit.reduceAll();
 
     Class<?> generated = new AsmCodeEmitter(unit).write(unit);
@@ -783,7 +785,7 @@ public class AsmCodeEmitterTest extends LoopTest {
   @Test
   public final void emitIfStatement() throws Exception {
     Parser parser = new Parser(new Tokenizer("sum(cond) ->\n  if cond then 1 else 2\n").tokenize());
-    Unit unit = parser.script();
+    Unit unit = parser.script(file);
     unit.reduceAll();
 
     Class<?> generated = new AsmCodeEmitter(unit).write(unit);

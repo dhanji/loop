@@ -8,6 +8,7 @@ x Modules/packaging/import
   x require as (stuff)
   x always require prelude
   - resolve types too
+  - hierarchical modules support
 - Update loop shell
 x Elide line break tokens inside [] and {}
 - Parse expressions directly in body and emit to static initializer
@@ -23,7 +24,7 @@ x Elide line break tokens inside [] and {}
 Stretch
 -------
 
-- line numbers (for exceptions)
+x line numbers (for exceptions)
 x Make ! and ? part of ident tokens
 - enumeration type
 - process subsystem
@@ -31,6 +32,7 @@ x Make ! and ? part of ident tokens
   - call (synchronous sendAndWait)
   - balance processes across threadpools
   - cron/timer process
+- one line web server (loop web.server 8080)
 - "ribbon" web framework based on Netty + process subsystem
 
 

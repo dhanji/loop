@@ -223,7 +223,7 @@ public class AsmMvelPerformanceBenchmark extends LoopTest {
     System.out.println(script);
     System.out.println("\n\n");
     Parser parser = new Parser(new Tokenizer(script).tokenize());
-    Unit unit = parser.script();
+    Unit unit = parser.script(null);
     unit.reduceAll();
 
     // Compile ASM.

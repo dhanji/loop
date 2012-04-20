@@ -109,8 +109,9 @@ public class Parser {
    * one-line expressions.
    * <p/>
    * script := module? require* (functionDecl | classDecl)*
+   * @param file
    */
-  public Unit script() {
+  public Unit script(String file) {
     chewEols();
 
     ModuleDecl module = module();
@@ -119,7 +120,7 @@ public class Parser {
 
     chewEols();
 
-    Unit unit = new Unit(module);
+    Unit unit = new Unit(file, module);
     RequireDecl require;
     do {
       require = require();
