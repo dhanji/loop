@@ -1,10 +1,13 @@
 package loop;
 
+import loop.Token.Kind;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.List;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author Dhanji R. Prasanna
@@ -33,6 +36,19 @@ public class TokenizerTest {
   public final void regexAndStringLiterals() {
     compare("2 . 0 'hello' \"hi\" / yo / 123", "2.0 'hello' \"hi\" /yo/ 123");
     compare("2 . 0 'hello' \"hi\" / yo */ 123", "2.0 'hello' \"hi\" /yo*/ 123");
+  }
+
+  @Test
+  public final void numericLiterals() {
+    compare("2 . 0 @22 22L", "2.0 @22 22L");
+
+    assertEquals(Arrays.asList(
+        new Token("2", Kind.INTEGER, 0, 0),
+        new Token(".", Kind.DOT, 0, 0),
+        new Token("0", Kind.INTEGER, 0, 0),
+        new Token("@22", Kind.BIG_INTEGER, 0, 0),
+        new Token("22L", Kind.LONG, 0, 0)
+    ), new Tokenizer("2.0 @22 22L").tokenize());
   }
 
   @Test

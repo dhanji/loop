@@ -65,6 +65,45 @@ public class BasicFunctionsConfidenceTest extends LoopTest {
   }
 
   @Test
+  public final void longArithmetic() {
+    assertEquals(true, Loop.run("test/loop/confidence/longs.loop"));
+  }
+
+  @Test
+  public final void longArithmetic2() {
+    assertEquals(true, Loop.run("test/loop/confidence/longs_2.loop"));
+  }
+
+  @Test
+  public final void doubleArithmetic() {
+    assertEquals(true, Loop.run("test/loop/confidence/doubles.loop"));
+  }
+
+  @Test
+  public final void doubleArithmetic2() {
+    assertEquals(true, Loop.run("test/loop/confidence/doubles_2.loop"));
+  }
+
+  @Test
+  public final void bigIntegerArithmetic() {
+    assertEquals(true, Loop.run("test/loop/confidence/big_ints.loop"));
+  }
+
+  @Test
+  public final void bigIntegerArithmetic2() {
+    assertEquals(true, Loop.run("test/loop/confidence/big_ints_2.loop"));
+  }
+  @Test
+  public final void bigDecimalArithmetic() {
+    assertEquals(true, Loop.run("test/loop/confidence/big_dec.loop"));
+  }
+
+  @Test
+  public final void bigDecimalArithmetic2() {
+    assertEquals(true, Loop.run("test/loop/confidence/big_dec_2.loop"));
+  }
+
+  @Test
   public final void notEqual() {
     assertEquals(true, Loop.run("test/loop/confidence/not_equal.loop"));
   }

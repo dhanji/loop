@@ -1,0 +1,8 @@
+# Arbitrary precision integer arithmetic
+
+main ->
+  (a * b + @200 - @20 / @5) == expected
+  where
+    a: @3
+    b: @10
+    expected: @42

@@ -21,6 +21,7 @@ import static org.junit.Assert.assertNotNull;
  *
  * @author dhanji@gmail.com (Dhanji R. Prasanna)
  */
+@SuppressWarnings("unchecked") // No idea why but the compiler keeps whinging
 public class AsmMvelPerformanceBenchmark extends LoopTest {
   // Number of cycles for the benchmark, should be > 200000 for anything useful.
 //  private static final int RUNS = 500000;

@@ -1,0 +1,8 @@
+# Arbitrary precision decimal arithmetic
+
+main ->
+  (a * b + @200.0 - @20.5 / -@5.0) == expected
+  where
+    a: -@3.0
+    b: -@10.5
+    expected: -@42.2

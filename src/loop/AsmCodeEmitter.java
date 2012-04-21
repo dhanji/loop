@@ -1,6 +1,8 @@
 package loop;
 
 import loop.ast.Assignment;
+import loop.ast.BigDecimalLiteral;
+import loop.ast.BigIntegerLiteral;
 import loop.ast.BinaryOp;
 import loop.ast.BooleanLiteral;
 import loop.ast.Call;
@@ -11,6 +13,7 @@ import loop.ast.Comprehension;
 import loop.ast.Computation;
 import loop.ast.ConstructorCall;
 import loop.ast.DestructuringPair;
+import loop.ast.DoubleLiteral;
 import loop.ast.Guard;
 import loop.ast.IndexIntoList;
 import loop.ast.InlineListDef;
@@ -19,6 +22,7 @@ import loop.ast.IntLiteral;
 import loop.ast.JavaLiteral;
 import loop.ast.ListDestructuringPattern;
 import loop.ast.ListStructurePattern;
+import loop.ast.LongLiteral;
 import loop.ast.MapPattern;
 import loop.ast.Node;
 import loop.ast.OtherwiseGuard;
@@ -119,6 +123,10 @@ import java.util.concurrent.atomic.AtomicInteger;
     EMITTERS.put(Call.class, callEmitter);
     EMITTERS.put(Computation.class, computationEmitter);
     EMITTERS.put(IntLiteral.class, intEmitter);
+    EMITTERS.put(LongLiteral.class, longEmitter);
+    EMITTERS.put(DoubleLiteral.class, doubleEmitter);
+    EMITTERS.put(BigIntegerLiteral.class, bigIntegerEmitter);
+    EMITTERS.put(BigDecimalLiteral.class, bigDecimalEmitter);
     EMITTERS.put(BooleanLiteral.class, booleanEmitter);
     EMITTERS.put(TypeLiteral.class, typeLiteralEmitter);
     EMITTERS.put(Variable.class, variableEmitter);
@@ -747,6 +755,62 @@ import java.util.concurrent.atomic.AtomicInteger;
       methodVisitor.visitMethodInsn(INVOKESTATIC, "java/lang/Integer", "valueOf",
           "(I)Ljava/lang/Integer;");
 
+    }
+  };
+
+  private final Emitter longEmitter = new Emitter() {
+    @Override
+    public void emitCode(Node node) {
+      LongLiteral longLiteral = (LongLiteral) node;
+
+      // Emit int wrappers.
+      MethodVisitor methodVisitor = methodStack.peek();
+      methodVisitor.visitLdcInsn(longLiteral.value);
+      methodVisitor.visitMethodInsn(INVOKESTATIC, "java/lang/Long", "valueOf",
+          "(J)Ljava/lang/Long;");
+    }
+  };
+
+  private final Emitter doubleEmitter = new Emitter() {
+    @Override
+    public void emitCode(Node node) {
+      DoubleLiteral doubleLiteral = (DoubleLiteral) node;
+
+      // Emit int wrappers.
+      MethodVisitor methodVisitor = methodStack.peek();
+      methodVisitor.visitLdcInsn(doubleLiteral.value);
+      methodVisitor.visitMethodInsn(INVOKESTATIC, "java/lang/Double", "valueOf",
+          "(D)Ljava/lang/Double;");
+    }
+  };
+
+  private final Emitter bigIntegerEmitter = new Emitter() {
+    @Override
+    public void emitCode(Node node) {
+      BigIntegerLiteral bigIntegerLiteral = (BigIntegerLiteral) node;
+
+      // Emit int wrappers.
+      MethodVisitor methodVisitor = methodStack.peek();
+      methodVisitor.visitTypeInsn(NEW, "java/math/BigInteger");
+      methodVisitor.visitInsn(DUP);
+      methodVisitor.visitLdcInsn(bigIntegerLiteral.value);
+      methodVisitor.visitMethodInsn(INVOKESPECIAL, "java/math/BigInteger", "<init>",
+          "(Ljava/lang/String;)V");
+    }
+  };
+
+  private final Emitter bigDecimalEmitter = new Emitter() {
+    @Override
+    public void emitCode(Node node) {
+      BigDecimalLiteral bigDecimalLiteral = (BigDecimalLiteral) node;
+
+      // Emit int wrappers.
+      MethodVisitor methodVisitor = methodStack.peek();
+      methodVisitor.visitTypeInsn(NEW, "java/math/BigDecimal");
+      methodVisitor.visitInsn(DUP);
+      methodVisitor.visitLdcInsn(bigDecimalLiteral.value);
+      methodVisitor.visitMethodInsn(INVOKESPECIAL, "java/math/BigDecimal", "<init>",
+          "(Ljava/lang/String;)V");
     }
   };
 

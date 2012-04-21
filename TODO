@@ -12,7 +12,7 @@ x Modules/packaging/import
 - Update loop shell
 x Elide line break tokens inside [] and {}
 - Parse expressions directly in body and emit to static initializer
-- Fix doubles!
+x Fix doubles!
 
 - Docs
 - About

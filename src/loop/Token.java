@@ -25,7 +25,9 @@ public class Token {
     ANONYMOUS_TOKEN,
     IDENT,
     TYPE_IDENT,
+    BIG_INTEGER,
     INTEGER,
+    LONG,
     STRING,
     JAVA_LITERAL,
     REGEX,
@@ -147,7 +149,9 @@ public class Token {
     public static Kind determine(String value) {
       char first = value.charAt(0);
 
-      if (first == '@') {
+      if (value.matches("@[0-9]+"))
+        return BIG_INTEGER;
+      else if (first == '@') {
         return value.length() > 1 ? PRIVATE_FIELD : ANONYMOUS_TOKEN;
       }
 
@@ -161,9 +165,10 @@ public class Token {
         return knownKind;
 
       // Integers (can this be more efficient?)
-      if (value.matches("[0-9]+")) {
+      if (value.matches("[0-9]+"))
         return INTEGER;
-      }
+      else if (value.matches("[0-9]+L"))
+        return LONG;
 
       if (Character.isUpperCase(first)) {
         return TYPE_IDENT;

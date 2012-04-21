@@ -1397,25 +1397,60 @@ public class Parser {
   }
 
   /**
-   * (lexer super rule) literal := string | MINUS? integer | decimal | TYPE_IDENT | JAVA_LITERAL
+   * (lexer super rule) literal := string | MINUS? (integer | long | ( integer DOT integer ))
+   *      | TYPE_IDENT | JAVA_LITERAL
    */
   private Node literal() {
     Token token =
-        anyOf(Token.Kind.STRING, Token.Kind.INTEGER, Token.Kind.TYPE_IDENT,
-            Token.Kind.JAVA_LITERAL, Token.Kind.TRUE, Token.Kind.FALSE);
+        anyOf(Token.Kind.STRING,
+            Token.Kind.INTEGER, Kind.BIG_INTEGER, Kind.LONG,
+            Token.Kind.TYPE_IDENT,
+            Token.Kind.JAVA_LITERAL,
+            Token.Kind.TRUE, Token.Kind.FALSE);
     if (null == token) {
       List<Token> match = match(Token.Kind.MINUS, Token.Kind.INTEGER);
-      if (null != match)
-        return new IntLiteral('-' + match.get(1).value);
-      else
-        return null;
+      if (null != match) {
+        List<Token> additional = match(Kind.DOT, Kind.INTEGER);
+        if (additional != null)
+          return new DoubleLiteral('-' + match.get(1).value + '.' + additional.get(1).value)
+              .sourceLocation(additional.get(1));
+
+        return new IntLiteral('-' + match.get(1).value).sourceLocation(match.get(1));
+      } else if ((match = match(Kind.MINUS, Kind.LONG)) != null)
+        return new LongLiteral('-' + match.get(1).value).sourceLocation(match.get(1));
+
+      else if ((match = match(Kind.MINUS, Kind.BIG_INTEGER)) != null) {
+        List<Token> additional = match(Kind.DOT, Kind.INTEGER);
+        if (additional != null)
+          return new BigDecimalLiteral('-' + match.get(1).value + '.' + additional.get(1).value)
+              .sourceLocation(additional.get(1));
+
+        return new BigIntegerLiteral('-' + match.get(1).value).sourceLocation(match.get(1));
+      }
+
+      return null;
     }
+
     switch (token.kind) {
       case TRUE:
       case FALSE:
         return new BooleanLiteral(token).sourceLocation(token);
       case INTEGER:
+        List<Token> additional = match(Kind.DOT, Kind.INTEGER);
+        if (additional != null)
+          return new DoubleLiteral(token.value + '.' + additional.get(1).value)
+              .sourceLocation(additional.get(1));
+
         return new IntLiteral(token.value).sourceLocation(token);
+      case BIG_INTEGER:
+        additional = match(Kind.DOT, Kind.INTEGER);
+        if (additional != null)
+          return new BigDecimalLiteral(token.value + '.' + additional.get(1).value)
+              .sourceLocation(additional.get(1));
+
+        return new BigIntegerLiteral(token.value).sourceLocation(token);
+      case LONG:
+        return new LongLiteral(token.value).sourceLocation(token);
       case STRING:
         return new StringLiteral(token.value).sourceLocation(token);
       case TYPE_IDENT:
