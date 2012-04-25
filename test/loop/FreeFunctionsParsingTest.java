@@ -18,6 +18,13 @@ public class FreeFunctionsParsingTest {
   }
 
   @Test
+  public final void simpleFunctionFollowedByInitializer() {
+    compareFunction("func", "(func: () -> (comput (. x) (+ (. 1))))", "func () ->\n  x + 1\n\nprint(1)\n");
+    compareFunction("func", "(func: () -> (comput (. x) (+ (. 1))))",
+        "func () ->\n  x + 1\n\nprint(2)");
+  }
+
+  @Test
   public final void simpleFunctionDeclarationWithRescue() {
     compareFunction("func", "(func: () except handler -> (comput (. x) (+ (. 1))))", "func () except handler ->\n  x + 1\n");
   }

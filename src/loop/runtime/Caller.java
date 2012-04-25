@@ -39,6 +39,7 @@ public class Caller {
     convertibleTypes.put(short.class, Short.class);
     convertibleTypes.put(float.class, Float.class);
     convertibleTypes.put(byte.class, Byte.class);
+    convertibleTypes.put(char.class, Character.class);
   }
 
   // Caches for high performance.

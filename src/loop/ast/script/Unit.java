@@ -6,6 +6,7 @@ import loop.Executable;
 import loop.Reducer;
 import loop.StaticError;
 import loop.ast.ClassDecl;
+import loop.ast.Node;
 import loop.runtime.Scope;
 
 import java.util.ArrayList;
@@ -38,6 +39,7 @@ public class Unit implements Scope {
   private final Map<String, FunctionDecl> functions = new LinkedHashMap<String, FunctionDecl>();
   private final Map<String, ClassDecl> classes = new HashMap<String, ClassDecl>();
   private final Stack<Context> scopes = new Stack<Context>();
+  private List<Node> initializer;
 
   public Unit(String fileName, ModuleDecl module) {
     this.fileName = fileName;
@@ -92,6 +94,14 @@ public class Unit implements Scope {
     }
     for (FunctionDecl functionDecl : functions.values()) {
       new Reducer(functionDecl).reduce();
+    }
+
+    if (initializer != null) {
+      List<Node> reduced = new ArrayList<Node>(initializer.size());
+      for (Node node : initializer) {
+        reduced.add(new Reducer(node).reduce());
+      }
+      initializer = reduced;
     }
   }
 
@@ -177,6 +187,16 @@ public class Unit implements Scope {
 
   public Set<RequireDecl> imports() {
     return imports;
+  }
+
+  public void addToInitializer(Node expression) {
+    if (initializer == null)
+      initializer = new ArrayList<Node>();
+    initializer.add(expression);
+  }
+
+  public List<Node> initializer() {
+    return initializer;
   }
 
   public List<AnnotatedError> loadDeps(String file) {

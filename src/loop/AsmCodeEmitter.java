@@ -173,6 +173,10 @@ import java.util.concurrent.atomic.AtomicInteger;
       emit(functionDecl);
     }
 
+    // Emit any static initializer here.
+    if (unit.initializer() != null)
+      emitInitializerBlock(unit.initializer());
+
     classWriter.visitEnd();
 
     if (print) {
@@ -190,6 +194,30 @@ import java.util.concurrent.atomic.AtomicInteger;
     } catch (ClassNotFoundException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  private void emitInitializerBlock(List<Node> exprs) {
+    MethodVisitor initializer = classWriter.visitMethod(ACC_PRIVATE + ACC_STATIC,
+        "<clinit>",
+        "()V",
+        null,
+        null);
+
+    methodStack.push(initializer);
+    Context context = new Context(FunctionDecl.STATIC_INITIALIZER);
+    functionStack.push(context);
+    scope.pushScope(context);
+    for (Node expr : exprs) {
+      emit(expr);
+      initializer.visitInsn(POP);
+    }
+
+    initializer.visitInsn(RETURN);
+    initializer.visitMaxs(1, 0);
+    initializer.visitEnd();
+    scope.popScope();
+    functionStack.pop();
+    methodStack.pop();
   }
 
   public Class<?> write(FunctionDecl node) {

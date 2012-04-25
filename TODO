@@ -11,7 +11,7 @@ x Modules/packaging/import
   - hierarchical modules support
 - Update loop shell
 x Elide line break tokens inside [] and {}
-- Parse expressions directly in body and emit to static initializer
+x Parse expressions directly in body and emit to static initializer
 x Fix doubles!
 
 - Docs
@@ -33,6 +33,7 @@ x Make ! and ? part of ident tokens
   - balance processes across threadpools
   - cron/timer process
 - software transactions with MVCC and failed handlers
+- parse + emit do blocks
 - one line web server (loop web.server 8080)
 - "ribbon" web framework based on Netty + process subsystem
 

@@ -108,7 +108,7 @@ public class Parser {
    * The top level parsing rule. Do not use parse() to parse entire programs, it is more for
    * one-line expressions.
    * <p/>
-   * script := module? require* (functionDecl | classDecl)*
+   * script := module? require* (functionDecl | classDecl)* (computation EOL)*
    * @param file
    */
   public Unit script(String file) {
@@ -167,6 +167,20 @@ public class Parser {
       }
 
     } while (function != null || classDecl != null);
+
+    // Now slurp up any freeform expressions into the module initializer.
+    Node expression;
+    while ((expression = computation()) != null) {
+      unit.addToInitializer(expression);
+      if (match(Kind.EOL) == null)
+        break;
+    }
+
+    chewEols();
+    if (i < tokens.size() && errors.isEmpty()) {
+      addError("Expected end of script, but additional statements found", tokens.get(i));
+      throw new LoopCompileException();
+    }
 
     return unit;
   }
@@ -260,6 +274,29 @@ public class Parser {
       if ((startTokens = match(Token.Kind.ANONYMOUS_TOKEN)) == null)
         return null;
     }
+
+    // Scan ahead to ensure this is a function decl, coz once we start parsing the arg list
+    // we can't go back.
+    boolean isFunction = false;
+    for (int k = i; k - i < 200 /* panic */ && k < tokens.size(); k++) {
+      Token token = tokens.get(k);
+      if ((token.kind == Kind.ARROW || token.kind == Kind.HASHROCKET)
+          && k < tokens.size() + 1
+          && tokens.get(k + 1).kind == Kind.LBRACE) {
+        isFunction = true;
+        break;
+      }
+      if (token.kind == Kind.LBRACE || token.kind == Kind.EOL)
+        break;
+    }
+
+    // Refuse to proceed if there does not appear to be a '->' at the end of the current line.
+    if (!isFunction) {
+      // Reset the parser in case we've already parsed an identifier.
+      i--;
+      return null;
+    }
+
     ArgDeclList arguments = argDeclList();
     String name = anonymous ? null : funcName.get(0).value;
     startTokens = funcName != null ? funcName : startTokens;

@@ -14,6 +14,8 @@ import java.util.List;
  * A declaration of a function. May be free or a member of a class.
  */
 public class FunctionDecl extends Node {
+  public static FunctionDecl STATIC_INITIALIZER = new FunctionDecl("<clinit>", null);
+
   public String moduleName;
   private String name;
   private final ArgDeclList arguments;
