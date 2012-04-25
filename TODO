@@ -32,6 +32,7 @@ x Make ! and ? part of ident tokens
   - call (synchronous sendAndWait)
   - balance processes across threadpools
   - cron/timer process
+- software transactions with MVCC and failed handlers
 - one line web server (loop web.server 8080)
 - "ribbon" web framework based on Netty + process subsystem
 
