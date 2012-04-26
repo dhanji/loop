@@ -329,17 +329,23 @@ public class Parser {
 
     Node line;
 
-    boolean shouldContinue;
-    do {
-      // Absorb indentation level.
-      withIndent();
+    // Absorb indentation level.
+    withIndent();
 
-      // Only one expression is allowed in a function.
-      line = line();
-      if (line == null) {
+    boolean hasBody = false;
+    while ((line = line()) != null) {
+      hasBody = true;
+      functionDecl.add(line);
+
+      // Multiple lines are allowed if terminated by a comma.
+      if (match(Kind.COMMA, Kind.EOL) == null)
         break;
-      }
 
+      withIndent();
+    }
+
+
+    if (hasBody) {
       chewEols();
 
       // Look for a where block attached to this function.
@@ -349,11 +355,8 @@ public class Parser {
       if (!endOfInput() && match(Token.Kind.RBRACE) == null) {
         addError("Expected end of function, additional statements found (did you mean '=>')", tokens.get(i));
         throw new LoopCompileException();
-      } else
-        shouldContinue = false;
-
-      functionDecl.add(line);
-    } while (shouldContinue);
+      }
+    }
 
     return functionDecl;
   }
@@ -869,7 +872,8 @@ public class Parser {
       return null;
     }
 
-    if (match(Token.Kind.ASSIGN) == null) {
+    List<Token> assignTokens = match(Kind.ASSIGN);
+    if (assignTokens == null) {
       return left;
     }
 
@@ -882,8 +886,8 @@ public class Parser {
     // OTHERWISE-- continue processing a normal assignment.
     Node right = computation();
     if (null == right) {
-      // TODO syntax error, dangling =
-      return null;
+      addError("Expected expression after '=' assign operator", assignTokens.get(0));
+      throw new LoopCompileException();
     }
 
     // Is this a conditional assignment?
