@@ -34,4 +34,6 @@ public interface Scope {
   FunctionDecl resolveFunction(String name, boolean scanDeps);
 
   FunctionDecl resolveNamespacedFunction(String name, String namespace);
+
+  ClassDecl resolveAliasedType(String alias, String type);
 }

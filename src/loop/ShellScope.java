@@ -34,6 +34,10 @@ class ShellScope implements Scope {
     throw new RuntimeException();
   }
 
+  @Override public ClassDecl resolveAliasedType(String alias, String type) {
+    throw new RuntimeException();
+  }
+
   @Override public void declare(RequireDecl require) {
     requires.add(require);
   }

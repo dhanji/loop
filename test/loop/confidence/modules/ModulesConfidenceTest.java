@@ -124,6 +124,30 @@ public class ModulesConfidenceTest extends LoopTest {
   }
 
   @Test(expected = LoopCompileException.class)
+  public final void requireLoopClassWithAliasFails() {
+    // Set the search path for prelude, first.
+    ModuleLoader.searchPaths = new String[] { "test/loop/confidence/modules" };
+
+    Map<String, Object> map = new HashMap<String, Object>();
+    map.put("left", 10);
+    map.put("right", 20);
+
+    assertEquals(map, Loop.run("test/loop/confidence/modules/require_class_4.loop"));
+  }
+
+  @Test(expected = LoopCompileException.class)
+  public final void requireLoopClassWithAliasFails2() {
+    // Set the search path for prelude, first.
+    ModuleLoader.searchPaths = new String[] { "test/loop/confidence/modules" };
+
+    Map<String, Object> map = new HashMap<String, Object>();
+    map.put("left", 10);
+    map.put("right", 20);
+
+    assertEquals(map, Loop.run("test/loop/confidence/modules/require_class_5.loop"));
+  }
+
+  @Test(expected = LoopCompileException.class)
   public final void requireLoopClassHidesTransitiveDeps() {
     // Set the search path for prelude, first.
     ModuleLoader.searchPaths = new String[] { "test/loop/confidence/modules" };

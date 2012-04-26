@@ -55,41 +55,7 @@ class Verifier {
 
     // Attempt to resolve the exception handler in scope.
     if (functionDecl.exceptionHandler != null) {
-      FunctionDecl exceptionHandler = resolveCall(functionDecl.exceptionHandler);
-      if (exceptionHandler == null)
-        addError("Cannot resolve exception handler: " + functionDecl.exceptionHandler,
-            functionDecl.sourceLine, functionDecl.sourceColumn);
-      else {
-        int argsSize = exceptionHandler.arguments().children().size();
-        // Verify exception handler template.
-        if (!exceptionHandler.patternMatching)
-          addError("Exception handler must be a pattern-matching function (did you mean '=>')",
-              exceptionHandler.sourceLine, exceptionHandler.sourceColumn);
-        else if (argsSize != 1) {
-          addError("Exception handler must take exactly 1 argument (this one takes "
-              + argsSize + ")", exceptionHandler.sourceLine, exceptionHandler.sourceColumn);
-        } else {
-          for (Node child : exceptionHandler.children()) {
-            PatternRule rule = (PatternRule) child;
-
-            // Should have only 1 arg pattern.
-            Node patternNode = rule.patterns.get(0);
-            if (patternNode instanceof PrivateField) {
-              if (!RestrictedKeywords.ENSURE.equals(((PrivateField) patternNode).name()))
-                addError("Illegal pattern rule in exception handler (did you mean '" +
-                    RestrictedKeywords.ENSURE + "')",
-                    patternNode.sourceLine, patternNode.sourceColumn);
-            } else if (patternNode instanceof TypeLiteral) {
-              TypeLiteral literal = (TypeLiteral) patternNode;
-              if (!resolveType(literal, Throwable.class))
-                addError("Cannot resolve exception type: " + literal.name, literal.sourceLine,
-                    literal.sourceColumn);
-            } else if (!(patternNode instanceof WildcardPattern))
-              addError("Illegal pattern rule in exception handler (only Exception types allowed)",
-                  patternNode.sourceLine, patternNode.sourceColumn);
-          }
-        }
-      }
+      verifyExceptionHandler(functionDecl);
     }
 
     // some basic function signature verification.
@@ -107,6 +73,44 @@ class Verifier {
     }
 
     functionStack.pop();
+  }
+
+  private void verifyExceptionHandler(FunctionDecl functionDecl) {
+    FunctionDecl exceptionHandler = resolveCall(functionDecl.exceptionHandler);
+    if (exceptionHandler == null)
+      addError("Cannot resolve exception handler: " + functionDecl.exceptionHandler,
+          functionDecl.sourceLine, functionDecl.sourceColumn);
+    else {
+      int argsSize = exceptionHandler.arguments().children().size();
+      // Verify exception handler template.
+      if (!exceptionHandler.patternMatching)
+        addError("Exception handler must be a pattern-matching function (did you mean '=>')",
+            exceptionHandler.sourceLine, exceptionHandler.sourceColumn);
+      else if (argsSize != 1) {
+        addError("Exception handler must take exactly 1 argument (this one takes "
+            + argsSize + ")", exceptionHandler.sourceLine, exceptionHandler.sourceColumn);
+      } else {
+        for (Node child : exceptionHandler.children()) {
+          PatternRule rule = (PatternRule) child;
+
+          // Should have only 1 arg pattern.
+          Node patternNode = rule.patterns.get(0);
+          if (patternNode instanceof PrivateField) {
+            if (!RestrictedKeywords.ENSURE.equals(((PrivateField) patternNode).name()))
+              addError("Illegal pattern rule in exception handler (did you mean '" +
+                  RestrictedKeywords.ENSURE + "')",
+                  patternNode.sourceLine, patternNode.sourceColumn);
+          } else if (patternNode instanceof TypeLiteral) {
+            TypeLiteral literal = (TypeLiteral) patternNode;
+            if (!resolveType(literal, Throwable.class))
+              addError("Cannot resolve exception type: " + literal.name, literal.sourceLine,
+                  literal.sourceColumn);
+          } else if (!(patternNode instanceof WildcardPattern))
+            addError("Illegal pattern rule in exception handler (only Exception types allowed)",
+                patternNode.sourceLine, patternNode.sourceColumn);
+        }
+      }
+    }
   }
 
   private void verifyNodes(List<Node> nodes) {
@@ -204,14 +208,24 @@ class Verifier {
 
   private boolean resolveType(ConstructorCall call) {
     ClassDecl classDecl = unit.resolve(call.name, true);
-    if (classDecl != null) {
+    if (classDecl != null)
       return true;
-    }
 
     String javaType;
-    if (call.modulePart != null)
+    if (call.modulePart != null) {
+      String[] pieces = call.modulePart.split("[.]");
+
+      // This could be an alias if there is only one namespace part to it.
+      if (pieces.length == 1) {
+        String alias = pieces[0];
+        classDecl = unit.resolveAliasedType(alias, call.name);
+
+        if (classDecl != null)
+          return true;
+      }
+
       javaType = call.modulePart + call.name;   // if it's an FQN
-    else
+    } else
       javaType = unit.resolveJavaType(call.name);  // resolve via require clause
 
     if (javaType == null)

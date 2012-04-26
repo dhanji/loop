@@ -1,0 +1,7 @@
+require prelude as hidden
+require prelude1 as pre1
+
+#should fail to resolve Pair
+
+main ->
+  new Pair(left: 10, right: 20)
