@@ -270,6 +270,9 @@ class Verifier {
       }
     }
 
+    // Attempt to resolve in previous lines, if any are assignments.
+
+
     // Attempt to resolve in args.
     for (Node node : thisFunction.function.arguments().children()) {
       ArgDeclList.Argument argument = (ArgDeclList.Argument) node;

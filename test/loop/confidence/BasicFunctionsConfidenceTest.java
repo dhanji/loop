@@ -114,6 +114,11 @@ public class BasicFunctionsConfidenceTest extends LoopTest {
   }
 
   @Test
+  public final void multilineFunctions() {
+    assertEquals(true, Loop.run("test/loop/confidence/multiline.loop"));
+  }
+
+  @Test
   public final void bangAndQnInIdentifiers() {
     assertEquals(true, Loop.run("test/loop/confidence/identifiers.loop"));
   }
