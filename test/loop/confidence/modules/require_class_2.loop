@@ -1,0 +1,7 @@
+require prelude as hidden
+require prelude_proxy
+
+#should fail to resolve Pair
+
+main ->
+  new Pair(left: 1, right: 2)

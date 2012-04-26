@@ -111,9 +111,9 @@ public class Unit implements Scope {
 
   @Override public ClassDecl resolve(String fullyQualifiedName, boolean scanDeps) {
     ClassDecl classDecl = classes.get(fullyQualifiedName);
-    if (classDecl == null) {
+    if (classDecl == null && scanDeps) {
 
-      // Resolve one-level off, in deps.
+      // Resolve one-level off, in deps, but no farther.
       for (Executable dep : deps) {
         classDecl = dep.getScope().resolve(fullyQualifiedName, false);
 

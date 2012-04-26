@@ -7,7 +7,7 @@ x Modules/packaging/import
   x conflicting module imports
   x require as (stuff)
   x always require prelude
-  - resolve types too
+  x resolve types too
   - hierarchical modules support
 - Update loop shell
 x Elide line break tokens inside [] and {}
