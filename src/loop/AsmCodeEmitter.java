@@ -507,7 +507,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
       // Resolve a loop type internally. Note that this makes dynamic linking
       // of Loop types impossible, but we CAN link Java binaries dynamically.
-      ClassDecl classDecl = scope.resolve(call.name);
+      ClassDecl classDecl = scope.resolve(call.name, true);
       if (classDecl != null) {
 
         // Instatiate the loop object first. With the correct type
@@ -1541,7 +1541,7 @@ import java.util.concurrent.atomic.AtomicInteger;
                                    int argIndex,
                                    TypeLiteral pattern) {
     String typeName;
-    ClassDecl resolved = scope.resolve(pattern.name);
+    ClassDecl resolved = scope.resolve(pattern.name, true);
     if (resolved != null) {
       typeName = resolved.name;
     } else {
@@ -1611,7 +1611,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
         TypeLiteral typeLiteral = (TypeLiteral) child;
         String typeName;
-        ClassDecl resolved = scope.resolve(typeLiteral.name);
+        ClassDecl resolved = scope.resolve(typeLiteral.name, true);
         if (resolved != null) {
           typeName = resolved.name;
         } else {

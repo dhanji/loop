@@ -127,7 +127,7 @@ public class Parser {
       chewEols();
 
       if (null != require) {
-        if (unit.imports().contains(require)) {
+        if (unit.imports().contains(require) && require.alias == null) {
           addError("Duplicate module import: " + require.toSymbol(),
               require.sourceLine, require.sourceColumn);
           throw new LoopCompileException();

@@ -29,3 +29,7 @@ tail(ls) ->
 reverse(ls) =>
   []      : []
   [x:xs]  : reverse(xs) + [x]
+
+class Pair ->
+  left
+  right

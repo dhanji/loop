@@ -8,7 +8,9 @@ import loop.ast.script.ModuleLoader;
 import org.junit.Test;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -95,6 +97,18 @@ public class ModulesConfidenceTest extends LoopTest {
   @Test
   public final void requireJavaClass() {
     assertEquals(new Date(10), Loop.run("test/loop/confidence/modules/require_java.loop"));
+  }
+
+  @Test
+  public final void requireLoopClass() {
+    // Set the search path for prelude, first.
+    ModuleLoader.searchPaths = new String[] { "test/loop/confidence/modules" };
+
+    Map<String, Object> map = new HashMap<String, Object>();
+    map.put("left", 1);
+    map.put("right", 2);
+
+    assertEquals(map, Loop.run("test/loop/confidence/modules/require_class.loop"));
   }
 
   @Test(expected = LoopCompileException.class)

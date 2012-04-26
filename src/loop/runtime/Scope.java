@@ -11,7 +11,7 @@ import java.util.Set;
  * @author dhanji@gmail.com (Dhanji R. Prasanna)
  */
 public interface Scope {
-  ClassDecl resolve(String fullyQualifiedName);
+  ClassDecl resolve(String fullyQualifiedName, boolean scanDeps);
 
   FunctionDecl resolveFunctionOnStack(String fullyQualifiedName);
 

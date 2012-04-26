@@ -186,7 +186,7 @@ class Verifier {
 
   private boolean resolveType(TypeLiteral literal, Class<?> superType) {
     // First resolve as Loop type. Then Java type.
-    ClassDecl classDecl = unit.resolve(literal.name);
+    ClassDecl classDecl = unit.resolve(literal.name, true);
     if (classDecl != null)
       return true;
 
@@ -194,7 +194,7 @@ class Verifier {
     if (javaType == null)
       return false;
 
-    // Verify that it exists and that it is a throwable type.
+    // Verify that it exists and that it is a compatible type.
     try {
       return superType.isAssignableFrom(Class.forName(javaType));
     } catch (ClassNotFoundException e) {
@@ -203,7 +203,7 @@ class Verifier {
   }
 
   private boolean resolveType(ConstructorCall call) {
-    ClassDecl classDecl = unit.resolve(call.name);
+    ClassDecl classDecl = unit.resolve(call.name, true);
     if (classDecl != null) {
       return true;
     }

@@ -284,7 +284,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
       // Resolve a loop type internally. Note that this makes dynamic linking
       // of Loop types impossible, but we CAN link Java binaries dynamically.
-      ClassDecl classDecl = scope.resolve(call.name);
+      ClassDecl classDecl = scope.resolve(call.name, true);
       if (classDecl != null) {
         append("loop.lang.LoopClass.newInstance('").append(classDecl.name);
 

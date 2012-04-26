@@ -69,7 +69,7 @@ class ShellScope implements Scope {
     return null;
   }
 
-  @Override public ClassDecl resolve(String fullyQualifiedName) {
+  @Override public ClassDecl resolve(String fullyQualifiedName, boolean b) {
     return classes.get(fullyQualifiedName);
   }
 
