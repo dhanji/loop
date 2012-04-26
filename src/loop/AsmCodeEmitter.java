@@ -291,17 +291,6 @@ import java.util.concurrent.atomic.AtomicInteger;
     EMITTERS.get(node.getClass()).emitCode(node);
   }
 
-  public void emitTo(Node node, StringBuilder alt) {
-    StringBuilder tmp = out;
-    out = alt;
-    emit(node);
-    out = tmp;
-  }
-
-  public TreeMap<SourceLocation, Node> getEmittedNodeMap() {
-    return emittedNodeMap;
-  }
-
   // -------------------------------------------------------------------
   // EMITTERS ----------------------------------------------------------
   // -------------------------------------------------------------------
@@ -505,9 +494,17 @@ import java.util.concurrent.atomic.AtomicInteger;
       MethodVisitor methodVisitor = methodStack.peek();
       Context context = functionStack.peek();
 
+      // Try to resolve as an aliased dep first.
+      ClassDecl classDecl = null;
+      if (call.modulePart != null && call.modulePart.split("[.]").length == 1)
+        classDecl = scope.resolveAliasedType(
+            call.modulePart.substring(0, call.modulePart.length() - 1),
+            call.name);
+
       // Resolve a loop type internally. Note that this makes dynamic linking
       // of Loop types impossible, but we CAN link Java binaries dynamically.
-      ClassDecl classDecl = scope.resolve(call.name, true);
+      if (classDecl == null)
+        classDecl = scope.resolve(call.name, true);
       if (classDecl != null) {
 
         // Instatiate the loop object first. With the correct type

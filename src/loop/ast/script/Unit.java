@@ -124,6 +124,14 @@ public class Unit implements Scope {
     return classDecl;
   }
 
+  @Override public ClassDecl resolveAliasedType(String alias, String type) {
+    Executable dep = aliasedDeps.get(alias);
+    if (dep == null)
+      return null;
+
+    return dep.getScope().resolve(type, false);
+  }
+
   @Override
   public FunctionDecl resolveFunctionOnStack(String fullyQualifiedName) {
     // First resolve in local scope if possible.
@@ -241,8 +249,8 @@ public class Unit implements Scope {
                 // remove aliased module after it is loaded.
                 aliasedDeps.put(requireDecl.alias, executable);
                 imports.remove(requireDecl);
-              }
-              deps.add(executable);
+              } else
+                deps.add(executable);
             }
           }
         }
