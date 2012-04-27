@@ -7,7 +7,6 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.StringReader;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Map;
 import java.util.regex.Pattern;
 
 /**
@@ -52,18 +51,6 @@ public class Loop {
     return safeEval(unit);
   }
 
-  public static Object eval(String expression, Unit shellScope) {
-    Executable executable = new Executable(new StringReader(expression + '\n'));
-    try {
-      executable.compileExpression(shellScope);
-    } catch (Exception e) {
-      e.printStackTrace();
-      return new LoopError("malformed expression '" + expression + "'");
-    }
-
-    return safeEval(executable);
-  }
-
   public static Object evalClassOrFunction(String function,
                                            Unit shellScope) {
     Executable executable = new Executable(new StringReader(function));
@@ -77,7 +64,7 @@ public class Loop {
     return "ok";
   }
 
-  private static Object safeEval(Executable executable) {
+  static Object safeEval(Executable executable) {
     try {
       if (executable.runMain())
         return executable.getCompiled().getDeclaredMethod("main").invoke(null);

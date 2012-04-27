@@ -5,17 +5,18 @@ import jline.console.completer.Completer;
 import jline.console.completer.FileNameCompleter;
 import loop.ast.Assignment;
 import loop.ast.Node;
+import loop.ast.script.FunctionDecl;
 import loop.ast.script.ModuleDecl;
+import loop.ast.script.ModuleLoader;
+import loop.ast.script.RequireDecl;
 import loop.ast.script.Unit;
 import loop.lang.LoopObject;
 import sun.org.mozilla.javascript.internal.Function;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.io.StringReader;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author dhanji@gmail.com (Dhanji R. Prasanna)
@@ -30,11 +31,13 @@ public class LoopShell {
       reader.addCompleter(new MetaCommandCompleter());
 
       Unit shellScope = new Unit(null, ModuleDecl.DEFAULT);
+      FunctionDecl main = new FunctionDecl("main", null);
+      shellScope.declare(main);
+
       boolean inFunction = false;
 
       // Used to build up multiline statement blocks (like functions)
       StringBuilder block = null;
-      List<Node> assigments = new ArrayList<Node>();    // Holds any assignments so far.
       //noinspection InfiniteLoopStatement
       do {
         String prompt = inFunction ? "|    " : ">> ";
@@ -78,12 +81,39 @@ public class LoopShell {
           shellScope = new Unit(null, ModuleDecl.DEFAULT);
           continue;
         }
+        if (line.startsWith(":i") || line.startsWith(":imports")) {
+          for (RequireDecl requireDecl : shellScope.imports()) {
+            System.out.println(requireDecl.toSymbol());
+          }
+          System.out.println();
+          continue;
+        }
+        if (line.startsWith(":f") || line.startsWith(":functions")) {
+          for (FunctionDecl functionDecl : shellScope.functions()) {
+            StringBuilder args = new StringBuilder();
+            List<Node> children = functionDecl.arguments().children();
+            for (int i = 0, childrenSize = children.size(); i < childrenSize; i++) {
+              Node arg = children.get(i);
+              args.append(arg.toSymbol());
+
+              if (i < childrenSize - 1)
+                args.append(", ");
+            }
+
+            System.out.println(functionDecl.name()
+                + ": (" + args.toString() + ")"
+                + (functionDecl.patternMatching ? " #pattern-matching" : "")
+            );
+          }
+          System.out.println();
+          continue;
+        }
         if (line.startsWith(":t") || line.startsWith(":type")) {
           String[] split = line.split("[ ]+", 2);
           if (split.length <= 1)
             System.out.println("Give me an expression to determine the type for.");
 
-          Object result = Loop.eval(split[1], shellScope);
+          Object result = evalInFunction(split[1], main, shellScope, false);
           if (result instanceof LoopError)
             System.out.println(result.toString());
           else if (result instanceof LoopObject)
@@ -98,7 +128,7 @@ public class LoopShell {
           if (split.length <= 1)
             System.out.println("Give me an expression to determine the type for.");
 
-          Object result = Loop.eval(split[1], shellScope);
+          Object result = evalInFunction(split[1], main, shellScope, false);
           if (result instanceof LoopError)
             System.out.println(result.toString());
           else
@@ -114,18 +144,64 @@ public class LoopShell {
         }
 
         // First determine what kind of expression this is.
-        Node parsedLine = new Parser(new Tokenizer(rawLine).tokenize()).line();
-
-        // Save for context, later.
-        if (parsedLine instanceof Assignment)
-          assigments.add(parsedLine);
+        main.children().clear();
 
         // OK execute expression.
-        printResult(Loop.eval(rawLine, shellScope));
+        printResult(evalInFunction(rawLine, main, shellScope, true));
+
       } while (true);
     } catch (IOException e) {
       System.err.println("Something went wrong =(");
       System.exit(1);
+    }
+  }
+
+  private static Object evalInFunction(String rawLine,
+                                       FunctionDecl func,
+                                       Unit shellScope,
+                                       boolean addToWhereBlock) {
+    rawLine = rawLine + '\n';
+    Executable executable = new Executable(new StringReader(rawLine));
+    Node parsedLine;
+    try {
+      Parser parser = new Parser(new Tokenizer(rawLine).tokenize());
+      parsedLine = parser.line();
+      if (!parser.getErrors().isEmpty()) {
+        executable.printErrors(parser.getErrors());
+        return "";
+      }
+
+      new Reducer(parsedLine).reduce();
+
+      // If this is an assignment, just check the rhs portion of it.
+      // This is a bit hacky but prevents verification from balking about new
+      // vars declared in the lhs.
+      if (parsedLine instanceof Assignment) {
+        Assignment assignment = (Assignment) parsedLine;
+        func.children().add(assignment.rhs());
+      } else
+        func.children().add(parsedLine);
+
+      executable.runMain(true);
+      executable.compileExpression(shellScope);
+
+      if (executable.hasErrors()) {
+        executable.printStaticErrorsIfNecessary();
+
+        return "";
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+      return new LoopError("malformed expression '" + rawLine + "'");
+    }
+
+    try {
+      return Loop.safeEval(executable);
+    } finally {
+      if (addToWhereBlock && parsedLine instanceof Assignment)
+        func.whereBlock.add(parsedLine);
+
+      ModuleLoader.reset();     // Cleans up the loaded classes.
     }
   }
 

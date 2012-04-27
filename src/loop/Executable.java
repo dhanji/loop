@@ -244,12 +244,6 @@ public class Executable {
 
   public void compileExpression(Unit scope) {
     this.scope = scope;
-    Parser parser = new Parser(new Tokenizer(source).tokenize());
-    Node line = parser.line();
-    if (hasErrors())
-      return;
-
-    this.node = new Reducer(line).reduce();
 
     if (!verify(scope))
       return;
