@@ -69,6 +69,7 @@ public class LoopShell {
         // Add a require import.
         if (line.startsWith("require ")) {
           shellScope.declare(new Parser(new Tokenizer(line + '\n').tokenize()).require());
+          shellScope.loadDeps("<shell>");
           continue;
         }
 
@@ -198,6 +199,7 @@ public class LoopShell {
       } else
         func.children().add(parsedLine);
 
+      shellScope.loadDeps("<shell>");
       executable.runMain(true);
       executable.compileExpression(shellScope);
 
@@ -224,9 +226,9 @@ public class LoopShell {
   private static void printResult(Object result) {
     if (result instanceof Closure) {
       Closure fun = (Closure) result;
-      System.out.println("#function:" + fun.name);
+      System.out.println("#function: " + fun.name);
     } else
-      System.out.println(result == null ? "Nothing" : result);
+      System.out.println(result == null ? "#nothing" : result);
   }
 
   private static boolean isLoadCommand(String line) {
@@ -244,7 +246,10 @@ public class LoopShell {
         ":quit",
         ":reset",
         ":type",
-        ":inspect"
+        ":inspect",
+        ":imports",
+        ":javatype",
+        ":functions"
     );
 
     private final FileNameCompleter fileNameCompleter = new FileNameCompleter();

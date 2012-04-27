@@ -7,15 +7,11 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.StringReader;
 import java.lang.reflect.InvocationTargetException;
-import java.util.regex.Pattern;
 
 /**
  * Converts parsed, type-solved, emitted code to Java classes.
  */
 public class Loop {
-  // Global config options for the runtime.
-  private static final Pattern UNKNOWN_MVEL_PATTERN =
-      Pattern.compile("\\[Error: unresolvable property or identifier: \\??(.*)\\]");
 
   public static void main(String[] args) {
     if (args.length == 0) {
