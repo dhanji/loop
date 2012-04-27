@@ -9,7 +9,7 @@ x Modules/packaging/import
   x always require prelude
   x resolve types too
   - hierarchical modules support
-- Update loop shell
+x Update loop shell
 x Elide line break tokens inside [] and {}
 x Parse expressions directly in body and emit to static initializer
 x Fix doubles!
