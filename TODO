@@ -3,17 +3,6 @@ TODO
 
 ASM
 
-x Modules/packaging/import
-  x conflicting module imports
-  x require as (stuff)
-  x always require prelude
-  x resolve types too
-  - hierarchical modules support
-x Update loop shell
-x Elide line break tokens inside [] and {}
-x Parse expressions directly in body and emit to static initializer
-x Fix doubles!
-
 - Docs
 - About
 - FAQ
@@ -24,19 +13,16 @@ x Fix doubles!
 Stretch
 -------
 
-x line numbers (for exceptions)
-x Make ! and ? part of ident tokens
-- enumeration type
 - process subsystem
   - send message to 'process'
   - call (synchronous sendAndWait)
   - balance processes across threadpools
   - cron/timer process
 - software transactional cells with MVCC and failed handlers
-x parse + emit do blocks
 - one line web server (loop web.server 8080)
-- "ribbon" web framework based on Netty + process subsystem
+- enumeration type
 - Get rid of commons-io dep
+- hierarchical modules support
 
 
 Algorithms
