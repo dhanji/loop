@@ -8,6 +8,7 @@ import loop.ast.script.Unit;
 import loop.runtime.Scope;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.Reader;
@@ -109,9 +110,11 @@ public class Executable {
     return null == (this.staticErrors = new Verifier(unit).verify());
   }
 
-  public void printStaticErrorsIfNecessary() {
+  public String printStaticErrorsIfNecessary() {
     if (staticErrors != null)
-      printErrors(getStaticErrors());
+      return printErrors(getStaticErrors());
+
+    return "";
   }
 
   public void printErrorsTo(PrintStream out, List<AnnotatedError> errors) {
@@ -178,8 +181,13 @@ public class Executable {
     }
   }
 
-  public void printErrors(List<AnnotatedError> errors) {
-    printErrorsTo(System.out, errors);
+  public String printErrors(List<AnnotatedError> errors) {
+    ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+    printErrorsTo(new PrintStream(buffer), errors);
+    String errorText = buffer.toString();
+
+    System.out.print(errorText);
+    return errorText;
   }
 
   public String file() {
@@ -192,6 +200,21 @@ public class Executable {
 
   public boolean hasErrors() {
     return staticErrors != null;
+  }
+
+  private void requireJavaImports(Set<RequireDecl> imports) {
+    for (RequireDecl requireDecl : imports) {
+      if (requireDecl.javaLiteral != null)
+        try {
+          Class.forName(requireDecl.javaLiteral);
+        } catch (ClassNotFoundException e) {
+          if (staticErrors == null)
+            staticErrors = new ArrayList<AnnotatedError>();
+
+          staticErrors.add(new StaticError("Unable to find Java type for import: "
+              + requireDecl.javaLiteral, requireDecl.sourceLine, requireDecl.sourceColumn));
+        }
+    }
   }
 
   public void compile() {
@@ -212,7 +235,6 @@ public class Executable {
 
     AsmCodeEmitter codeEmitter = new AsmCodeEmitter(unit);
     this.scope = unit;
-//    this.emittedNodes = codeEmitter.getEmittedNodeMap();
     this.compiled = codeEmitter.write(unit, false);
 
     requireJavaImports(unit.imports());
@@ -220,22 +242,7 @@ public class Executable {
     this.source = null;
   }
 
-  private void requireJavaImports(Set<RequireDecl> imports) {
-    for (RequireDecl requireDecl : imports) {
-      if (requireDecl.javaLiteral != null)
-        try {
-          Class.forName(requireDecl.javaLiteral);
-        } catch (ClassNotFoundException e) {
-          if (staticErrors == null)
-            staticErrors = new ArrayList<AnnotatedError>();
-
-          staticErrors.add(new StaticError("Unable to find Java type for import: "
-              + requireDecl.javaLiteral, requireDecl.sourceLine, requireDecl.sourceColumn));
-        }
-    }
-  }
-
-  public void compileExpression(Scope scope) {
+  public void compileExpression(Unit scope) {
     this.scope = scope;
     Parser parser = new Parser(new Tokenizer(source).tokenize());
     Node line = parser.line();
@@ -244,15 +251,17 @@ public class Executable {
 
     this.node = new Reducer(line).reduce();
 
+    if (!verify(scope))
+      return;
+
     AsmCodeEmitter codeEmitter = new AsmCodeEmitter(scope);
-//    this.emittedNodes = codeEmitter.getEmittedNodeMap();
-    this.compiled = codeEmitter.write(node);
+    this.compiled = codeEmitter.write(scope, false);
     this.source = null;
 
     requireJavaImports(scope.requires());
   }
 
-  public void compileClassOrFunction(Scope scope) {
+  public void compileClassOrFunction(Unit scope) {
     this.scope = scope;
     Parser parser = new Parser(new Tokenizer(source).tokenize());
     FunctionDecl functionDecl = parser.functionDecl();
@@ -267,11 +276,13 @@ public class Executable {
       return;
 
     this.node = new Reducer(node).reduce();
-    AsmCodeEmitter codeEmitter = new AsmCodeEmitter(scope);
-//    this.emittedNodes = codeEmitter.getEmittedNodeMap();
-    this.compiled = codeEmitter.write(node);
-    this.source = null;
 
+    if (!verify(scope))
+      return;
+
+    // We don't need to actually compile this code, yet.
+
+    this.source = null;
     requireJavaImports(scope.requires());
 
     if (functionDecl != null)

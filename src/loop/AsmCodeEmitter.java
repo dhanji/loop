@@ -75,13 +75,8 @@ import java.util.concurrent.atomic.AtomicInteger;
   private static final String IS_READER_PREFIX = "__$isRdr_";
   private static final String WHERE_SCOPE_FN_PREFIX = "$wh$";
 
-  private StringBuilder out = new StringBuilder();
   private final Stack<Context> functionStack = new Stack<Context>();
 
-  // Java line and column to map back to our Loop AST.
-  private int line;
-  private int column;
-  private final TreeMap<SourceLocation, Node> emittedNodeMap = new TreeMap<SourceLocation, Node>();
   private final Scope scope;
 
   public static class SourceLocation implements Comparable<SourceLocation> {
@@ -218,55 +213,6 @@ import java.util.concurrent.atomic.AtomicInteger;
     scope.popScope();
     functionStack.pop();
     methodStack.pop();
-  }
-
-  public Class<?> write(FunctionDecl node) {
-    Unit unit = new Unit(null, ModuleDecl.DEFAULT);
-    unit.declare(node);
-    unit.reduceAll();
-
-    return write(unit);
-  }
-
-
-  public Class<?> write(Node node) {
-    // We don't really emit classes.
-    if (node instanceof ClassDecl)
-      return null;
-    else if (node instanceof FunctionDecl)
-      return write((FunctionDecl)node);
-
-    throw new UnsupportedOperationException("Can't compile nodes of type " + node);
-  }
-
-  private AsmCodeEmitter append(String str) {
-    if (null == str)
-      return this;
-    out.append(str);
-    if (str.contains("\n")) {
-      line++;
-      column = 0;
-    } else
-      column += str.length();
-
-    return this;
-  }
-
-  private AsmCodeEmitter append(char c) {
-    out.append(c);
-    if (c == '\n') {
-      line++;
-      column = 0;
-    } else
-      column++;
-
-    return this;
-  }
-
-  private AsmCodeEmitter append(int n) {
-    out.append(n);
-    column++;
-    return this;
   }
 
   private void trackLineAndColumn(Node node) {
@@ -858,7 +804,7 @@ import java.util.concurrent.atomic.AtomicInteger;
     public void emitCode(Node node) {
       TypeLiteral type = (TypeLiteral) node;
       trackLineAndColumn(type);
-      append(type.name);
+      throw new UnsupportedOperationException();
     }
   };
 
@@ -918,7 +864,7 @@ import java.util.concurrent.atomic.AtomicInteger;
     @Override
     public void emitCode(Node node) {
       RegexLiteral regex = (RegexLiteral) node;
-      append('"').append(regex.value).append('"');
+      throw new UnsupportedOperationException();
     }
   };
 

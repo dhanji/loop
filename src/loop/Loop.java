@@ -1,5 +1,7 @@
 package loop;
 
+import loop.ast.script.Unit;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -50,7 +52,7 @@ public class Loop {
     return safeEval(unit);
   }
 
-  public static Object eval(String expression, ShellScope shellScope) {
+  public static Object eval(String expression, Unit shellScope) {
     Executable executable = new Executable(new StringReader(expression + '\n'));
     try {
       executable.compileExpression(shellScope);
@@ -63,8 +65,7 @@ public class Loop {
   }
 
   public static Object evalClassOrFunction(String function,
-                                           ShellScope shellScope,
-                                           Map<String, Object> context) {
+                                           Unit shellScope) {
     Executable executable = new Executable(new StringReader(function));
     try {
       executable.compileClassOrFunction(shellScope);
@@ -73,7 +74,7 @@ public class Loop {
       return new LoopError("malformed function");
     }
 
-    return safeEval(executable);
+    return "ok";
   }
 
   private static Object safeEval(Executable executable) {
@@ -115,9 +116,9 @@ public class Loop {
       executable = new Executable(new FileReader(script), script.getName());
       executable.compile();
       if (executable.hasErrors()) {
-        executable.printStaticErrorsIfNecessary();
+        String errors = executable.printStaticErrorsIfNecessary();
 
-        throw new LoopCompileException("Syntax errors exist", executable);
+        throw new LoopCompileException("Syntax errors exist:\n" + errors, executable);
       }
     } catch (FileNotFoundException e) {
       throw new RuntimeException(e);

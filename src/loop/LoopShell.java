@@ -3,10 +3,15 @@ package loop;
 import jline.console.ConsoleReader;
 import jline.console.completer.Completer;
 import jline.console.completer.FileNameCompleter;
+import loop.ast.Assignment;
+import loop.ast.Node;
+import loop.ast.script.ModuleDecl;
+import loop.ast.script.Unit;
 import loop.lang.LoopObject;
 import sun.org.mozilla.javascript.internal.Function;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -17,31 +22,30 @@ import java.util.Map;
  */
 public class LoopShell {
   public static void shell() {
-    System.out.println("loOp (http://loop-lang.org)");
+    System.out.println("loOp (http://looplang.org)");
     System.out.println("     by Dhanji R. Prasanna\n");
 
     try {
       ConsoleReader reader = new ConsoleReader();
       reader.addCompleter(new MetaCommandCompleter());
 
-      Map<String, Object> context = new HashMap<String, Object>();
-      ShellScope shellScope = new ShellScope();
+      Unit shellScope = new Unit(null, ModuleDecl.DEFAULT);
       boolean inFunction = false;
 
       // Used to build up multiline statement blocks (like functions)
       StringBuilder block = null;
+      List<Node> assigments = new ArrayList<Node>();    // Holds any assignments so far.
       //noinspection InfiniteLoopStatement
       do {
         String prompt = inFunction ? "|    " : ">> ";
-
         String rawLine = reader.readLine(prompt);
 
         if (inFunction) {
           if (rawLine == null || rawLine.trim().isEmpty()) {
             inFunction = false;
 
-            // Eval the function into our context.
-            printResult(Loop.evalClassOrFunction(block.toString(), shellScope, context));
+            // Eval the function to verify it.
+            printResult(Loop.evalClassOrFunction(block.toString(), shellScope));
             block = null;
             continue;
           }
@@ -54,6 +58,7 @@ public class LoopShell {
           quit();
         }
 
+        //noinspection ConstantConditions
         String line = rawLine.trim();
         if (line.isEmpty())
           continue;
@@ -68,25 +73,9 @@ public class LoopShell {
           quit();
         }
 
-        if (isLoadCommand(line)) {
-          // Load the given file into context.
-          String[] split = line.split("[ ]+");
-          if (split.length <= 1) {
-            System.out.println("What should I load? (I like loading files that end in '.loop' =)");
-            continue;
-          }
-
-          for (int i = 1, splitLength = split.length; i < splitLength; i++) {
-            String script = split[i];
-            Loop.run(script, false, false);
-          }
-
-          System.out.println("Loaded.");
-          continue;
-        }
         if (line.startsWith(":r") || line.startsWith(":reset")) {
-          context = new HashMap<String, Object>();
           System.out.println("Context reset.");
+          shellScope = new Unit(null, ModuleDecl.DEFAULT);
           continue;
         }
         if (line.startsWith(":t") || line.startsWith(":type")) {
@@ -123,6 +112,13 @@ public class LoopShell {
           block = new StringBuilder(line).append('\n');
           continue;
         }
+
+        // First determine what kind of expression this is.
+        Node parsedLine = new Parser(new Tokenizer(rawLine).tokenize()).line();
+
+        // Save for context, later.
+        if (parsedLine instanceof Assignment)
+          assigments.add(parsedLine);
 
         // OK execute expression.
         printResult(Loop.eval(rawLine, shellScope));
