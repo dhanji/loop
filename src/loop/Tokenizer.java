@@ -1,10 +1,11 @@
 package loop;
 
-import org.apache.commons.io.IOUtils;
-
 import java.io.IOException;
 import java.io.StringReader;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Stack;
 
 /**
  * @author Dhanji R. Prasanna
@@ -17,7 +18,7 @@ public class Tokenizer {
       // Clean input of leading whitespace on empty lines.
       StringBuilder cleaned = new StringBuilder();
       @SuppressWarnings("unchecked")
-      List<String> lines = IOUtils.readLines(new StringReader(input));
+      List<String> lines = Util.toLines(new StringReader(input));
       for (int i = 0, linesSize = lines.size(); i < linesSize; i++) {
         String line = lines.get(i);
         if (!line.trim().isEmpty())

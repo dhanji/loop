@@ -2,10 +2,9 @@ package loop.ast.script;
 
 import loop.Executable;
 import loop.LoopClassLoader;
+import loop.Util;
 import loop.lang.LoopClass;
 import loop.runtime.Caller;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -16,6 +15,7 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -81,7 +81,7 @@ public class ModuleLoader {
           return null;
 
         try {
-          cached = IOUtils.toString(resourceStream).intern();
+          cached = Util.toString(resourceStream).intern();
         } catch (IOException e) {
           return null;
         }
@@ -138,7 +138,15 @@ public class ModuleLoader {
 
       if (file.isDirectory()) {
         // List all loop files and load them.
-        toLoad.addAll(FileUtils.listFiles(file, LOOP_FILES, false));
+        Collection<File> files = Util.listFiles(file, LOOP_FILES);
+        for (File dep : files) {
+          try {
+            toLoad.add(new FileReader(dep));
+          } catch (FileNotFoundException e) {
+            // Weird, should not happen!
+            e.printStackTrace();
+          }
+        }
 
         if (toLoad.isEmpty())
           return null;

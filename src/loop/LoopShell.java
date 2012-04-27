@@ -177,7 +177,7 @@ public class LoopShell {
                                        FunctionDecl func,
                                        Unit shellScope,
                                        boolean addToWhereBlock) {
-    rawLine = rawLine + '\n';
+    rawLine = rawLine.trim() + '\n';
     Executable executable = new Executable(new StringReader(rawLine));
     Node parsedLine;
     try {

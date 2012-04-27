@@ -21,7 +21,7 @@ Stretch
 - software transactional cells with MVCC and failed handlers
 - one line web server (loop web.server 8080)
 - enumeration type
-- Get rid of commons-io dep
+x Get rid of commons-io dep
 - hierarchical modules support
 
 
