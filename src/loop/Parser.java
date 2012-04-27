@@ -783,7 +783,6 @@ public class Parser {
       aliasedModules.add(aliasTokens.get(0).value);
     }
 
-
     if (match(Token.Kind.EOL) == null) {
       addError("Expected newline after require declaration", tokens.get(i - 1));
       throw new LoopCompileException();

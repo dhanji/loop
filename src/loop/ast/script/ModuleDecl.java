@@ -9,6 +9,7 @@ import java.util.List;
  * Import declaration at the top of a script.
  */
 public class ModuleDecl extends Node {
+  public static final ModuleDecl SHELL = new ModuleDecl(Arrays.asList("_shell"));
   public static final ModuleDecl DEFAULT = new ModuleDecl(Arrays.asList("_default"));
 
   public final List<String> moduleChain;

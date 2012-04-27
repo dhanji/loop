@@ -11,7 +11,7 @@ import loop.ast.script.ModuleLoader;
 import loop.ast.script.RequireDecl;
 import loop.ast.script.Unit;
 import loop.lang.LoopObject;
-import sun.org.mozilla.javascript.internal.Function;
+import loop.runtime.Closure;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -30,7 +30,7 @@ public class LoopShell {
       ConsoleReader reader = new ConsoleReader();
       reader.addCompleter(new MetaCommandCompleter());
 
-      Unit shellScope = new Unit(null, ModuleDecl.DEFAULT);
+      Unit shellScope = new Unit(null, ModuleDecl.SHELL);
       FunctionDecl main = new FunctionDecl("main", null);
       shellScope.declare(main);
 
@@ -68,7 +68,7 @@ public class LoopShell {
 
         // Add a require import.
         if (line.startsWith("require ")) {
-          shellScope.declare(new Parser(new Tokenizer(line).tokenize()).require());
+          shellScope.declare(new Parser(new Tokenizer(line + '\n').tokenize()).require());
           continue;
         }
 
@@ -78,7 +78,7 @@ public class LoopShell {
 
         if (line.startsWith(":r") || line.startsWith(":reset")) {
           System.out.println("Context reset.");
-          shellScope = new Unit(null, ModuleDecl.DEFAULT);
+          shellScope = new Unit(null, ModuleDecl.SHELL);
           continue;
         }
         if (line.startsWith(":i") || line.startsWith(":imports")) {
@@ -110,23 +110,22 @@ public class LoopShell {
         }
         if (line.startsWith(":t") || line.startsWith(":type")) {
           String[] split = line.split("[ ]+", 2);
-          if (split.length <= 1)
-            System.out.println("Give me an expression to determine the type for.");
+          if (split.length <= 1) {
+            System.out.println("Give me an expression to determine the type for.\n");
+            continue;
+          }
 
           Object result = evalInFunction(split[1], main, shellScope, false);
-          if (result instanceof LoopError)
-            System.out.println(result.toString());
-          else if (result instanceof LoopObject)
-            System.out.println(((LoopObject)result).getType());
-          else
-            System.out.println(result == null ? "Nothing" : "#java: " + result.getClass().getName());
+          printTypeOf(result);
           continue;
         }
 
         if (line.startsWith(":javatype")) {
           String[] split = line.split("[ ]+", 2);
-          if (split.length <= 1)
-            System.out.println("Give me an expression to determine the type for.");
+          if (split.length <= 1) {
+            System.out.println("Give me an expression to determine the type for.\n");
+            continue;
+          }
 
           Object result = evalInFunction(split[1], main, shellScope, false);
           if (result instanceof LoopError)
@@ -147,13 +146,30 @@ public class LoopShell {
         main.children().clear();
 
         // OK execute expression.
-        printResult(evalInFunction(rawLine, main, shellScope, true));
+        try {
+          printResult(evalInFunction(rawLine, main, shellScope, true));
+        } catch (RuntimeException e) {
+          StackTraceSanitizer.cleanForShell(e);
+          e.printStackTrace();
+          System.out.println();
+        }
 
       } while (true);
     } catch (IOException e) {
       System.err.println("Something went wrong =(");
       System.exit(1);
     }
+  }
+
+  private static void printTypeOf(Object result) {
+    if (result instanceof LoopError)
+      System.out.println(result.toString());
+    else if (result instanceof LoopObject)
+      System.out.println(((LoopObject)result).getType());
+    else if (result instanceof Closure)
+      System.out.println("#function: " + ((Closure)result).name);
+    else
+      System.out.println(result == null ? "Nothing" : "#java: " + result.getClass().getName());
   }
 
   private static Object evalInFunction(String rawLine,
@@ -192,7 +208,7 @@ public class LoopShell {
       }
     } catch (Exception e) {
       e.printStackTrace();
-      return new LoopError("malformed expression '" + rawLine + "'");
+      return new LoopError("malformed expression " + rawLine);
     }
 
     try {
@@ -206,9 +222,9 @@ public class LoopShell {
   }
 
   private static void printResult(Object result) {
-    if (result instanceof Function) {
-//      Function fun = (Function) result;
-//      System.out.println("#function:" + fun.getName() + "()");
+    if (result instanceof Closure) {
+      Closure fun = (Closure) result;
+      System.out.println("#function:" + fun.name);
     } else
       System.out.println(result == null ? "Nothing" : result);
   }

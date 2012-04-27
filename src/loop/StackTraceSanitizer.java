@@ -1,5 +1,7 @@
 package loop;
 
+import loop.ast.script.ModuleDecl;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -44,5 +46,18 @@ class StackTraceSanitizer {
     }
 
     t.setStackTrace(pruned.toArray(new StackTraceElement[pruned.size()]));
+  }
+
+  public static void cleanForShell(Throwable e) {
+    StackTraceElement[] trace = e.getStackTrace();
+    List<StackTraceElement> pruned = new ArrayList<StackTraceElement>(trace.length);
+    for (StackTraceElement element : trace) {
+      pruned.add(element);
+
+      if (ModuleDecl.SHELL.name.equals(element.getClassName()))
+        break;
+    }
+
+    e.setStackTrace(pruned.toArray(new StackTraceElement[pruned.size()]));
   }
 }
