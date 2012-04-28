@@ -77,9 +77,15 @@ public class LoopShell {
           quit();
         }
 
+        if (line.startsWith(":h") || line.startsWith(":help")) {
+          printHelp();
+        }
+
         if (line.startsWith(":r") || line.startsWith(":reset")) {
           System.out.println("Context reset.");
           shellScope = new Unit(null, ModuleDecl.SHELL);
+          main = new FunctionDecl("main", null);
+          shellScope.declare(main);
           continue;
         }
         if (line.startsWith(":i") || line.startsWith(":imports")) {
@@ -162,6 +168,19 @@ public class LoopShell {
     }
   }
 
+  private static void printHelp() {
+    System.out.println("loOp Shell v1.0");
+    System.out.println("  :reset            - discards current shell context (variables, funcs, etc.)");
+    System.out.println("  :imports          - lists all currently imported loop modules and Java types");
+    System.out.println("  :functions        - lists all currently defined functions by signature");
+    System.out.println("  :type <expr>      - prints the type of the given expression");
+    System.out.println("  :javatype <expr>  - prints the underlying java type (for examining loop internals)");
+    System.out.println("  :quit (or Ctrl-D) - exits the loop shell");
+    System.out.println("  :help             - prints this help card");
+    System.out.println();
+    System.out.println("  Hint :h is short for :help, etc.");
+  }
+
   private static void printTypeOf(Object result) {
     if (result instanceof LoopError)
       System.out.println(result.toString());
@@ -183,7 +202,7 @@ public class LoopShell {
     try {
       Parser parser = new Parser(new Tokenizer(rawLine).tokenize());
       parsedLine = parser.line();
-      if (!parser.getErrors().isEmpty()) {
+      if (parsedLine == null || !parser.getErrors().isEmpty()) {
         executable.printErrors(parser.getErrors());
         return "";
       }
@@ -242,11 +261,11 @@ public class LoopShell {
 
   private static class MetaCommandCompleter implements Completer {
     private final List<String> commands = Arrays.asList(
+        ":help",
         ":load",
         ":quit",
         ":reset",
         ":type",
-        ":inspect",
         ":imports",
         ":javatype",
         ":functions"

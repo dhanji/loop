@@ -84,13 +84,12 @@
             </goals>
             <configuration>
               <includes>
-                <include>*:commons-io</include>
                 <include>*:jline</include>
               </includes>
               <rules>
                 <rule>
-                  <pattern>org.apache.commons.**.*</pattern>
-                  <result>loop.internal.cio.@1.$@2</result>
+                  <pattern>jline.**.*</pattern>
+                  <result>loop.internal.jline.@1.$@2</result>
                 </rule>
                 <keep>
                   <pattern>loop.*</pattern>
