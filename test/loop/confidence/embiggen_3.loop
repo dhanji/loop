@@ -1,0 +1,4 @@
+# Double -> BigDecimal
+
+main ->
+  @2.0 + 2.0.embiggen()

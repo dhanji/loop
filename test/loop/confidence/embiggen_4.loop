@@ -1,0 +1,4 @@
+# Strings
+
+main ->
+  'smallest man'.embiggen()

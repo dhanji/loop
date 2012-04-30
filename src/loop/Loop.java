@@ -71,8 +71,9 @@ public class Loop {
       Throwable cause = e.getCause();
       StackTraceSanitizer.clean(cause);
 
+      if (cause instanceof VerifyError)
+        throw (Error) cause;
       throw (RuntimeException) cause;
-
     } catch (NoSuchMethodException e) {
       throw new RuntimeException(e);
     } catch (IllegalAccessException e) {

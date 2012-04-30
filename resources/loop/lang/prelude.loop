@@ -4,9 +4,11 @@ require `java.lang.Integer`
 require `java.lang.Long`
 require `java.lang.Double`
 require `java.lang.String`
+require `java.math.BigInteger`
+require `java.math.BigDecimal`
 
 print(object) ->
-  `java.lang.System::out`.println(object)
+  `java.lang.System::out`.println(object.toString())
 
 negate(b) ->
   b not true
@@ -36,9 +38,7 @@ reverse(ls) =>
   [x:xs]  : reverse(xs) + [x]
 
 embiggen(thing) =>
-  Integer  : new java.math.BigInteger(thing.toString())
-  Long     : new java.math.BigInteger(thing.toString())
-  Double   : new java.math.BigDecimal(thing.toString())
+  Integer  : new BigInteger(thing.toString())
+  Long     : new BigInteger(thing.toString())
+  Double   : new BigDecimal(thing.toString())
   String   : thing.toUpperCase()
-  where
-    x: print(thing)

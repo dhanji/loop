@@ -1,4 +1,4 @@
 # Integer -> BigInteger
 
 main ->
-  print(2.embiggen())
+  @2 + 2.embiggen()

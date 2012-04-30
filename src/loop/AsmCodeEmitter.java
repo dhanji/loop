@@ -172,7 +172,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
     classWriter.visitEnd();
 
-    if (true || print) {
+    if (print) {
       try {
         new ClassReader(new ByteArrayInputStream(classWriter.toByteArray())).accept(
             new TraceClassVisitor(new PrintWriter(System.out)), ClassReader.SKIP_DEBUG);
@@ -349,21 +349,25 @@ import java.util.concurrent.atomic.AtomicInteger;
       }
 
       // push name of containing type if this is a static call.
+      boolean isExternalFunction = resolvedFunction != null
+          && resolvedFunction.moduleName != null
+          && !scope.getModuleName().equals(resolvedFunction.moduleName);
+
       if (isStatic && !call.isJavaStatic()) {
         if (isClosure)
           methodVisitor.visitTypeInsn(CHECKCAST, "loop/runtime/Closure");
 
-        methodVisitor.visitLdcInsn(scope.getModuleName());
+        if (!isExternalFunction)
+          methodVisitor.visitLdcInsn(scope.getModuleName());
       }
 
       // push method name onto stack
       if (!isClosure) {
         // Emit the module name of the containing class for the resolved function, BUT only
         // if it is not in the same module as us.
-        if (resolvedFunction != null
-            && resolvedFunction.moduleName != null
-            && !scope.getModuleName().equals(resolvedFunction.moduleName))
+        if (isExternalFunction) {
           methodVisitor.visitLdcInsn(resolvedFunction.moduleName);
+        }
 
         methodVisitor.visitLdcInsn(name);
       }

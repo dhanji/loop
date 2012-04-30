@@ -1,0 +1,4 @@
+# Long -> BigInteger
+
+main ->
+  @2 + 2L.embiggen()

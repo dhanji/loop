@@ -5,6 +5,7 @@ import loop.LoopError;
 import loop.LoopTest;
 import org.junit.Test;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -73,6 +74,21 @@ public class BasicFunctionsConfidenceTest extends LoopTest {
   @Test
   public final void embiggenInteger() {
     assertEquals(BigInteger.valueOf(4), Loop.run("test/loop/confidence/embiggen_1.loop"));
+  }
+
+  @Test
+  public final void embiggenLong() {
+    assertEquals(BigInteger.valueOf(4), Loop.run("test/loop/confidence/embiggen_2.loop"));
+  }
+
+  @Test
+  public final void embiggenDouble() {
+    assertEquals(BigDecimal.valueOf(4.0), Loop.run("test/loop/confidence/embiggen_3.loop"));
+  }
+
+  @Test
+  public final void embiggenString() {
+    assertEquals("SMALLEST MAN", Loop.run("test/loop/confidence/embiggen_4.loop"));
   }
 
   @Test
