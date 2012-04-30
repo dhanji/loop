@@ -1,5 +1,10 @@
 module prelude
 
+require `java.lang.Integer`
+require `java.lang.Long`
+require `java.lang.Double`
+require `java.lang.String`
+
 print(object) ->
   `java.lang.System::out`.println(object)
 
@@ -29,3 +34,11 @@ tail(ls) ->
 reverse(ls) =>
   []      : []
   [x:xs]  : reverse(xs) + [x]
+
+embiggen(thing) =>
+  Integer  : new java.math.BigInteger(thing.toString())
+  Long     : new java.math.BigInteger(thing.toString())
+  Double   : new java.math.BigDecimal(thing.toString())
+  String   : thing.toUpperCase()
+  where
+    x: print(thing)

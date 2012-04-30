@@ -37,7 +37,6 @@ import loop.ast.Variable;
 import loop.ast.WildcardPattern;
 import loop.ast.script.ArgDeclList;
 import loop.ast.script.FunctionDecl;
-import loop.ast.script.ModuleDecl;
 import loop.ast.script.Unit;
 import loop.runtime.Scope;
 import loop.runtime.regex.NamedPattern;
@@ -59,7 +58,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
-import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -174,7 +172,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
     classWriter.visitEnd();
 
-    if (print) {
+    if (true || print) {
       try {
         new ClassReader(new ByteArrayInputStream(classWriter.toByteArray())).accept(
             new TraceClassVisitor(new PrintWriter(System.out)), ClassReader.SKIP_DEBUG);

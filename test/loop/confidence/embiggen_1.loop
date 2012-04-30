@@ -1,0 +1,4 @@
+# Integer -> BigInteger
+
+main ->
+  print(2.embiggen())

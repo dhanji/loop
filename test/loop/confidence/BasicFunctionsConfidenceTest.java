@@ -5,6 +5,7 @@ import loop.LoopError;
 import loop.LoopTest;
 import org.junit.Test;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -67,6 +68,11 @@ public class BasicFunctionsConfidenceTest extends LoopTest {
   @Test
   public final void booleanOps() {
     assertEquals(true, Loop.run("test/loop/confidence/and_or.loop"));
+  }
+
+  @Test
+  public final void embiggenInteger() {
+    assertEquals(BigInteger.valueOf(4), Loop.run("test/loop/confidence/embiggen_1.loop"));
   }
 
   @Test
