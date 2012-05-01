@@ -1430,6 +1430,7 @@ import java.util.concurrent.atomic.AtomicInteger;
         } else if (pattern instanceof ListStructurePattern) {
           emitListStructurePatternRule(rule, methodVisitor, context, matchedClause, endOfClause, i);
         } else if (pattern instanceof StringLiteral
+            || pattern instanceof PrivateField
             || pattern instanceof IntLiteral
             || pattern instanceof BooleanLiteral) {
 

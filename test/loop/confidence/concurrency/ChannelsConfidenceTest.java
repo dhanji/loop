@@ -14,4 +14,11 @@ public class ChannelsConfidenceTest extends LoopTest {
     // Counts upto 10 on global worker pool.
     Loop.run("test/loop/confidence/concurrency/channels_counter.loop");
   }
+
+  @Test
+  public final void pingpongBurst() throws InterruptedException {
+    // Counts upto 10 on global worker pool.
+    Loop.run("test/loop/confidence/concurrency/channels_pingpong.loop");
+    Thread.sleep(5);
+  }
 }

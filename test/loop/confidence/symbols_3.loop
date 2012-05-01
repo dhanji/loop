@@ -1,0 +1,10 @@
+# Pattern Matching against objects
+
+stuff(msg) =>
+  @ping       : '1'
+  @sing       : '2'
+  @ring       : '3'
+  *           : '4'
+
+main ->
+  stuff(@ping) + stuff(@sing) + stuff(@ring) + stuff(@ding)

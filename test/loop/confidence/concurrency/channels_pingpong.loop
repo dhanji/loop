@@ -1,0 +1,15 @@
+require channels
+
+do_ping(msg) =>
+  @ping        : [print(msg), @ponger.send(@pong)]
+  *            : @shutdown
+
+do_pong(msg) =>
+  @pong        : [print(msg), @pinger.send(@ping)]
+  *            : @shutdown
+
+
+main ->
+  channel(@pinger, do_ping, {:}),
+  channel(@ponger, do_pong, {:}),
+  @pinger.send(@ping)

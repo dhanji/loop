@@ -203,6 +203,11 @@ public class BasicFunctionsConfidenceTest extends LoopTest {
   }
 
   @Test
+  public final void patternMatchingAgainstSymbols() {
+    assertEquals("1234", Loop.run("test/loop/confidence/symbols_3.loop"));
+  }
+
+  @Test
   public final void symbolsSimple() {
     Object run = Loop.run("test/loop/confidence/symbols_2.loop");
     assertTrue(run instanceof Boolean);

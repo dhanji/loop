@@ -1,6 +1,6 @@
 require channels
 
-
+# printer channel:
 do_stuff(msg) =>
   -1        : @shutdown
   *         : print(msg)
