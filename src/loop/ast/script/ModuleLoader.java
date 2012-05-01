@@ -16,7 +16,9 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -37,6 +39,11 @@ public class ModuleLoader {
   private static final String[] LOOP_FILES = new String[]{".loop"};
 
   public static volatile String[] searchPaths = new String[]{ "." };
+
+  private static final Set<String> CORE_MODULES = new HashSet<String>(Arrays.asList(
+      "prelude",
+      "channels"
+  ));
 
   // For faster loading of core modules.
   private static final ConcurrentMap<String, String> corelibCache =
@@ -73,7 +80,7 @@ public class ModuleLoader {
     List<Reader> toLoad = null;
 
     // First try to load this module from our resource package (i.e. boot loader)
-    if (moduleName.equals("prelude") || moduleName.startsWith("loop.")) {
+    if (CORE_MODULES.contains(moduleName)) {
       String cached = corelibCache.get(moduleName);
       if (cached == null) {
         InputStream resourceStream = LoopClass.class.getResourceAsStream(moduleName + ".loop");

@@ -112,8 +112,8 @@ public class Reducer {
       reduce(guard.line, true);
     } else if (bloated instanceof FunctionDecl) {
       FunctionDecl decl = (FunctionDecl) bloated;
-      if (!decl.whereBlock.isEmpty()) {
-        for (Node node : decl.whereBlock) {
+      if (!decl.whereBlock().isEmpty()) {
+        for (Node node : decl.whereBlock()) {
           reduce(node, true);
         }
       }

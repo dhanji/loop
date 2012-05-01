@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -183,7 +184,7 @@ public class BasicFunctionsConfidenceTest extends LoopTest {
 
   @Test
   public final void reverseListPatternMatchingUsingNestedWhereBlocks() {
-    assertEquals(Arrays.asList(4, 3, 2, 1), Loop.run("test/loop/confidence/whereblock_2.loop", true));
+    assertEquals(Arrays.asList(4, 3, 2, 1), Loop.run("test/loop/confidence/whereblock_2.loop"));
   }
 
   @Test
@@ -250,15 +251,15 @@ public class BasicFunctionsConfidenceTest extends LoopTest {
 
   @Test
   public final void callJavaMethodOnString() {
-    assertEquals("hello", Loop.run("test/loop/confidence/java_call_on_string.loop", true));
+    assertEquals("hello", Loop.run("test/loop/confidence/java_call_on_string.loop"));
   }
 
-//  @Test
+  @Test
   public final void nullSafeCallChain1() {
-    assertEquals("dhanji", Loop.run("test/loop/confidence/nullsafe_1.loop"));
+    assertNull(Loop.run("test/loop/confidence/nullsafe_1.loop"));
   }
 
-//  @Test
+  @Test
   public final void nullSafeCallChain2() {
     assertEquals(null, Loop.run("test/loop/confidence/nullsafe_2.loop"));
   }
@@ -352,10 +353,10 @@ public class BasicFunctionsConfidenceTest extends LoopTest {
     Map<String, String> map = new HashMap<String, String>();
     map.put("count", "10");
 
-    assertEquals(map, Loop.run("test/loop/confidence/pattern_matching_multiarg_1.loop", true));
+    assertEquals(map, Loop.run("test/loop/confidence/pattern_matching_multiarg_1.loop"));
   }
 
-//  @Test
+  @Test
   public final void propertyNavigation1() {
     assertEquals("Peter", Loop.run("test/loop/confidence/property_nav_1.loop"));
   }

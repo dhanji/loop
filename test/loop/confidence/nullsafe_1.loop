@@ -3,4 +3,4 @@
 main ->
   name.toLowerCase()
   where
-    name: 'Dhanji'
+    name: `loop.LoopTest`.getNull()

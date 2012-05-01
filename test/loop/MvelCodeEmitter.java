@@ -474,7 +474,7 @@ import java.util.concurrent.atomic.AtomicInteger;
       trackLineAndColumn(functionDecl);
 
       // Emit locally-scoped helper functions and variables.
-      for (Node helper : functionDecl.whereBlock) {
+      for (Node helper : functionDecl.whereBlock()) {
         emit(helper);
       }
 

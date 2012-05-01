@@ -6,9 +6,9 @@ import loop.Parser;
  * An inline list. Can be a range or
  */
 public class ListRange extends Node {
-  private final Node from;
+  public final Node from;
   private final boolean slice;
-  private final Node to;
+  public final Node to;
 
   public ListRange(Node from, boolean slice, Node to) {
     this.from = from;

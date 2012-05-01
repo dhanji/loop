@@ -11,25 +11,10 @@ TODO
 Stretch
 -------
 
-- process subsystem
-  - send message to 'process'
-  - call (synchronous sendAndWait)
-  - balance processes across threadpools
+x process subsystem
+  x send message to 'process'
+  x balance processes across threadpools
   - cron/timer process
-
-require channels
-
-do_stuff(msg) =>
-  @ping    : print('pong')
-  *        : @shutdown
-
-main ->
-  start_channel(name    : @pinger,
-                actor   : do_stuff,
-                options : {}),
-  @pinger.send(@ping) for i in [1..10],
-  @pinger.send(-1)
-
 
 - software transactional cells with MVCC and failed handlers
 - one line web server (loop web.server 8080)

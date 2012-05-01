@@ -236,7 +236,7 @@ public class LoopShell {
       return Loop.safeEval(executable);
     } finally {
       if (addToWhereBlock && parsedLine instanceof Assignment)
-        func.whereBlock.add(parsedLine);
+        func.declareLocally(parsedLine);
 
       ModuleLoader.reset();     // Cleans up the loaded classes.
     }

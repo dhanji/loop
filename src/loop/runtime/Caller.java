@@ -7,9 +7,11 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -134,11 +136,27 @@ public class Caller {
         || argType.isAssignableFrom(arg.getClass());
   }
 
+  // Messy, we should inline this really.
+  public static Object range(Object from, Object to) {
+    if (from instanceof Integer) {
+      Integer start = (Integer) from;
+      int distance = ((Integer)to) - start;
+      List<Integer> range = new ArrayList<Integer>(distance);
+      for (int i = start; i < distance; i++) {
+        range.add(i);
+      }
+      return range;
+    }
+
+    throw new RuntimeException("Unknown range type: " + from + " - " + to);
+  }
+
   public static Object call(Object target, String method, Object... args) throws Throwable {
     if (target == null)
       return null;
 
-    if (target instanceof Map) {
+    boolean isMap = target instanceof Map;
+    if (isMap) {
       Object value = ((Map) target).get(method);
       if (value != null)
         return value;
@@ -183,9 +201,12 @@ public class Caller {
         }
       }
 
-      if (null == toCall)
+      if (null == toCall) {
+        if (isMap)
+          return null;
         throw new RuntimeException("Method not found: " + name + "#" + method
             + "(" + Arrays.toString(args) + ")");
+      }
 
       if (!toCall.isAccessible())
         toCall.setAccessible(true);

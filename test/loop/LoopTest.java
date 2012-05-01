@@ -12,4 +12,8 @@ public abstract class LoopTest {
     // Reset the module search path.
     ModuleLoader.reset();
   }
+
+  public static Object getNull() {
+    return null;
+  }
 }
