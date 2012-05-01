@@ -5,6 +5,6 @@ package loop;
  */
 public class Runner {
   public static void main(String...args) {
-    Loop.run("test/loop/scripts/math_test.loop", true);
+    Loop.run("test/loop/scripts/math_test.loop");
   }
 }

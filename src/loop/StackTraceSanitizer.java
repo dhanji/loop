@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * @author dhanji@gmail.com (Dhanji R. Prasanna)
  */
-class StackTraceSanitizer {
+public class StackTraceSanitizer {
   private static final List<String> REFLECT_SEGMENT = Arrays.asList(
      "sun.reflect.NativeMethodAccessorImpl",
      "sun.reflect.NativeMethodAccessorImpl",

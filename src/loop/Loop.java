@@ -19,7 +19,7 @@ public class Loop {
     }
 
     if (args.length > 1)
-      run(args[0], false);
+      run(args[0], false, true);
     else
       run(args[0]);
   }
@@ -30,11 +30,6 @@ public class Loop {
 
     return safeEval(unit);
   }
-
-  public static Object run(String file, boolean print) {
-    return run(file, print, true);
-  }
-
 
   public static Object run(String file,
                            boolean print,

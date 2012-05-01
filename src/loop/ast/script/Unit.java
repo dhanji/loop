@@ -189,7 +189,7 @@ public class Unit implements Scope {
     functions.put(node.name(), node);
 
     // Set this function's module name.
-    node.moduleName = name;
+    node.setModule(name);
   }
 
   @Override public Set<RequireDecl> requires() {

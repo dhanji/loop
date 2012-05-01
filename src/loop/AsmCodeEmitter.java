@@ -21,6 +21,7 @@ import loop.ast.InlineMapDef;
 import loop.ast.IntLiteral;
 import loop.ast.JavaLiteral;
 import loop.ast.ListDestructuringPattern;
+import loop.ast.ListRange;
 import loop.ast.ListStructurePattern;
 import loop.ast.LongLiteral;
 import loop.ast.MapPattern;
@@ -139,6 +140,7 @@ import java.util.concurrent.atomic.AtomicInteger;
     EMITTERS.put(TernaryExpression.class, ternaryExpressionEmitter);
     EMITTERS.put(Comprehension.class, comprehensionEmitter);
     EMITTERS.put(ConstructorCall.class, constructorCallEmitter);
+    EMITTERS.put(ListRange.class, inlineListRangeEmitter);
   }
 
   private final ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
@@ -704,9 +706,10 @@ import java.util.concurrent.atomic.AtomicInteger;
         MethodVisitor methodVisitor = methodStack.peek();
         methodVisitor.visitTypeInsn(NEW, "loop/runtime/Closure");
         methodVisitor.visitInsn(DUP);
+        methodVisitor.visitLdcInsn(functionDecl.moduleName);
         methodVisitor.visitLdcInsn(functionDecl.scopedName());
         methodVisitor.visitMethodInsn(INVOKESPECIAL, "loop/runtime/Closure", "<init>",
-            "(Ljava/lang/String;)V");
+            "(Ljava/lang/String;Ljava/lang/String;)V");
 
       } else
         methodStack.peek().visitVarInsn(ALOAD, index);
@@ -900,6 +903,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
         currentVisitor.visitTypeInsn(NEW, "loop/runtime/Closure");
         currentVisitor.visitInsn(DUP);
+        currentVisitor.visitLdcInsn(functionDecl.moduleName);
         currentVisitor.visitLdcInsn(name);
 
         if (!freeVariables.isEmpty()) {
@@ -922,9 +926,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 
           // Load the array back in.
           currentVisitor.visitVarInsn(ALOAD, arrayIndex);
-          currentVisitor.visitMethodInsn(INVOKESPECIAL, "loop/runtime/Closure", "<init>", "(Ljava/lang/String;[Ljava/lang/Object;)V");
+          currentVisitor.visitMethodInsn(INVOKESPECIAL, "loop/runtime/Closure", "<init>",
+              "(Ljava/lang/String;Ljava/lang/String;[Ljava/lang/Object;)V");
         } else
-          currentVisitor.visitMethodInsn(INVOKESPECIAL, "loop/runtime/Closure", "<init>", "(Ljava/lang/String;)V");
+          currentVisitor.visitMethodInsn(INVOKESPECIAL, "loop/runtime/Closure", "<init>",
+              "(Ljava/lang/String;Ljava/lang/String;)V");
       }
 
 
@@ -963,14 +969,14 @@ import java.util.concurrent.atomic.AtomicInteger;
       for (int i1 = 0, functionStackSize = functionStack.size(); i1 < functionStackSize - 1; i1++) {
         FunctionDecl parent = functionStack.get(i1).thisFunction;
 
-        for (Node helper : parent.whereBlock) {
+        for (Node helper : parent.whereBlock()) {
           if (helper instanceof Assignment)
             emit(helper);
         }
       }
 
       // Emit locally-scoped helper functions and variables.
-      for (Node helper : functionDecl.whereBlock) {
+      for (Node helper : functionDecl.whereBlock()) {
         // Rewrite helper functions to be namespaced inside the parent function.
         if (helper instanceof FunctionDecl)
           scopeNestedFunction(functionDecl, innerContext, (FunctionDecl) helper);
@@ -1204,6 +1210,20 @@ import java.util.concurrent.atomic.AtomicInteger;
       }
 
       methodVisitor.visitVarInsn(ALOAD, listVar);
+    }
+  };
+
+  private final Emitter inlineListRangeEmitter = new Emitter() {
+    @Override
+    public void emitCode(Node node) {
+      ListRange range = (ListRange) node;
+
+      MethodVisitor methodVisitor = methodStack.peek();
+
+      emit(range.from);
+      emit(range.to);
+      methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/runtime/Caller", "range",
+          "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
     }
   };
 

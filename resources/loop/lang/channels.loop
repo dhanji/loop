@@ -1,0 +1,10 @@
+module channels
+
+channel(name, actor, options) ->
+  `loop.runtime.Channel`.establish(name, actor, options)
+
+send(name, msg) ->
+  ch<-receive(msg)
+  where
+    ch: `loop.runtime.Channel`.named(name)
+

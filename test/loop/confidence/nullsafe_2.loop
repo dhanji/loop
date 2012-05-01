@@ -1,6 +1,6 @@
 # Call in a null-safe manner
 
 main ->
-  name.toLowerCase()
+  obj.missing.toLowerCase()
   where
-    name: `null`
+    obj: { @name: 'hi' }

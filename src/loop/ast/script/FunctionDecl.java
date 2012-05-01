@@ -1,6 +1,7 @@
 package loop.ast.script;
 
 import loop.Parser;
+import loop.ast.Assignment;
 import loop.ast.Node;
 import loop.ast.PatternRule;
 import loop.ast.TypeLiteral;
@@ -23,7 +24,7 @@ public class FunctionDecl extends Node {
   public final boolean isPrivate;
   public String exceptionHandler;
 
-  public final List<Node> whereBlock = new ArrayList<Node>();
+  private final List<Node> whereBlock = new ArrayList<Node>();
 
   // Memo fields.
   public transient List<Variable> freeVariables;
@@ -77,6 +78,30 @@ public class FunctionDecl extends Node {
 
   public void scopedName(String newName) {
     this.scopedName = newName;
+  }
+
+  public List<Node> whereBlock() {
+    return whereBlock;
+  }
+
+  // Declared functions into the where block.
+  public void declareLocally(FunctionDecl func) {
+    this.whereBlock.add(func);
+  }
+
+  public void setModule(String name) {
+    this.moduleName = name;
+
+    // Cascade to nested funcs.
+    for (Node node : whereBlock) {
+      if (node instanceof FunctionDecl)
+        ((FunctionDecl) node).setModule(name);
+    }
+  }
+
+  public void declareLocally(Node assignment) {
+    assert assignment instanceof Assignment;
+    this.whereBlock.add(assignment);
   }
 
   @Override

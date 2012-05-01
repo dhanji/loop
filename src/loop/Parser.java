@@ -26,6 +26,7 @@ public class Parser {
   private Set<String> aliasedModules;
   private Node last = null;
   private int i = 0;
+  private Unit scope;
 
   private static final Set<Token.Kind> RIGHT_ASSOCIATIVE = new HashSet<Token.Kind>();
   private static final Set<Token.Kind> LEFT_ASSOCIATIVE = new HashSet<Token.Kind>();
@@ -121,6 +122,7 @@ public class Parser {
     chewEols();
 
     Unit unit = new Unit(file, module);
+    scope = unit;
     RequireDecl require;
     do {
       require = require();
@@ -182,6 +184,7 @@ public class Parser {
       throw new LoopCompileException();
     }
 
+    scope = null;
     return unit;
   }
 
@@ -301,6 +304,11 @@ public class Parser {
     String name = anonymous ? null : funcName.get(0).value;
     startTokens = funcName != null ? funcName : startTokens;
     FunctionDecl functionDecl = new FunctionDecl(name, arguments).sourceLocation(startTokens);
+
+    // We need to set the module name here because closures are not declared as
+    // top level functions in the module.
+    if (anonymous)
+      functionDecl.setModule(scope.getModuleName());
 
     // Before we match the arrow and start the function, slurp up any exception handling logic.
     List<Token> exceptHandlerTokens = match(Kind.IDENT, Kind.IDENT);
@@ -469,10 +477,10 @@ public class Parser {
 
         if (null != helperFunction) {
           hasWhere = true;
-          functionDecl.whereBlock.add(helperFunction);
+          functionDecl.declareLocally(helperFunction);
         } else if (null != assignment) {
           hasWhere = true;
-          functionDecl.whereBlock.add(assignment);
+          functionDecl.declareLocally(assignment);
         }
       } while (helperFunction != null || assignment != null);
     }

@@ -65,7 +65,7 @@ class Verifier {
     } else
       verifyNodes(functionDecl.children());
 
-    for (Node inner : functionDecl.whereBlock) {
+    for (Node inner : functionDecl.whereBlock()) {
       if (inner instanceof FunctionDecl)
         verify((FunctionDecl) inner);
       else
@@ -297,7 +297,7 @@ class Verifier {
     // Keep searching up the stack until we resolve this symbol or die trying!.
     while (iterator.hasPrevious()) {
       FunctionDecl functionDecl = iterator.previous().function;
-      List<Node> whereBlock = functionDecl.whereBlock;
+      List<Node> whereBlock = functionDecl.whereBlock();
 
       // Then attempt to resolve in local function scope.
       for (Node node : whereBlock) {
@@ -317,7 +317,7 @@ class Verifier {
     ListIterator<FunctionContext> iterator = functionStack.listIterator(functionStack.size());
     while (iterator.hasPrevious()) {
       FunctionDecl functionDecl = iterator.previous().function;
-      List<Node> whereBlock = functionDecl.whereBlock;
+      List<Node> whereBlock = functionDecl.whereBlock();
 
       // Well, first see if this is a direct call (usually catches recursion).
       if (name.equals(functionDecl.name()))
