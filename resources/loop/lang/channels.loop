@@ -1,10 +1,19 @@
 module channels
 
+require `java.lang.Number`
+require `java.lang.String`
+require `loop.lang.ImmutableLoopObject`
+
 channel(name, actor, options) ->
   `loop.runtime.Channel`.establish(name, actor, options)
 
-send(name, msg) ->
-  ch<-receive(msg)
+send(name, msg) =>
+  *, Number                 : ch<-receive(msg)
+  *, String                 : ch<-receive(msg)
+  *, ImmutableLoopObject    : ch<-receive(msg)
+  *, *                      : raise("Illegal attempt to share mutable state: @{msg.getClass()}")
   where
     ch: `loop.runtime.Channel`.named(name)
 
+channel_memory() ->
+  `loop.runtime.Channel`.currentMemory()

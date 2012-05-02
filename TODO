@@ -10,12 +10,15 @@ x Fix bug in literal pattern matching
 - Get started page
 - Release a build!
 
+- Fix error printing, indexOOB exception
+
 Stretch
 -------
 
 x process subsystem
   x send message to 'process'
   x balance processes across threadpools
+  x channel-local memory for serialized channels
   - cron/timer process
 
 - software transactional cells with MVCC and failed handlers

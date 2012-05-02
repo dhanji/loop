@@ -10,8 +10,13 @@ import org.junit.Test;
 public class ChannelsConfidenceTest extends LoopTest {
 
   @Test
-  public final void counterBurst() {
+  public final void printerBurst() {
     // Counts upto 10 on global worker pool.
+    Loop.run("test/loop/confidence/concurrency/channels_printer.loop");
+  }
+
+  @Test
+  public final void counterSerial() {
     Loop.run("test/loop/confidence/concurrency/channels_counter.loop");
   }
 

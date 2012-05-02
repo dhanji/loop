@@ -125,7 +125,10 @@ public class Executable {
 
       // Unwrap to previous line if column is 0, or line is empty.
       int errorLineNumber = error.line(), column = error.column();
-      if (error.column() == 0 || lines.get(error.line()).trim().isEmpty()) {
+      if (errorLineNumber >= lines.size())
+        errorLineNumber = lines.size() - 1;
+
+      if (error.column() == 0 || lines.get(errorLineNumber).trim().isEmpty()) {
         errorLineNumber = Math.max(0, errorLineNumber - 1);
         column = lines.get(errorLineNumber).length();
       }

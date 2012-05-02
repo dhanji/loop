@@ -1,7 +1,9 @@
 package loop.runtime;
 
 import loop.StackTraceSanitizer;
+import loop.lang.ImmutableLoopObject;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -11,6 +13,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
+ * Concurrent Channels support class for loop's event-driven channel API.
+ *
  * @author dhanji@gmail.com (Dhanji R. Prasanna)
  */
 public class Channel {
@@ -35,6 +39,7 @@ public class Channel {
   private final Runnable runnable;
   private final ExecutorService executor;
   private final boolean isDedicatedPool;
+  private final Map<String, Object> channelMemory = new HashMap<String, Object>();
 
   public Channel(String name, Closure actor, boolean parallel, int workers) {
     this.name = name;
@@ -59,6 +64,8 @@ public class Channel {
         return;
 
       try {
+        currentChannelMemory.set(channelMemory);
+
         int processed = 0;
         while (!queue.isEmpty() && processed < YIELD_FAIRNESS_CYCLES) {
           try {
@@ -90,6 +97,7 @@ public class Channel {
           }
         }
       } finally {
+        currentChannelMemory.remove();
         running.compareAndSet(true, false);
 
         // Tail-call ourselves if we're not done with this queue.
@@ -134,6 +142,15 @@ public class Channel {
       }
     }
   };
+
+  private static final ThreadLocal<Map<String, Object>> currentChannelMemory = new ThreadLocal<Map<String, Object>>();
+
+  public static Object currentMemory() {
+    Map<String, Object> map = currentChannelMemory.get();
+    if (map == null)
+      throw new RuntimeException("Illegal shared memory request. (Hint: use transactional cells instead)");
+    return map;
+  }
 
   public void shutdown() {
     channels.remove(name);

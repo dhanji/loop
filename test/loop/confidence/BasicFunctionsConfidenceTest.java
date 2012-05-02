@@ -40,7 +40,7 @@ public class BasicFunctionsConfidenceTest extends LoopTest {
 
   @Test
   public final void freeExpressionsInInitializerBlock() {
-    assertEquals(null, Loop.run("test/loop/confidence/free_exprs.loop"));
+    assertEquals("bye", Loop.run("test/loop/confidence/free_exprs.loop"));
   }
 
   @Test

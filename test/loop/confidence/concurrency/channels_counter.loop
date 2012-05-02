@@ -1,12 +1,14 @@
 require channels
 
-# printer channel:
+# counter channel:
 do_stuff(msg) =>
   -1        : @shutdown
-  *         : print(msg)
+  *         : mem[@count] = mem[@count] + 1
+  where
+    mem     : channel_memory().print()
 
 
 main ->
-  channel(@printer, do_stuff, {:}),
+  channel(@printer, do_stuff, { @serialize : true }),
   @printer.send(i) for i in [1..10],
   @printer.send(-1)

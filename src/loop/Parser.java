@@ -449,7 +449,7 @@ public class Parser {
       }
 
       functionDecl.add(rule);
-      rule = new PatternRule();
+      rule = new PatternRule().sourceLocation(functionDecl);
 
       if (endOfInput() || match(Token.Kind.RBRACE) != null)
         break;
