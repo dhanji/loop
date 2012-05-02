@@ -15,6 +15,13 @@ public class ChannelsConfidenceTest extends LoopTest {
     Loop.run("test/loop/confidence/concurrency/channels_printer.loop");
   }
 
+
+  @Test
+  public final void printerSerial() {
+    // Counts upto 10 on global worker pool.
+    Loop.run("test/loop/confidence/concurrency/channels_printer_2.loop");
+  }
+
   @Test
   public final void counterSerial() {
     Loop.run("test/loop/confidence/concurrency/channels_counter.loop");
