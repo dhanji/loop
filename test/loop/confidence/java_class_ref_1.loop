@@ -1,0 +1,6 @@
+# Java classes
+
+require `java.util.Date`
+
+main ->
+  Date.name

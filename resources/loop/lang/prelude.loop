@@ -43,3 +43,6 @@ embiggen(thing) =>
   Long     : new BigInteger(thing.toString())
   Double   : new BigDecimal(thing.toString())
   String   : thing.toUpperCase()
+
+alert(msg) ->
+  `javax.swing.JOptionPane`.showMessageDialog(Nothing, msg)

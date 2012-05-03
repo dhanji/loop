@@ -809,7 +809,23 @@ import java.util.concurrent.atomic.AtomicInteger;
     public void emitCode(Node node) {
       TypeLiteral type = (TypeLiteral) node;
       trackLineAndColumn(type);
-      throw new UnsupportedOperationException();
+
+      MethodVisitor methodVisitor = methodStack.peek();
+      if (TypeLiteral.NOTHING.equals(type.name)) // Special-case the bottom type.
+        methodVisitor.visitInsn(ACONST_NULL);
+      else {
+        ClassDecl classDecl = scope.resolve(type.name, true);
+
+        if (classDecl != null)
+          throw new UnsupportedOperationException(); // TODO reflection.
+
+        String fqn = scope.resolveJavaType(type.name);
+        if (fqn != null) {
+          methodVisitor.visitLdcInsn(fqn);
+          methodVisitor.visitMethodInsn(INVOKESTATIC, "java/lang/Class", "forName",
+              "(Ljava/lang/String;)Ljava/lang/Class;");
+        }
+      }
     }
   };
 

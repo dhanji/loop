@@ -68,6 +68,21 @@ public class BasicFunctionsConfidenceTest extends LoopTest {
   }
 
   @Test
+  public final void nothingInstance1() {
+    assertNull(Loop.run("test/loop/confidence/nothing_1.loop"));
+  }
+
+  @Test
+  public final void nothingInstance2() {
+    assertNull(Loop.run("test/loop/confidence/nothing_2.loop"));
+  }
+
+  @Test
+  public final void javaClassRefs() {
+    assertEquals("java.util.Date", Loop.run("test/loop/confidence/java_class_ref_1.loop"));
+  }
+
+  @Test
   public final void booleanOps() {
     assertEquals(true, Loop.run("test/loop/confidence/and_or.loop"));
   }
