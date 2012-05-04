@@ -81,6 +81,14 @@ public class LoopShell {
           printHelp();
         }
 
+        if (line.startsWith(":run")) {
+          String[] split = line.split("[ ]+", 2);
+          if (split.length < 2 || !split[1].endsWith(".loop"))
+            System.out.println("You must specify a .loop file to run.");
+          Loop.run(split[1]);
+          continue;
+        }
+
         if (line.startsWith(":r") || line.startsWith(":reset")) {
           System.out.println("Context reset.");
           shellScope = new Unit(null, ModuleDecl.SHELL);
@@ -170,6 +178,7 @@ public class LoopShell {
 
   private static void printHelp() {
     System.out.println("loOp Shell v1.0");
+    System.out.println("  :run <file.loop>  - executes the specified loop file");
     System.out.println("  :reset            - discards current shell context (variables, funcs, etc.)");
     System.out.println("  :imports          - lists all currently imported loop modules and Java types");
     System.out.println("  :functions        - lists all currently defined functions by signature");
@@ -251,7 +260,7 @@ public class LoopShell {
   }
 
   private static boolean isLoadCommand(String line) {
-    return line.startsWith(":l") || line.startsWith(":load");
+    return line.startsWith(":run");
   }
 
   private static void quit() {
@@ -262,7 +271,7 @@ public class LoopShell {
   private static class MetaCommandCompleter implements Completer {
     private final List<String> commands = Arrays.asList(
         ":help",
-        ":load",
+        ":run",
         ":quit",
         ":reset",
         ":type",

@@ -30,7 +30,10 @@ public class Collections {
     } else if (collection instanceof String) {
       String string = (String) collection;
 
-      return string.charAt((Integer) exactly);
+      if (exactly instanceof Integer)
+        return string.charAt((Integer) exactly);
+      else if (exactly instanceof String)
+        return string.indexOf(exactly.toString());
     } else if (collection instanceof Map) {
       Map map = (Map) collection;
 
