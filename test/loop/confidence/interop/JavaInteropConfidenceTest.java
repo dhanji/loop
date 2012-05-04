@@ -4,6 +4,7 @@ import loop.Loop;
 import loop.LoopTest;
 import org.junit.Test;
 
+import java.util.Arrays;
 import java.util.Date;
 
 import static org.junit.Assert.assertEquals;
@@ -17,6 +18,12 @@ import static org.junit.Assert.assertTrue;
  */
 public class JavaInteropConfidenceTest extends LoopTest {
   public static final Integer CONSTANT = Long.valueOf(new Date().getTime()).intValue();
+
+  @Test
+  public final void mainMethodArgs() {
+    assertEquals(Arrays.asList("ARG1", "ARG2"),
+        Loop.run("test/loop/confidence/interop/main_args.loop", new String[] { "arg1", "arg2" }));
+  }
 
   @Test
   public final void normalFunctionCall() {

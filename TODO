@@ -11,6 +11,7 @@ x Fix bug in literal pattern matching
 - Release a build!
 
 - Fix error printing, indexOOB exception
+x Pass CLI args through to main
 
 Stretch
 -------

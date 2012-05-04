@@ -233,7 +233,7 @@ public class LoopShell {
     }
 
     try {
-      return Loop.safeEval(executable);
+      return Loop.safeEval(executable, null);
     } finally {
       if (addToWhereBlock && parsedLine instanceof Assignment)
         func.declareLocally(parsedLine);

@@ -7,6 +7,8 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.StringReader;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Arrays;
 
 /**
  * Converts parsed, type-solved, emitted code to Java classes.
@@ -19,7 +21,7 @@ public class Loop {
     }
 
     if (args.length > 1)
-      run(args[0], false, true);
+      run(args[0], args);
     else
       run(args[0]);
   }
@@ -28,18 +30,14 @@ public class Loop {
     Executable unit = loopCompile(file);
     unit.runMain(true);
 
-    return safeEval(unit);
+    return safeEval(unit, null);
   }
 
-  public static Object run(String file,
-                           boolean print,
-                           boolean runMain) {
+  public static Object run(String file, String[] args) {
     Executable unit = loopCompile(file);
-    if (print)
-      System.out.println(unit.getCompiled());
+    unit.runMain(true);
 
-    unit.runMain(runMain);
-    return safeEval(unit);
+    return safeEval(unit, args);
   }
 
   public static Object evalClassOrFunction(String function,
@@ -55,12 +53,21 @@ public class Loop {
     return "ok";
   }
 
-  static Object safeEval(Executable executable) {
+  static Object safeEval(Executable executable, String[] args) {
     try {
-      if (executable.runMain())
-        return executable.getCompiled().getDeclaredMethod("main").invoke(null);
-      else
-        return executable.getCompiled();
+      if (executable.runMain()) {
+        Class<?> compiled = executable.getCompiled();
+
+        // Main optionally can have zero args, or take a list.
+        if (args != null)
+          return compiled.getDeclaredMethod("main", Object.class).invoke(null, Arrays.asList(args));
+        else
+          return compiled.getDeclaredMethod("main").invoke(null);
+      }
+      else {
+        executable.getCompiled();   // Forces class to be loaded & initialized.
+        return null;
+      }
     } catch (InvocationTargetException e) {
       // Unwrap Java stack trace using our special wrapper exception.
       Throwable cause = e.getCause();

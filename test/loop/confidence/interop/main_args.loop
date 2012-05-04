@@ -1,0 +1,4 @@
+# Calling main with arguments.
+
+main(args) ->
+  arg.toUpperCase() for arg in args
