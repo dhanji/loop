@@ -13,6 +13,8 @@ x Fix bug in literal pattern matching
 - Fix error printing, indexOOB exception
 x Pass CLI args through to main
 - think thru null-safe stuff
+- resolve functions from imported modules when creating a function-ref closure
+- fix closures in loopshell
 
 Stretch
 -------
