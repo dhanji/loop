@@ -31,7 +31,7 @@ public class Collections {
       String string = (String) collection;
 
       if (exactly instanceof Integer)
-        return string.charAt((Integer) exactly);
+        return Character.toString(string.charAt((Integer) exactly));
       else if (exactly instanceof String)
         return string.indexOf(exactly.toString());
     } else if (collection instanceof Map) {

@@ -216,8 +216,6 @@ public class LoopShell {
         return "";
       }
 
-      new Reducer(parsedLine).reduce();
-
       // If this is an assignment, just check the rhs portion of it.
       // This is a bit hacky but prevents verification from balking about new
       // vars declared in the lhs.
@@ -226,6 +224,9 @@ public class LoopShell {
         func.children().add(assignment.rhs());
       } else
         func.children().add(parsedLine);
+
+      // Compress nodes and eliminate redundancies.
+      new Reducer(func).reduce();
 
       shellScope.loadDeps("<shell>");
       executable.runMain(true);

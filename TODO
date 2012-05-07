@@ -12,6 +12,7 @@ x Fix bug in literal pattern matching
 
 - Fix error printing, indexOOB exception
 x Pass CLI args through to main
+- think thru null-safe stuff
 
 Stretch
 -------
