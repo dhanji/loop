@@ -6,9 +6,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.StringReader;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Arrays;
 
 /**
  * Converts parsed, type-solved, emitted code to Java classes.
@@ -54,32 +51,11 @@ public class Loop {
   }
 
   static Object safeEval(Executable executable, String[] args) {
-    try {
-      if (executable.runMain()) {
-        Class<?> compiled = executable.getCompiled();
-
-        // Main optionally can have zero args, or take a list.
-        if (args != null)
-          return compiled.getDeclaredMethod("main", Object.class).invoke(null, Arrays.asList(args));
-        else
-          return compiled.getDeclaredMethod("main").invoke(null);
-      }
-      else {
-        executable.getCompiled();   // Forces class to be loaded & initialized.
-        return null;
-      }
-    } catch (InvocationTargetException e) {
-      // Unwrap Java stack trace using our special wrapper exception.
-      Throwable cause = e.getCause();
-      StackTraceSanitizer.clean(cause);
-
-      if (cause instanceof VerifyError)
-        throw (Error) cause;
-      throw (RuntimeException) cause;
-    } catch (NoSuchMethodException e) {
-      throw new RuntimeException(e);
-    } catch (IllegalAccessException e) {
-      throw new RuntimeException(e);
+    if (executable.runMain()) {
+      return executable.main(args);
+    } else {
+      executable.getCompiled();   // Forces class to be loaded & initialized.
+      return null;
     }
   }
 

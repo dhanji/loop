@@ -12,7 +12,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.Reader;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
@@ -47,7 +49,6 @@ public class Executable {
   private final List<String> lines;    // Loop source code lines (for error tracing).
 
   private Scope scope;
-  private Node node; // If a fragment and not a whole unit (mutually exclusive with unit)
 
   private List<AnnotatedError> staticErrors;
   private Class<?> compiled;
@@ -220,6 +221,34 @@ public class Executable {
     }
   }
 
+  public Object main(String[] commandLine) {
+    FunctionDecl main = scope.resolveFunction("main", false);
+    if (main != null) {
+      int args = main.arguments().children().size();
+      try {
+        if (args == 0)
+          return compiled.getDeclaredMethod("main").invoke(null);
+        else
+          return compiled.getDeclaredMethod("main", Object.class).invoke(null, Arrays.asList(commandLine));
+      } catch (NoSuchMethodException e) {
+        System.out.println("Incorrect main method declaration in: " + file);
+      } catch (InvocationTargetException e) {
+        // Unwrap Java stack trace using our special wrapper exception.
+        Throwable cause = e.getCause();
+        StackTraceSanitizer.clean(cause);
+
+        if (cause instanceof VerifyError)
+          throw (Error) cause;
+
+        // Rethrow cleaned up exception.
+        throw (RuntimeException) cause;
+      } catch (IllegalAccessException e) {
+        throw new RuntimeException(e);
+      }
+    }
+    return null;
+  }
+
   public void compile() {
     Unit unit = parse(source);
     if (hasErrors())
@@ -263,16 +292,17 @@ public class Executable {
     Parser parser = new Parser(new Tokenizer(source).tokenize());
     FunctionDecl functionDecl = parser.functionDecl();
     ClassDecl classDecl = null;
+    Node node;
     if (null == functionDecl) {
       classDecl = parser.classDecl();
-      this.node = classDecl;
+      node = classDecl;
     } else
-      this.node = functionDecl;
+      node = functionDecl;
 
     if (hasErrors())
       return;
 
-    this.node = new Reducer(node).reduce();
+    new Reducer(node).reduce();
 
     if (!verify(scope))
       return;

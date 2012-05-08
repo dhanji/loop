@@ -27,7 +27,6 @@ import java.util.Stack;
  */
 public class Unit implements Scope {
   private final String fileName;
-  private final ModuleDecl module;
 
   private String name;
   private final Set<RequireDecl> imports = new LinkedHashSet<RequireDecl>();
@@ -43,7 +42,6 @@ public class Unit implements Scope {
 
   public Unit(String fileName, ModuleDecl module) {
     this.fileName = fileName;
-    this.module = module;
 
     StringBuilder builder = new StringBuilder();
     List<String> moduleChain = module.moduleChain;
