@@ -245,7 +245,8 @@ public class Executable {
       } catch (IllegalAccessException e) {
         throw new RuntimeException(e);
       }
-    }
+    } else
+      return compiled;   // Force classload.
     return null;
   }
 

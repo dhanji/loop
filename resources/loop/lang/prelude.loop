@@ -1,12 +1,5 @@
 module prelude
 
-require `java.lang.Integer`
-require `java.lang.Long`
-require `java.lang.Double`
-require `java.lang.String`
-require `java.math.BigInteger`
-require `java.math.BigDecimal`
-
 print(object) ->
   `java.lang.System::out`.println(object.toString()),
   object

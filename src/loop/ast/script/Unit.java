@@ -26,6 +26,19 @@ import java.util.Stack;
  * @NotThreadSafe
  */
 public class Unit implements Scope {
+  private static final Map<String, String> ALWAYS_IMPORTED = new HashMap<String, String>();
+
+  static {
+    ALWAYS_IMPORTED.put("Integer", "java.lang.Integer");
+    ALWAYS_IMPORTED.put("Long", "java.lang.Long");
+    ALWAYS_IMPORTED.put("Number", "java.lang.Number");
+    ALWAYS_IMPORTED.put("Double", "java.lang.Double");
+    ALWAYS_IMPORTED.put("String", "java.lang.String");
+    ALWAYS_IMPORTED.put("Boolean", "java.lang.Boolean");
+    ALWAYS_IMPORTED.put("BigInteger", "java.math.BigInteger");
+    ALWAYS_IMPORTED.put("BigDecimal", "java.math.BigDecimal");
+  }
+
   private final String fileName;
 
   private String name;
@@ -76,6 +89,10 @@ public class Unit implements Scope {
   }
 
   @Override public String resolveJavaType(String name) {
+    String resolved = ALWAYS_IMPORTED.get(name);
+    if (resolved != null)
+      return resolved;
+
     for (RequireDecl requireDecl : imports) {
       if (requireDecl.javaLiteral == null)
         continue;

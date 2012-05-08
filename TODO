@@ -33,7 +33,7 @@ x process subsystem
 - enumeration type
 x Get rid of commons-io dep
 - hierarchical modules support
-- Add verification error (or implicit imports for java.lang primitive wrapper types)
+x Add verification error (or implicit imports for java.lang primitive wrapper types)
 
 Algorithms
 ----------
