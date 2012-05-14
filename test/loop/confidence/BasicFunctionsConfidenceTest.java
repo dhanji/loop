@@ -88,6 +88,11 @@ public class BasicFunctionsConfidenceTest extends LoopTest {
   }
 
   @Test
+  public final void initializerBlock() {
+    Loop.run("echo.loop");
+  }
+
+  @Test
   public final void embiggenInteger() {
     assertEquals(BigInteger.valueOf(4), Loop.run("test/loop/confidence/embiggen_1.loop"));
   }
