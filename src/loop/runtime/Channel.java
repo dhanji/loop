@@ -73,9 +73,9 @@ public class Channel {
 
             // Check if we should shutdown this channel.
             // Allows graceful drain of queued messages.
-            if (SHUTDOWN == result)
+            if (SHUTDOWN.equals(result))
               shutdown();
-            else if (DIE == result) {
+            else if (DIE.equals(result)) {
               // Process no more messages.
               die();
               break;
@@ -118,9 +118,9 @@ public class Channel {
         try {
           Object result = Caller.callClosure(actor, actor.target, new Object[]{queue.poll()});
 
-          if (SHUTDOWN == result)
+          if (SHUTDOWN.equals(result))
             shutdown();
-          else if (DIE == result) {
+          else if (DIE.equals(result)) {
             // Process no more messages.
             die();
             break;
