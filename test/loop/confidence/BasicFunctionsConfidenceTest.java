@@ -87,7 +87,7 @@ public class BasicFunctionsConfidenceTest extends LoopTest {
     assertEquals(true, Loop.run("test/loop/confidence/and_or.loop"));
   }
 
-  @Test
+//  @Test
   public final void initializerBlock() {
     Loop.run("echo.loop");
   }
