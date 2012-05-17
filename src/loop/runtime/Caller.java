@@ -328,7 +328,10 @@ public class Caller {
     return toCall.get(null);
   }
 
-  public static void raise(String message) {
-    throw new RuntimeException(message);
+  public static void raise(Object message) {
+    if (message instanceof String)
+      throw new RuntimeException(message.toString());
+
+    throw new RuntimeException((RuntimeException)message);
   }
 }
