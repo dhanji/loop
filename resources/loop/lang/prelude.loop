@@ -39,3 +39,6 @@ embiggen(thing) =>
 
 alert(msg) ->
   `javax.swing.JOptionPane`.showMessageDialog(Nothing, msg)
+
+exit(code) ->
+  `java.lang.System`.exit(code)
