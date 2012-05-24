@@ -1,8 +1,6 @@
 TODO
 ----
 
-x Fix bug in literal pattern matching
-
 - Docs
 x About
 - FAQ
@@ -12,8 +10,6 @@ x Mailing list
 - add analytics to homepage
 - map looplang.org to docsite
 
-x run scripts in class initializer form
-x resolve functions from imported modules when creating a function-ref closure
 - fix closures in loopshell
 - VerifyError: Illegal local variable number
 - fix concurrency problems in channels API
@@ -32,9 +28,7 @@ x process subsystem
 - Fix error printing, indexOOB exception
 - one line web server (loop web.server 8080)
 - enumeration type
-x Get rid of commons-io dep
 - hierarchical modules support
-x Add verification error (or implicit imports for java.lang primitive wrapper types)
 
 Algorithms
 ----------

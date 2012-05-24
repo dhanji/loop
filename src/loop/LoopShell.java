@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author dhanji@gmail.com (Dhanji R. Prasanna)
@@ -256,7 +257,11 @@ public class LoopShell {
     if (result instanceof Closure) {
       Closure fun = (Closure) result;
       System.out.println("#function: " + fun.name);
-    } else
+    } else if (result instanceof Set) {
+      String r = result.toString();
+      System.out.println('{' + r.substring(1, r.length() - 1) + '}');
+    }
+    else
       System.out.println(result == null ? "#nothing" : result);
   }
 
