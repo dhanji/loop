@@ -3,12 +3,14 @@ require channels
 # counter channel:
 do_stuff(msg) =>
   -1        : @shutdown
-  *         : mem[@count] = mem[@count] + 1
+  @print    : print(mem[@count])
+  *         : mem[@count] = mem[@count] + 10
   where
-    mem     : channel_memory().print()
+    mem     : channel_memory()
 
 
 main ->
   channel(@printer, do_stuff, { @serialize : true }),
   @printer.send(i) for i in [1..10],
+  @printer.send(@print),
   @printer.send(-1)

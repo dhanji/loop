@@ -1,0 +1,6 @@
+# Resolve function references in imported modules (prelude)
+
+main ->
+  a.@call([1, 2])
+  where
+    a: last

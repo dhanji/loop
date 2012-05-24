@@ -245,6 +245,13 @@ public class Executable {
       } catch (IllegalAccessException e) {
         throw new RuntimeException(e);
       }
+    } else {
+      // Attempt to force class initialization.
+      try {
+        Class.forName(compiled.getName(), true, LoopClassLoader.CLASS_LOADER);
+      } catch (ClassNotFoundException e) {
+        throw new Error("Not supposed to happen. A previously loaded class disappeared.", e);
+      }
     }
     return null;
   }
@@ -267,7 +274,7 @@ public class Executable {
 
     AsmCodeEmitter codeEmitter = new AsmCodeEmitter(unit);
     this.scope = unit;
-    this.compiled = codeEmitter.write(unit, false);
+    this.compiled = codeEmitter.write(unit);
 
     requireJavaImports(unit.imports());
 
@@ -281,7 +288,7 @@ public class Executable {
       return;
 
     AsmCodeEmitter codeEmitter = new AsmCodeEmitter(scope);
-    this.compiled = codeEmitter.write(scope, false);
+    this.compiled = codeEmitter.write(scope);
     this.source = null;
 
     requireJavaImports(scope.requires());

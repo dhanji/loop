@@ -259,7 +259,7 @@ public class Caller {
 
       args = combinedArgs;
     }
-    return callStatic(target, closure.name, args);
+    return callStatic(closure.target, closure.name, args);
   }
 
   public static Object callStatic(String target, String method, Object[] args) throws Throwable {
