@@ -210,7 +210,7 @@ public class LoopShell {
     Executable executable = new Executable(new StringReader(rawLine));
     Node parsedLine;
     try {
-      Parser parser = new Parser(new Tokenizer(rawLine).tokenize());
+      Parser parser = new Parser(new Tokenizer(rawLine).tokenize(), shellScope);
       parsedLine = parser.line();
       if (parsedLine == null || !parser.getErrors().isEmpty()) {
         executable.printErrors(parser.getErrors());

@@ -55,6 +55,11 @@ public class Parser {
     this.tokens = tokens;
   }
 
+  public Parser(List<Token> tokens, Unit shellScope) {
+    this.tokens = tokens;
+    this.scope = shellScope;
+  }
+
   public List<AnnotatedError> getErrors() {
     return errors;
   }

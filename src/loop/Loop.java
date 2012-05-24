@@ -47,6 +47,11 @@ public class Loop {
       return new LoopError("malformed function");
     }
 
+    if (executable.hasErrors()) {
+      executable.printStaticErrorsIfNecessary();
+      return "";
+    }
+
     return "ok";
   }
 

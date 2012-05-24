@@ -296,7 +296,8 @@ public class Executable {
 
   public void compileClassOrFunction(Unit scope) {
     this.scope = scope;
-    Parser parser = new Parser(new Tokenizer(source).tokenize());
+    List<Token> tokens = new Tokenizer(source).tokenize();
+    Parser parser = new Parser(tokens);
     FunctionDecl functionDecl = parser.functionDecl();
     ClassDecl classDecl = null;
     Node node;
@@ -308,6 +309,13 @@ public class Executable {
 
     if (hasErrors())
       return;
+
+    if (node == null) {
+      this.staticErrors = Arrays.<AnnotatedError>asList(
+          new StaticError("malformed function definition",
+          tokens.get(tokens.size() - 1)));
+      return;
+    }
 
     new Reducer(node).reduce();
 
