@@ -147,10 +147,6 @@ import java.util.concurrent.atomic.AtomicInteger;
   private final Stack<MethodVisitor> methodStack = new Stack<MethodVisitor>();
 
   public Class<?> write(Unit unit) {
-    return write(unit, false);
-  }
-
-  public Class<?> write(Unit unit, boolean print) {
     Thread.currentThread().setContextClassLoader(LoopClassLoader.CLASS_LOADER);
 
     // We always emit functions as static into a containing Java class.
@@ -174,7 +170,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
     classWriter.visitEnd();
 
-    if (print) {
+    if (false) {
       try {
         new ClassReader(new ByteArrayInputStream(classWriter.toByteArray())).accept(
             new TraceClassVisitor(new PrintWriter(System.out)), ClassReader.SKIP_DEBUG);
@@ -192,7 +188,7 @@ import java.util.concurrent.atomic.AtomicInteger;
   }
 
   private void emitInitializerBlock(List<Node> exprs) {
-    MethodVisitor initializer = classWriter.visitMethod(ACC_PRIVATE + ACC_STATIC,
+    MethodVisitor initializer = classWriter.visitMethod(ACC_STATIC,
         "<clinit>",
         "()V",
         null,

@@ -1,7 +1,5 @@
 package loop;
 
-import loop.runtime.Caller;
-
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -23,8 +21,7 @@ public class LoopClassLoader extends ClassLoader {
   }
 
   @Override
-  protected Class findClass(String name)
-      throws ClassNotFoundException {
+  protected Class findClass(String name) throws ClassNotFoundException {
     Class<?> clazz = loaded.get(name);
     if (null != clazz)
       return clazz;

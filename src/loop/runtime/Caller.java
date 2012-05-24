@@ -259,7 +259,7 @@ public class Caller {
 
       args = combinedArgs;
     }
-    return callStatic(target, closure.name, args);
+    return callStatic(closure.target, closure.name, args);
   }
 
   public static Object callStatic(String target, String method, Object[] args) throws Throwable {
@@ -328,7 +328,10 @@ public class Caller {
     return toCall.get(null);
   }
 
-  public static void raise(String message) {
-    throw new RuntimeException(message);
+  public static void raise(Object message) {
+    if (message instanceof String)
+      throw new RuntimeException(message.toString());
+
+    throw new RuntimeException((RuntimeException)message);
   }
 }

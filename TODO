@@ -12,10 +12,11 @@ x Mailing list
 - add analytics to homepage
 - map looplang.org to docsite
 
-- resolve functions from imported modules when creating a function-ref closure
+x run scripts in class initializer form
+x resolve functions from imported modules when creating a function-ref closure
 - fix closures in loopshell
 - VerifyError: Illegal local variable number
-
+- fix concurrency problems in channels API
 
 Stretch
 -------

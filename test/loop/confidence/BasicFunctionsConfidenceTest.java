@@ -87,11 +87,6 @@ public class BasicFunctionsConfidenceTest extends LoopTest {
     assertEquals(true, Loop.run("test/loop/confidence/and_or.loop"));
   }
 
-//  @Test
-  public final void initializerBlock() {
-    Loop.run("echo.loop");
-  }
-
   @Test
   public final void embiggenInteger() {
     assertEquals(BigInteger.valueOf(4), Loop.run("test/loop/confidence/embiggen_1.loop"));
@@ -110,6 +105,11 @@ public class BasicFunctionsConfidenceTest extends LoopTest {
   @Test
   public final void embiggenString() {
     assertEquals("SMALLEST MAN", Loop.run("test/loop/confidence/embiggen_4.loop"));
+  }
+
+  @Test
+  public final void functionReferences() {
+    assertEquals(2, Loop.run("test/loop/confidence/func_refs.loop"));
   }
 
   @Test
