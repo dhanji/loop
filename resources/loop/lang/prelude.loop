@@ -42,3 +42,6 @@ alert(msg) ->
 
 exit(code) ->
   `java.lang.System`.exit(code)
+
+to_integer(i) =>
+  String   : `java.lang.Integer`.valueOf(i)
