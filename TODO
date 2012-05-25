@@ -8,9 +8,9 @@ x Mailing list
 x Get started page
 - Release a build!
 x add analytics to homepage
-- map looplang.org to docsite
+x map looplang.org to docsite
 
-- fix closures in loopshell
+- fix closures in loopshell, and generally allow one-line closures/funcs(?)
 - VerifyError: Illegal local variable number
 - fix concurrency problems in channels API
 
