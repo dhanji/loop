@@ -290,6 +290,7 @@ public class LoopShell {
     System.exit(0);
   }
 
+  // For tracking multiline expressions.
   private static int braces = 0, brackets = 0, parens = 0;
 
   private static boolean isDangling(String line) {
