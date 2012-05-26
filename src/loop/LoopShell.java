@@ -23,6 +23,7 @@ import java.util.Set;
  * @author dhanji@gmail.com (Dhanji R. Prasanna)
  */
 public class LoopShell {
+
   public static void shell() {
     System.out.println("loOp (http://looplang.org)");
     System.out.println("     by Dhanji R. Prasanna\n");
@@ -41,7 +42,7 @@ public class LoopShell {
       StringBuilder block = null;
       //noinspection InfiniteLoopStatement
       do {
-        String prompt = inFunction ? "|    " : ">> ";
+        String prompt = (block != null) ? "|    " : ">> ";
         String rawLine = reader.readLine(prompt);
 
         if (inFunction) {
@@ -156,6 +157,17 @@ public class LoopShell {
           inFunction = true;
           block = new StringBuilder(line).append('\n');
           continue;
+        } else if (isDangling(line)) {
+          if (block == null)
+            block = new StringBuilder();
+
+          block.append(line).append('\n');
+          continue;
+        }
+
+        if (block != null) {
+          rawLine = block.append(line).toString();
+          block = null;
         }
 
         // First determine what kind of expression this is.
@@ -164,7 +176,11 @@ public class LoopShell {
         // OK execute expression.
         try {
           printResult(evalInFunction(rawLine, main, shellScope, true));
-        } catch (RuntimeException e) {
+        } catch (ClassCastException e) {
+          StackTraceSanitizer.cleanForShell(e);
+          System.out.println("#error: " + e.getMessage());
+          System.out.println();
+        }catch (RuntimeException e) {
           StackTraceSanitizer.cleanForShell(e);
           e.printStackTrace();
           System.out.println();
@@ -272,6 +288,35 @@ public class LoopShell {
   private static void quit() {
     System.out.println("Bye.");
     System.exit(0);
+  }
+
+  private static int braces = 0, brackets = 0, parens = 0;
+
+  private static boolean isDangling(String line) {
+    for (Token token : new Tokenizer(line).tokenize()) {
+      switch (token.kind) {
+        case LBRACE:
+          braces++;
+          break;
+        case LBRACKET:
+          brackets++;
+          break;
+        case LPAREN:
+          parens++;
+          break;
+        case RBRACE:
+          braces--;
+          break;
+        case RBRACKET:
+          brackets--;
+          break;
+        case RPAREN:
+          parens--;
+          break;
+      }
+    }
+
+    return braces > 0 || brackets > 0 || parens > 0;
   }
 
   private static class MetaCommandCompleter implements Completer {
