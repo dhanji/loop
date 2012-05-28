@@ -11,7 +11,6 @@ x add analytics to homepage
 x map looplang.org to docsite
 
 - fix closures in loopshell, and generally allow one-line closures/funcs(?)
-- VerifyError: Illegal local variable number
 - fix concurrency problems in channels API
 
 Stretch

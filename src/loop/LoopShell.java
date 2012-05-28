@@ -180,7 +180,7 @@ public class LoopShell {
           StackTraceSanitizer.cleanForShell(e);
           System.out.println("#error: " + e.getMessage());
           System.out.println();
-        }catch (RuntimeException e) {
+        } catch (RuntimeException e) {
           StackTraceSanitizer.cleanForShell(e);
           e.printStackTrace();
           System.out.println();
@@ -260,11 +260,13 @@ public class LoopShell {
     }
 
     try {
-      return Loop.safeEval(executable, null);
-    } finally {
+      Object result = Loop.safeEval(executable, null);
+
       if (addToWhereBlock && parsedLine instanceof Assignment)
         func.declareLocally(parsedLine);
 
+      return result;
+    } finally {
       ModuleLoader.reset();     // Cleans up the loaded classes.
     }
   }
