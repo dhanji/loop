@@ -242,8 +242,12 @@ public class Tokenizer {
 
       // Insert new function start token if necessary.
       if (isThinOrFatArrow(token)) {
-        iterator.add(new Token("{", Token.Kind.LBRACE, token.line, token.column));
-        groupStack.push(Token.Kind.LBRACE);
+        // Don't bother doing this if there is already an lbrace next.
+        if (iterator.hasNext() && iterator.next().kind != Token.Kind.LBRACE) {
+          iterator.previous();
+          iterator.add(new Token("{", Token.Kind.LBRACE, token.line, token.column));
+          groupStack.push(Token.Kind.LBRACE);
+        }
       }
 
       Token previous = null;

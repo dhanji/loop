@@ -1,0 +1,4 @@
+module cells
+
+select(cell) ->
+  `loop.runtime.Cells`.readCell(cell)

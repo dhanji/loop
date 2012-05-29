@@ -2,9 +2,11 @@ package loop.lang;
 
 import loop.LoopExecutionException;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -47,5 +49,51 @@ public class LoopObject extends HashMap<Object, Object> {
 
   public ImmutableLoopObject immutize() {
     return new ImmutableLoopObject(type, this);
+  }
+
+  public LoopObject copy() {
+    return copy(new LoopObject(type), this);
+  }
+
+  @SuppressWarnings("unchecked")
+  private static <T> T copy(Map<Object, Object> to, Map<Object, Object> from) {
+    for (Map.Entry<Object, Object> entry : from.entrySet()) {
+      Object value = entry.getValue();
+
+      // Make mutable if necessary.
+      if (value instanceof Collection)
+        value = copy((Collection) value);
+      else if (value instanceof Map) {
+        Map toCopy = (Map) value;
+        value = copy(new HashMap<Object, Object>(toCopy.size()), toCopy);
+      }
+
+      to.put(entry.getKey(), value);
+    }
+
+    return (T) to;
+  }
+
+  @SuppressWarnings("unchecked")
+  public static Collection copy(Collection value) {
+    Collection<Object> copy;
+    if (value instanceof Set) {
+      copy = new HashSet<Object>(value.size());
+    } else {
+      copy = new ArrayList<Object>(value.size());
+    }
+
+    for (Object item : value) {
+      if (item instanceof Collection)
+        item = copy((Collection) item);
+      else if (item instanceof Map) {
+        Map<Object, Object> toCopy = (Map<Object, Object>) item;
+        item = copy(new HashMap<Object, Object>(toCopy.size()), toCopy);
+      }
+
+      copy.add(item);
+    }
+
+    return copy;
   }
 }

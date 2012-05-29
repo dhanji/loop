@@ -975,6 +975,17 @@ import java.util.concurrent.atomic.AtomicInteger;
 
       methodVisitor.visitLabel(innerContext.startOfFunction);
 
+      //******* BEGIN CELL TRANSACTION ********
+      if (functionDecl.cell != null) {
+        int thisIndex = innerContext.newLocalVariable("this");
+
+        // Load the cell in a transactional wrapper into the "this" variable.
+        methodVisitor.visitLdcInsn(functionDecl.cell);
+        methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/runtime/Cells", "beginTransaction",
+            "(Ljava/lang/String;)Ljava/lang/Object;");
+        methodVisitor.visitVarInsn(ASTORE, thisIndex);
+      }
+
       //******* BEGIN WHERE BLOCK LOCALS ********
 
       // Emit static definitions in all parent where blocks.

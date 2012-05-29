@@ -22,6 +22,7 @@ public class FunctionDecl extends Node {
   private final ArgDeclList arguments;
   public boolean patternMatching;
   public final boolean isPrivate;
+  public String cell;
   public String exceptionHandler;
 
   private final List<Node> whereBlock = new ArrayList<Node>();

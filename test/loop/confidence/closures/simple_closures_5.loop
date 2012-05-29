@@ -1,0 +1,11 @@
+# Simple closures
+
+comp(inner_fn) ->
+  inner_fn.@call(2)
+
+main ->
+  comp(fn())
+  where
+    fn -> {
+      @(x) -> { x * 2 }
+    }

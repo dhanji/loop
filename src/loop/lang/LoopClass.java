@@ -8,6 +8,8 @@ import java.util.Map;
  * @author dhanji@gmail.com (Dhanji R. Prasanna)
  */
 public class LoopClass {
+  public static final LoopClass IMMUTABLE_MAP = new LoopClass("java.util.Map");
+
   public final String name;
 
   public LoopClass(String name) { this.name = name; }

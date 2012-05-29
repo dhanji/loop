@@ -261,9 +261,9 @@ public class Parser {
    * <p/>
    * anonymousFunctionDecl := ANONYMOUS_TOKEN argDeclList? 'except' IDENT ARROW EOL (INDENT+ line EOL)
    * <p/>
-   * functionDecl := (PRIVATE_FIELD | IDENT) argDeclList? 'except' IDENT ARROW EOL (INDENT+ line EOL)
+   * functionDecl := (PRIVATE_FIELD | IDENT) argDeclList? ('in' SYMBOL)? 'except' IDENT ARROW EOL (INDENT+ line EOL)
    * <p/>
-   * patternFunctionDecl := (PRIVATE_FIELD | IDENT) argDeclList? 'except' IDENT HASHROCKET EOL (INDENT+ line EOL)*
+   * patternFunctionDecl := (PRIVATE_FIELD | IDENT) argDeclList? ('in' SYMBOL)? 'except' IDENT HASHROCKET EOL (INDENT+ line EOL)*
    */
   private FunctionDecl internalFunctionDecl(boolean anonymous) {
     List<Token> funcName = null;
@@ -314,6 +314,12 @@ public class Parser {
     // top level functions in the module.
     if (anonymous)
       functionDecl.setModule(scope.getModuleName());
+
+    // Before we match the start of the function, allow for cell declaration.
+    List<Token> inCellTokens = match(Kind.IN, Kind.PRIVATE_FIELD);
+    if (inCellTokens != null) {
+      functionDecl.cell = inCellTokens.get(1).value;
+    }
 
     // Before we match the arrow and start the function, slurp up any exception handling logic.
     List<Token> exceptHandlerTokens = match(Kind.IDENT, Kind.IDENT);

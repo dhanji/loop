@@ -1,0 +1,7 @@
+# Simple closures
+
+comp(fn) ->
+  fn.@call() * 2
+
+main ->
+  comp(@() -> { 50 })
