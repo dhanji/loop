@@ -1,0 +1,7 @@
+# local vars should take precedence in scoping
+
+flip(input) =>
+  (first : ' ' : last)  : "@{last}, @{first}"
+
+main ->
+  flip('Optimus Prime')

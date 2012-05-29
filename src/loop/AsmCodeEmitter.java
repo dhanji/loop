@@ -697,17 +697,19 @@ import java.util.concurrent.atomic.AtomicInteger;
       if (index == null)
         index = context.localVarIndex(var.name);
 
-      // It could be a function-reference. In which case emit it as a closure.
-      FunctionDecl functionDecl = scope.resolveFunctionOnStack(var.name);
-      if (functionDecl != null) {
-        MethodVisitor methodVisitor = methodStack.peek();
-        methodVisitor.visitTypeInsn(NEW, "loop/runtime/Closure");
-        methodVisitor.visitInsn(DUP);
-        methodVisitor.visitLdcInsn(functionDecl.moduleName);
-        methodVisitor.visitLdcInsn(functionDecl.scopedName());
-        methodVisitor.visitMethodInsn(INVOKESPECIAL, "loop/runtime/Closure", "<init>",
-            "(Ljava/lang/String;Ljava/lang/String;)V");
+      if (index == null) {
+        // It could be a function-reference. In which case emit it as a closure.
+        FunctionDecl functionDecl = scope.resolveFunctionOnStack(var.name);
+        if (functionDecl != null) {
+          MethodVisitor methodVisitor = methodStack.peek();
+          methodVisitor.visitTypeInsn(NEW, "loop/runtime/Closure");
+          methodVisitor.visitInsn(DUP);
+          methodVisitor.visitLdcInsn(functionDecl.moduleName);
+          methodVisitor.visitLdcInsn(functionDecl.scopedName());
+          methodVisitor.visitMethodInsn(INVOKESPECIAL, "loop/runtime/Closure", "<init>",
+              "(Ljava/lang/String;Ljava/lang/String;)V");
 
+        }
       } else
         methodStack.peek().visitVarInsn(ALOAD, index);
     }
@@ -1514,7 +1516,6 @@ import java.util.concurrent.atomic.AtomicInteger;
           emitMapPatternRule(rule, context, matchedClause, endOfClause, i);
         } else if (pattern instanceof WildcardPattern) {
           // Always matches.
-//          methodVisitor.visitJumpInsn(GOTO, endOfClause);
         }
       }
 
@@ -1645,7 +1646,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 
     boolean splittable = false;
     int lastIndex = context.localVarIndex(context.newLocalVariable());      // The last index of split (i.e. pattern delimiter).
-    methodVisitor.visitIntInsn(BIPUSH, -1);
+
+    // Start from offset if the first bit is a constant (corner case)
+    if (childrenSize > 0 && children.get(0) instanceof StringLiteral)
+      methodVisitor.visitLdcInsn(((StringLiteral) children.get(0)).unquotedValue().length());
+    else
+      methodVisitor.visitIntInsn(BIPUSH, -1);
+
     methodVisitor.visitIntInsn(ISTORE, lastIndex);
 
     for (int j = 0; j < childrenSize; j++) {

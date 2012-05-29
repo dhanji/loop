@@ -15,7 +15,8 @@ x make closures callable using postfix notation
 x and generally allow one-line closures/funcs(?)
 - fix concurrency errors in channels API test (isolate test JVMs?)
 x fix object pattern rules to use {}
-- fix string pattern or remove it.
+x fix string pattern or remove it.
+x fix scoping problem for local string stuff (dont lookup functions over local vars)
 
 Stretch
 -------

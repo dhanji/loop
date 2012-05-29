@@ -274,6 +274,11 @@ public class BasicFunctionsConfidenceTest extends LoopTest {
     assertEquals("Prime, Optimus", Loop.run("test/loop/confidence/split_various_selective_3.loop"));
   }
 
+  @Test
+  public final void localVarsShouldBeScopedOverFunctionRefs() {
+    assertEquals("Prime, Optimus", Loop.run("test/loop/confidence/local_vars_scope.loop"));
+  }
+
   @Test(expected = RuntimeException.class)
   public final void splitVariousStringsPatternMatchingNotAllMatches() {
     assertTrue(Loop.run("test/loop/confidence/split_various_string_error.loop") instanceof LoopError);
