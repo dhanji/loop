@@ -43,8 +43,8 @@ public class StringLiteral extends Node {
     this.parts = parts;
   }
 
-  public static class StringPart {
-
+  public String unquotedValue() {
+    return value != null ? value.substring(1, value.length() - 1) : null; // strip quotes
   }
 
   @Override

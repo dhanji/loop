@@ -1,0 +1,7 @@
+# Pattern Matching split across various pattern literals in a string
+
+flip(input) =>
+  (first : ' ' : sur)  : "@{sur}, @{first}"
+
+main ->
+  flip('Optimus Prime')

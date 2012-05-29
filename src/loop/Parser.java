@@ -545,7 +545,7 @@ public class Parser {
       typeLiteral = new TypeLiteral(type.get(0).value).sourceLocation(type);
     }
 
-    List<Token> lbracketTokens = match(Kind.LBRACKET);
+    Token lbracketTokens = anyOf(Kind.LBRACKET, Kind.LBRACE);
     if (lbracketTokens == null)
       return typeLiteral;
 
@@ -670,8 +670,8 @@ public class Parser {
       pattern.add(new DestructuringPair(term, rhs).sourceLocation(term));
     }
 
-    if (match(Token.Kind.RBRACKET) == null) {
-      throw new RuntimeException("Expected ']' at end of object pattern");
+    if (match(Token.Kind.RBRACKET) == null && match(Kind.RBRACE) == null) {
+      throw new RuntimeException("Expected '}' at end of object pattern");
     }
 
     return rewriteObjectPattern(pattern);

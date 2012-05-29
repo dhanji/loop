@@ -1702,15 +1702,15 @@ import java.util.concurrent.atomic.AtomicInteger;
             methodVisitor.visitIntInsn(ILOAD, thisIndex);
             methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "java/lang/String", "substring",
                 "(II)Ljava/lang/String;");
-            methodVisitor.visitInsn(DUP);
 
             // Save this piece into our variable.
             methodVisitor.visitVarInsn(ASTORE, matchedPieceVar);
 
             // Advance the index by the length of this match.
-            methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "java/lang/String", "length", "()I");
+            methodVisitor.visitLdcInsn(((StringLiteral) next).unquotedValue().length());
             methodVisitor.visitIntInsn(ILOAD, thisIndex);
             methodVisitor.visitInsn(IADD);
+
             methodVisitor.visitIntInsn(ISTORE, lastIndex);
 
             splittable = true;

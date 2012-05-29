@@ -264,6 +264,16 @@ public class BasicFunctionsConfidenceTest extends LoopTest {
     assertEquals("3", Loop.run("test/loop/confidence/split_various_selective.loop"));
   }
 
+  @Test
+  public final void splitVariousStringsPatternMatchingWithWildcards2() {
+    assertEquals("1234", Loop.run("test/loop/confidence/split_various_selective_2.loop"));
+  }
+
+  @Test
+  public final void splitVariousStringsPatternMatchingSimple() {
+    assertEquals("Prime, Optimus", Loop.run("test/loop/confidence/split_various_selective_3.loop"));
+  }
+
   @Test(expected = RuntimeException.class)
   public final void splitVariousStringsPatternMatchingNotAllMatches() {
     assertTrue(Loop.run("test/loop/confidence/split_various_string_error.loop") instanceof LoopError);

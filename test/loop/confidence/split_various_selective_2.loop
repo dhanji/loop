@@ -1,0 +1,7 @@
+# Pattern Matching split across various pattern literals in a string
+
+split(input) =>
+  ('A' : a : 'B' : b : 'C' : c : 'D' : d)  : a + b + c + d
+
+main ->
+  split('A1B2C3D4')
