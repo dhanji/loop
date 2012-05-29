@@ -17,6 +17,7 @@ import loop.ast.WildcardPattern;
 import loop.ast.script.ArgDeclList;
 import loop.ast.script.FunctionDecl;
 import loop.ast.script.Unit;
+import loop.runtime.Closure;
 import loop.runtime.regex.NamedPattern;
 
 import java.lang.reflect.Constructor;

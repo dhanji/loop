@@ -1,0 +1,4 @@
+# Simple closures
+
+main ->
+  @() -> { 50 }.@call() * 2

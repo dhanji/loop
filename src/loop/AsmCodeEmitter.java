@@ -39,6 +39,7 @@ import loop.ast.WildcardPattern;
 import loop.ast.script.ArgDeclList;
 import loop.ast.script.FunctionDecl;
 import loop.ast.script.Unit;
+import loop.runtime.Closure;
 import loop.runtime.Scope;
 import loop.runtime.regex.NamedPattern;
 import org.objectweb.asm.ClassReader;
@@ -299,7 +300,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
       // This is a special invocation so we emit it without the dot.
       String name;
-      if ("@call".equals(call.name())) {
+      if (Closure.CALL_FORM.equals(call.name())) {
         name = "";
 
         isStatic = true;

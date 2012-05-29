@@ -4,6 +4,7 @@ package loop.runtime;
  * @author dhanji@gmail.com (Dhanji R. Prasanna)
  */
 public class Closure {
+  public static final String CALL_FORM = "@call";
   // The target class this is resolved into.
   public final String target;
 

@@ -1075,8 +1075,6 @@ public class Parser {
 
     if (null == node) {
       node = anonymousFunctionDecl();
-      if (null != node)
-        return node;
     }
 
     // If not an ternary IF, maybe a term?

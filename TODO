@@ -10,7 +10,9 @@ x Get started page
 x add analytics to homepage
 x map looplang.org to docsite
 
-- fix closures in loopshell, and generally allow one-line closures/funcs(?)
+x fix closures in loopshell
+x make closures callable using postfix notation
+x and generally allow one-line closures/funcs(?)
 - fix concurrency problems in channels API
 
 Stretch

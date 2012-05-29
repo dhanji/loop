@@ -19,11 +19,11 @@ public class ImmutableList extends ArrayList implements Immutable {
     deepCopy(collection, cyclesCheck);
   }
 
-  @SuppressWarnings("unchecked")
   public ImmutableList(Collection<?> collection, IdentityHashMap<Object, Object> cyclesCheck) {
     deepCopy(collection, cyclesCheck);
   }
 
+  @SuppressWarnings("unchecked")
   private void deepCopy(Collection<?> collection, IdentityHashMap<Object, Object> cyclesCheck) {
     for (Object value : collection) {
 

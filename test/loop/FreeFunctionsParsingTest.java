@@ -102,16 +102,16 @@ public class FreeFunctionsParsingTest {
   @Test
   public final void functionWithAnonymousFunctionsInside() {
     compareFunction("main",
-        "(main: () -> (comput (. func(()= (comput (<anonymous>: () -> (comput (. 4))))))))",
+        "(main: () -> (comput (. func(()= (comput (. (<anonymous>: () -> (comput (. 4)))))))))",
         "main ->\n  func(@() ->\n    4)\n");
     compareFunction("func",
-        "(func: (()= x y z) -> (comput (<anonymous>: () -> (comput (. 1) (+ (. 2 toString()))))))",
+        "(func: (()= x y z) -> (comput (. (<anonymous>: () -> (comput (. 1) (+ (. 2 toString())))))))",
         "func (x, y, z) ->\n  @() ->\n    1 + 2.toString()\n");
     compareFunction("func",
-        "(func: () -> (comput (<anonymous>: () -> (comput (<anonymous>: () -> (comput (. 1)))))))",
+        "(func: () -> (comput (. (<anonymous>: () -> (comput (. (<anonymous>: () -> (comput (. 1)))))))))",
         "func() ->\n  @() ->\n    @() ->\n      1");
     compareFunction("func",
-        "(func: () -> (comput (<anonymous>: () -> (comput (<anonymous>: () -> (comput (. func(()= (comput (<anonymous>: () -> (comput (. 4))))))))))))",
+        "(func: () -> (comput (. (<anonymous>: () -> (comput (. (<anonymous>: () -> (comput (. func(()= (comput (. (<anonymous>: () -> (comput (. 4)))))))))))))))",
         "func() ->\n  @() ->\n    @() ->\n      func(@() ->\n    4\n)");
   }
 

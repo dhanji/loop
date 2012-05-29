@@ -19,6 +19,11 @@ public class ClosuresConfidenceTest extends LoopTest {
   }
 
   @Test
+  public final void createAndCallAnonymousFunctionWithPostfix() {
+    assertEquals(100, Loop.run("test/loop/confidence/closures/simple_closures_6.loop"));
+  }
+
+  @Test
   public final void createAndCallAnonymousFunction4() {
     assertEquals(100, Loop.run("test/loop/confidence/closures/simple_closures_4.loop"));
   }
