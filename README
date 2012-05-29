@@ -1,0 +1,13 @@
+The Loop Programming Language
+
+Loop is a little programming language for the JVM, that takes advanced functional
+features and makes them easy and fun to use.
+
+Loop emphasizes readabile, concise and clear code, with an additional focus on
+performance and concurrency.
+
+To get going quickly, run the "loop" shell script from the loop.tar.gz distribution archive.
+For more details, including documentation, visit http://looplang.org
+
+
+(c) Copyright 2012. By Dhanji R. Prasanna. Some rights reserved.
