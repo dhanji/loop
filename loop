@@ -21,5 +21,5 @@ if [ -n "${LOOP_HOME-x}" ]; then
   fi
 fi
 
-java -jar $LOOP_HOME/loop.jar $*
+java -classpath lib/* -jar $LOOP_HOME/loop.jar $*
 
