@@ -1,0 +1,4 @@
+require file
+
+main ->
+  print(read('loop'))

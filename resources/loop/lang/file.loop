@@ -5,21 +5,27 @@ require `java.io.FileInputStream`
 require `java.io.FileReader`
 require `java.io.FileWriter`
 
+
 file(name) ->
   new File(name)
+
 
 read(name) =>
   String   :   `loop.Util`.toString(new FileInputStream(new File(name)))
   File     :   `loop.Util`.toString(new FileInputStream(name))
 
+
 lines(name) =>
   String   :   `loop.Util`.toLines(new FileReader(new File(name)))
   File     :   `loop.Util`.toLines(new FileReader(name))
 
+
 stream(name) =>
-  String   :   new FileInputStream(new File(name)))
-  File     :   new FileInputStream(name))
+  String   :   new FileInputStream(new File(name))
+  File     :   new FileInputStream(name)
+
 
 write(file, text) =>
   String, String  :  new FileWriter(new File(file)).write(text)
   File, String    :  new FileWriter(file).write(text)
+

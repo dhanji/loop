@@ -14,6 +14,7 @@ import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 /**
@@ -162,5 +163,10 @@ public class ModulesConfidenceTest extends LoopTest {
   @Test(expected = LoopCompileException.class)
   public final void requireJavaClassFails() {
     assertEquals(new Date(10), Loop.run("test/loop/confidence/modules/require_java_error.loop"));
+  }
+
+  @Test
+  public final void requireFileModule() {
+    assertTrue(Loop.run("test/loop/confidence/modules/require_file.loop").toString().contains("http://looplang.org"));
   }
 }
