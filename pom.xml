@@ -66,9 +66,7 @@
             <descriptorRef>jar-with-dependencies</descriptorRef>
           </descriptorRefs>
           <archive>
-            <manifest>
-              <mainClass>loop.Loop</mainClass>
-            </manifest>
+            <manifestFile>resources/MANIFEST.MF</manifestFile>
           </archive>
         </configuration>
       </plugin>

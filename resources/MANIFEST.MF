@@ -1,0 +1,6 @@
+Manifest-Version: 1.0
+Built-By: dhanji@gmail.com (Dhanji R. Prasanna)
+Build-Jdk: 1.6
+Created-By: Apache Maven
+Main-Class: loop.Loop
+Archiver-Version: Plexus Archiver
