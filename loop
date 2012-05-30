@@ -10,7 +10,7 @@
 DETECTED_HOME=`dirname "$(cd ${0%/*} && echo $PWD/${0##*/})"`
 
 if [ -n "${LOOP_HOME-x}" ]; then
-  if [[ -e $DETECTED_HOME/loop.jar ]]; then
+  if [ -e $DETECTED_HOME/loop.jar ]; then
     LOOP_HOME=$DETECTED_HOME
   else
     echo "LOOP_HOME is not set. Please set it (in bash):"
