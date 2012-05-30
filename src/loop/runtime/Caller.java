@@ -142,7 +142,7 @@ public class Caller {
       Integer start = (Integer) from;
       int distance = ((Integer)to) - start + 1;
       List<Integer> range = new ArrayList<Integer>(distance);
-      for (int i = start; i <= distance; i++) {
+      for (int i = start; i < start + distance; i++) {
         range.add(i);
       }
       return range;

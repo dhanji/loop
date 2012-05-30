@@ -16,6 +16,11 @@ import static org.junit.Assert.assertEquals;
  */
 public class ListComprehensionConfidenceTest extends LoopTest {
   @Test
+  public final void listRanges() {
+    assertEquals(Arrays.asList(Arrays.asList(3, 4, 5)), Loop.run("test/loop/confidence/lists/ranges.loop"));
+  }
+
+  @Test
   public final void identityComprehension() {
     assertEquals(Arrays.asList(10, 20, 30), Loop.run("test/loop/confidence/lists/projection.loop"));
   }

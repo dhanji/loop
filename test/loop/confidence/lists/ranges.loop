@@ -1,0 +1,4 @@
+# List ranges
+
+main ->
+  [ [3..5] ]
