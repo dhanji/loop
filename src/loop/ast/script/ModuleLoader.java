@@ -42,7 +42,8 @@ public class ModuleLoader {
 
   private static final Set<String> CORE_MODULES = new HashSet<String>(Arrays.asList(
       "prelude",
-      "channels"
+      "channels",
+      "file"
   ));
 
   // For faster loading of core modules.
