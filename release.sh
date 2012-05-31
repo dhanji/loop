@@ -12,6 +12,7 @@ mvn -o clean package assembly:single
 mkdir -p $TMP
 cp ./target/loop-*-jar-with-dependencies.jar ./$TMP/loop.jar
 cp loop $TMP/
+cp loop.bat $TMP/
 cp README $TMP/
 cp LICENSE $TMP/
 pushd build_tmp
