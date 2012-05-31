@@ -1,0 +1,25 @@
+#!/bin/sh
+#
+# Loop shell and runtime launcher
+#      by Dhanji R. Prasanna
+#
+# http://looplang.org
+#
+
+# lol this is batshit insane:
+DETECTED_HOME=`dirname "$(cd ${0%/*} && echo $PWD/${0##*/})"`
+
+if [ -n "${LOOP_HOME-x}" ]; then
+  if [ -e $DETECTED_HOME/loop.jar ]; then
+    LOOP_HOME=$DETECTED_HOME
+  else
+    echo "LOOP_HOME is not set. Please set it (in bash):"
+    echo
+    echo export LOOP_HOME=/path/to/loop_home
+    echo
+    exit
+  fi
+fi
+
+java -classpath "$LOOP_HOME/loop.jar:./lib/*" loop.Loop $*
+
