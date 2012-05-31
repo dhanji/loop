@@ -19,4 +19,4 @@ rem Get parameters string
 set PARAMS=%*
 
 
-java -classpath %LOOP_HOME%\lib\loop.jar:lib\* loop.Loop %PARAMS%
+java -classpath %LOOP_HOME%\lib\loop.jar;lib\* loop.Loop %PARAMS%
