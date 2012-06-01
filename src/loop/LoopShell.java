@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -27,6 +28,10 @@ import java.util.Set;
  */
 public class LoopShell {
   private static Map<String, Object> shellContext;
+
+  public static Object shellObtain(String var) {
+    return shellContext.get(var);
+  }
 
   public static void shell() {
     System.out.println("loOp (http://looplang.org)");
@@ -270,14 +275,24 @@ public class LoopShell {
 
       if (addToWhereBlock && parsedLine instanceof Assignment) {
         Assignment assignment = (Assignment) parsedLine;
+        new Reducer(assignment).reduce();
         if (assignment.lhs() instanceof Variable) {
           String name = ((Variable) assignment.lhs()).name;
           shellContext.put(name, result);
 
           // Loop up the value of the RHS of the variable from the shell context,
           // if this is the second reference to the same variable.
-          assignment.setRhs(new Parser(new Tokenizer("`loop.LoopShell`.shellObtain(" + name + ")").tokenize()).parse());
+          assignment.setRhs(new Parser(new Tokenizer("`loop.LoopShell`.shellObtain('" + name + "')").tokenize()).parse());
         }
+
+        // If this assignment is already present in the current scope, we should replace it.
+        for (Iterator<Node> iterator = func.whereBlock().iterator(); iterator.hasNext(); ) {
+          Node node = iterator.next();
+          if (node instanceof Assignment && ((Assignment) node).lhs() instanceof Variable) {
+            iterator.remove();
+          }
+        }
+
         func.declareLocally(parsedLine);
       }
 

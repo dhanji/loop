@@ -66,6 +66,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author dhanji@gmail.com (Dhanji R. Prasanna)
  */
 @SuppressWarnings({"FieldCanBeLocal"}) class AsmCodeEmitter implements Opcodes {
+  private static final boolean printBytecode = System.getProperty("print_bytecode") != null;
   private static final AtomicInteger functionNameSequence = new AtomicInteger();
 
   private static final String IS_LIST_VAR_PREFIX = "__$isList_";
@@ -171,7 +172,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
     classWriter.visitEnd();
 
-    if (false) {
+    if (printBytecode) {
       try {
         new ClassReader(new ByteArrayInputStream(classWriter.toByteArray())).accept(
             new TraceClassVisitor(new PrintWriter(System.out)), ClassReader.SKIP_DEBUG);
