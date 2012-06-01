@@ -5,6 +5,7 @@ import jline.console.completer.Completer;
 import jline.console.completer.FileNameCompleter;
 import loop.ast.Assignment;
 import loop.ast.Node;
+import loop.ast.Variable;
 import loop.ast.script.FunctionDecl;
 import loop.ast.script.ModuleDecl;
 import loop.ast.script.ModuleLoader;
@@ -16,13 +17,16 @@ import loop.runtime.Closure;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
  * @author dhanji@gmail.com (Dhanji R. Prasanna)
  */
 public class LoopShell {
+  private static Map<String, Object> shellContext;
 
   public static void shell() {
     System.out.println("loOp (http://looplang.org)");
@@ -35,6 +39,7 @@ public class LoopShell {
       Unit shellScope = new Unit(null, ModuleDecl.SHELL);
       FunctionDecl main = new FunctionDecl("main", null);
       shellScope.declare(main);
+      shellContext = new HashMap<String, Object>();
 
       boolean inFunction = false;
 
@@ -96,6 +101,7 @@ public class LoopShell {
           shellScope = new Unit(null, ModuleDecl.SHELL);
           main = new FunctionDecl("main", null);
           shellScope.declare(main);
+          shellContext = new HashMap<String, Object>();
           continue;
         }
         if (line.startsWith(":i") || line.startsWith(":imports")) {
@@ -262,8 +268,18 @@ public class LoopShell {
     try {
       Object result = Loop.safeEval(executable, null);
 
-      if (addToWhereBlock && parsedLine instanceof Assignment)
+      if (addToWhereBlock && parsedLine instanceof Assignment) {
+        Assignment assignment = (Assignment) parsedLine;
+        if (assignment.lhs() instanceof Variable) {
+          String name = ((Variable) assignment.lhs()).name;
+          shellContext.put(name, result);
+
+          // Loop up the value of the RHS of the variable from the shell context,
+          // if this is the second reference to the same variable.
+          assignment.setRhs(new Parser(new Tokenizer("`loop.LoopShell`.shellObtain(" + name + ")").tokenize()).parse());
+        }
         func.declareLocally(parsedLine);
+      }
 
       return result;
     } finally {

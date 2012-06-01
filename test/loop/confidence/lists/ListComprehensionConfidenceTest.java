@@ -5,6 +5,7 @@ import loop.LoopTest;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
@@ -15,7 +16,7 @@ import static org.junit.Assert.assertEquals;
  * @author dhanji@gmail.com (Dhanji R. Prasanna)
  */
 public class ListComprehensionConfidenceTest extends LoopTest {
-  @Test
+  @Test @SuppressWarnings("unchecked")
   public final void listRanges() {
     assertEquals(Arrays.asList(Arrays.asList(3, 4, 5)), Loop.run("test/loop/confidence/lists/ranges.loop"));
   }
@@ -23,6 +24,46 @@ public class ListComprehensionConfidenceTest extends LoopTest {
   @Test
   public final void identityComprehension() {
     assertEquals(Arrays.asList(10, 20, 30), Loop.run("test/loop/confidence/lists/projection.loop"));
+  }
+
+  @Test
+  public final void slicePortions() {
+    assertEquals(Arrays.asList(1, 2, 3), Loop.run("test/loop/confidence/lists/slices.loop"));
+  }
+
+  @Test
+  public final void slicePortions2() {
+    assertEquals(Arrays.asList(1, 2, 3), Loop.run("test/loop/confidence/lists/slices_2.loop"));
+  }
+
+  @Test
+  public final void slicePortionsTo() {
+    assertEquals(Arrays.asList(2, 3, 4, 5, 6), Loop.run("test/loop/confidence/lists/slices_to.loop"));
+  }
+
+  @Test
+  public final void slicePortionsStrings() {
+    assertEquals("hel", Loop.run("test/loop/confidence/lists/slices_string.loop"));
+  }
+
+  @Test
+  public final void slicePortionsStrings2() {
+    assertEquals("ell", Loop.run("test/loop/confidence/lists/slices_string_2.loop"));
+  }
+
+  @Test
+  public final void slicePortionsStrings3() {
+    assertEquals("hell", Loop.run("test/loop/confidence/lists/slices_string_3.loop"));
+  }
+
+  @Test
+  public final void slicePortionsStrings4() {
+    assertEquals("lo", Loop.run("test/loop/confidence/lists/slices_string_4.loop"));
+  }
+
+  @Test
+  public final void slicePortions3() {
+    assertEquals(Arrays.asList(2, 3), Loop.run("test/loop/confidence/lists/slices_3.loop"));
   }
 
   @Test

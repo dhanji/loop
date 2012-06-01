@@ -12,11 +12,11 @@ public class Collections {
     if (collection instanceof List) {
       List list = (List) collection;
 
-      return list.subList(from, to);
+      return list.subList(from, to + 1);
     } else if (collection instanceof String) {
       String string = (String) collection;
 
-      return string.substring(from, to);
+      return string.substring(from, to + 1);
     }
 
     throw new RuntimeException("Arrays not supported");
@@ -83,11 +83,11 @@ public class Collections {
     if (collection instanceof List) {
       List list = (List) collection;
 
-      return list.subList(0, to);
+      return list.subList(0, to + 1);
     } else if (collection instanceof String) {
       String string = (String) collection;
 
-      return string.substring(0, to);
+      return string.substring(0, to + 1);
     }
 
     throw new RuntimeException("Arrays not supported");

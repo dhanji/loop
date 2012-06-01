@@ -196,7 +196,7 @@ public class AsmCodeEmitterTest extends LoopTest {
     // Inspect.
     inspect(generated);
 
-    assertEquals(Arrays.asList(2, 3), generated.getDeclaredMethod("fun", Object.class).invoke(null, Arrays.asList(1, 2, 3)));
+    assertEquals(Arrays.asList(2, 3, 4), generated.getDeclaredMethod("fun", Object.class).invoke(null, Arrays.asList(1, 2, 3, 4)));
   }
 
   @Test
@@ -225,7 +225,7 @@ public class AsmCodeEmitterTest extends LoopTest {
     // Inspect.
     inspect(generated);
 
-    assertEquals(Arrays.asList(1, 2), generated.getDeclaredMethod("fun", Object.class).invoke(null, Arrays.asList(1, 2, 3)));
+    assertEquals(Arrays.asList(1, 2, 3), generated.getDeclaredMethod("fun", Object.class).invoke(null, Arrays.asList(1, 2, 3)));
   }
 
 
@@ -275,7 +275,7 @@ public class AsmCodeEmitterTest extends LoopTest {
     // Inspect.
     inspect(generated);
 
-    assertEquals("el", generated.getDeclaredMethod("slice", Object.class)
+    assertEquals("ell", generated.getDeclaredMethod("slice", Object.class)
         .invoke(null, "Hello"));
   }
 

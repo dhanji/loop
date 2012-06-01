@@ -23,6 +23,10 @@ public class Assignment extends Node {
     return children.get(1);
   }
 
+  public void setRhs(Node node) {
+    children.set(1, node);
+  }
+
   @Override
   public String toSymbol() {
     if (condition == null) {

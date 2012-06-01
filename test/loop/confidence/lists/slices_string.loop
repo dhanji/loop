@@ -1,0 +1,4 @@
+# String slices
+
+main ->
+  'hello'[0..2]
