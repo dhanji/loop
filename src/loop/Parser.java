@@ -1038,6 +1038,11 @@ public class Parser {
     Computation computation = new Computation();
     computation.add(node);
 
+    // See if there is a call here.
+    Call postfixCall = call();
+    if (postfixCall != null)
+      computation.add(postfixCall.postfix(true));
+
     Node rightOp;
     Node comprehension = null;
     Node operand;
@@ -1327,7 +1332,7 @@ public class Parser {
    * <p/>
    * call := DOT|UNARROW (IDENT | PRIVATE_FIELD) arglist?
    */
-  private Node call() {
+  private Call call() {
     List<Token> call = match(Token.Kind.DOT, Token.Kind.IDENT);
 
     if (null == call)
