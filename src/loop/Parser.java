@@ -181,6 +181,7 @@ public class Parser {
       unit.addToInitializer(expression);
       if (match(Kind.EOL) == null)
         break;
+      chewEols();
     }
 
     chewEols();
