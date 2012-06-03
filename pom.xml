@@ -7,6 +7,14 @@
   <packaging>jar</packaging>
   <version>1.0</version>
   <url>http://looplang.org</url>
+  
+  <repositories>
+  	<repository>
+  		<name>codehaus</name>
+  		<id>codehaus</id>
+  		<url>http://snapshots.repository.codehaus.org/</url>
+  	</repository>
+  </repositories>
 
   <dependencies>
     <dependency>
