@@ -39,6 +39,7 @@ public class LoopShell {
 
     try {
       ConsoleReader reader = new ConsoleReader();
+      reader.setExpandEvents(false);
       reader.addCompleter(new MetaCommandCompleter());
 
       Unit shellScope = new Unit(null, ModuleDecl.SHELL);
