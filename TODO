@@ -1,22 +1,7 @@
 TODO
 ----
 
-x Docs
-x About
-x FAQ
-x Mailing list
-x Get started page
-- Release a build!
-x add analytics to homepage
-x map looplang.org to docsite
-
-x fix closures in loopshell
-x make closures callable using postfix notation
-x and generally allow one-line closures/funcs(?)
 - fix flaky concurrency test (isolate test JVMs?)
-x fix object pattern rules to use {}
-x fix string pattern or remove it.
-x fix scoping problem for local string stuff (dont lookup functions over local vars)
 
 Stretch
 -------
@@ -50,5 +35,3 @@ x Naive Factorial
 
 - Dining Philosophers
 - Fan out/fan in (map-reduce)
-
-java -classpath "/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home/lib/deploy.jar:/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home/lib/dt.jar:/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home/lib/javaws.jar:/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home/lib/jce.jar:/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home/lib/jconsole.jar:/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home/lib/management-agent.jar:/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home/lib/plugin.jar:/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home/lib/sa-jdi.jar:/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Classes/charsets.jar:/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Classes/classes.jar:/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Classes/jsse.jar:/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Classes/ui.jar:/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home/lib/ext/apple_provider.jar:/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home/lib/ext/dnsns.jar:/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home/lib/ext/localedata.jar:/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home/lib/ext/sunjce_provider.jar:/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home/lib/ext/sunpkcs11.jar:/Users/dhanji/src/loop/target/classes:/Users/dhanji/.m2/repository/org/ow2/asm/asm/4.0/asm-4.0.jar:/Users/dhanji/.m2/repository/org/ow2/asm/asm-util/4.0/asm-util-4.0.jar:/Users/dhanji/.m2/repository/org/ow2/asm/asm-tree/4.0/asm-tree-4.0.jar:/Users/dhanji/.m2/repository/org/sonatype/jline/jline/2.5/jline-2.5.jar:/Applications/IntelliJ IDEA 11.app/lib/idea_rt.jar" com.intellij.rt.execution.application.AppMain loop.Loop
