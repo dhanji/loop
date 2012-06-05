@@ -39,6 +39,7 @@ public class LoopShell {
 
     try {
       ConsoleReader reader = new ConsoleReader();
+      reader.setExpandEvents(false);
       reader.addCompleter(new MetaCommandCompleter());
 
       Unit shellScope = new Unit(null, ModuleDecl.SHELL);
@@ -276,22 +277,26 @@ public class LoopShell {
       if (addToWhereBlock && parsedLine instanceof Assignment) {
         Assignment assignment = (Assignment) parsedLine;
         new Reducer(assignment).reduce();
+        boolean shouldReplace = false;
         if (assignment.lhs() instanceof Variable) {
           String name = ((Variable) assignment.lhs()).name;
           shellContext.put(name, result);
 
           // Loop up the value of the RHS of the variable from the shell context,
           // if this is the second reference to the same variable.
-          assignment.setRhs(new Parser(new Tokenizer("`loop.LoopShell`.shellObtain('" + name + "')").tokenize()).parse());
+          assignment.setRhs(new Parser(new Tokenizer(
+              "`loop.LoopShell`.shellObtain('" + name + "')").tokenize()).parse());
+          shouldReplace = true;
         }
 
         // If this assignment is already present in the current scope, we should replace it.
-        for (Iterator<Node> iterator = func.whereBlock().iterator(); iterator.hasNext(); ) {
-          Node node = iterator.next();
-          if (node instanceof Assignment && ((Assignment) node).lhs() instanceof Variable) {
-            iterator.remove();
+        if (shouldReplace)
+          for (Iterator<Node> iterator = func.whereBlock().iterator(); iterator.hasNext(); ) {
+            Node node = iterator.next();
+            if (node instanceof Assignment && ((Assignment) node).lhs() instanceof Variable) {
+              iterator.remove();
+            }
           }
-        }
 
         func.declareLocally(parsedLine);
       }

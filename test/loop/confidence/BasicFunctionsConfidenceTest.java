@@ -58,6 +58,21 @@ public class BasicFunctionsConfidenceTest extends LoopTest {
   }
 
   @Test
+  public final void groupPostfixCalling1() {
+    assertEquals(8, Loop.run("test/loop/confidence/group_postfix_call_1.loop"));
+  }
+
+  @Test
+  public final void groupPostfixCalling2() {
+    assertEquals(8, Loop.run("test/loop/confidence/group_postfix_call_2.loop"));
+  }
+
+  @Test
+  public final void groupPostfixCalling3() {
+    assertEquals(12, Loop.run("test/loop/confidence/group_postfix_call_3.loop"));
+  }
+
+  @Test
   public final void dynamicPostfixCalling1() {
     assertEquals(3, Loop.run("test/loop/confidence/postfix_calling_adv_1.loop"));
   }

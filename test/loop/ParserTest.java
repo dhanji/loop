@@ -7,6 +7,7 @@ import org.junit.Test;
  * @author dhanji@gmail.com (Dhanji R. Prasanna)
  */
 public class ParserTest {
+  private static final boolean printComparisons = false;
 
   @Test
   public final void simpleExpr() {
@@ -295,11 +296,14 @@ public class ParserTest {
     Parser parser = new Parser(new Tokenizer(input).tokenize());
     Assert.assertNotNull("Parser returned no output", parser.parse());
 
-    System.out.println("\n------------------------");
-    System.out.println("Parse Tree:\n" + parser.ast());
-    System.out.println("Parse S-Expr:\n" + Parser.stringify(parser.ast()));
+    if (printComparisons) {
+      System.out.println("\n------------------------");
+      System.out.println("Parse Tree:\n" + parser.ast());
+      System.out.println("Parse S-Expr:\n" + Parser.stringify(parser.ast()));
+    }
     Assert.assertEquals(expected, Parser.stringify(parser.ast()));
-    System.out.println("PASS");
+    if (printComparisons)
+      System.out.println("PASS");
   }
 
   static void expectNoOutput(String input) {

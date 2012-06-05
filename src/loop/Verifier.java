@@ -2,6 +2,7 @@ package loop;
 
 import loop.ast.Assignment;
 import loop.ast.Call;
+import loop.ast.CallChain;
 import loop.ast.ClassDecl;
 import loop.ast.ConstructorCall;
 import loop.ast.DestructuringPair;
@@ -301,7 +302,16 @@ class Verifier {
       for (Node node : whereBlock) {
         if (node instanceof Assignment) {
           Assignment assignment = (Assignment) node;
-          if (name.equals(((Variable) assignment.lhs()).name))
+          Node lhs = assignment.lhs();
+          String lhsName;
+          if (lhs instanceof Variable)
+            lhsName = ((Variable) lhs).name;
+          else {
+            // Should be a call chain, pick the first node as the local variable.
+            assert lhs instanceof CallChain;
+            lhsName = ((Variable)lhs.children().iterator().next()).name;
+          }
+          if (name.equals(lhsName))
             return true;
         }
       }
