@@ -1321,14 +1321,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 
         if (indexIntoList.isSlice() && from == null)
           methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/runtime/Collections", "sliceTo",
-              "(Ljava/lang/Object;Ljava/lang/Integer;)Ljava/lang/Object;");
+              "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
         else
           methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/runtime/Collections", "obtain",
               "(Ljava/lang/Object;Ljava/lang/Integer;Ljava/lang/Integer;)Ljava/lang/Object;");
       } else {
         if (indexIntoList.isSlice())
           methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/runtime/Collections", "sliceFrom",
-              "(Ljava/lang/Object;Ljava/lang/Integer;)Ljava/lang/Object;");
+              "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
         else
           methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/runtime/Collections", "obtain",
               "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");

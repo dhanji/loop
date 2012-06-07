@@ -65,7 +65,8 @@ public class Collections {
     }
   }
 
-  public static Object sliceFrom(Object collection, Integer from) {
+  public static Object sliceFrom(Object collection, Object fromObj) {
+    int from = (Integer)fromObj;
     if (collection instanceof List) {
       List list = (List) collection;
 
@@ -79,7 +80,9 @@ public class Collections {
     throw new RuntimeException("Arrays not supported");
   }
 
-  public static Object sliceTo(Object collection, Integer to) {
+  public static Object sliceTo(Object collection, Object toObj) {
+    int to = (Integer)toObj;
+
     if (collection instanceof List) {
       List list = (List) collection;
 
