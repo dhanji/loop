@@ -220,9 +220,11 @@ public class AsmMvelPerformanceBenchmark extends LoopTest {
   }
 
   public static void time(String script, Callable javaCallable, String mvelCallable) throws Exception {
-    System.out.println("Profiling loop script:");
-    System.out.println(script);
-    System.out.println("\n\n");
+    if (RUNS > 1) {
+      System.out.println("Profiling loop script:");
+      System.out.println(script);
+      System.out.println("\n\n");
+    }
     Parser parser = new Parser(new Tokenizer(script).tokenize());
     Unit unit = parser.script(null);
     unit.reduceAll();
@@ -266,14 +268,18 @@ public class AsmMvelPerformanceBenchmark extends LoopTest {
 
     long start = System.currentTimeMillis();
     MVEL.executeExpression(compiledMvel, factory);
-    System.out.println("Mvel runtime: " + (System.currentTimeMillis() - start));
+
+    if (RUNS > 1)
+      System.out.println("Mvel runtime: " + (System.currentTimeMillis() - start));
 
     start = System.currentTimeMillis();
     for (int i = 0; i < RUNS; i++) {
       javaCallable.call(asmCallable);
     }
-    System.out.println("Asm runtime: " + (System.currentTimeMillis() - start));
-    System.out.println();
+    if (RUNS > 1) {
+      System.out.println("Asm runtime: " + (System.currentTimeMillis() - start));
+      System.out.println();
+    }
   }
 
   public static interface Callable {
