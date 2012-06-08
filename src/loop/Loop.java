@@ -6,6 +6,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.StringReader;
+import java.lang.reflect.Proxy;
+
+import loop.runtime.LoopInvocationHandler;
 
 /**
  * Converts parsed, type-solved, emitted code to Java classes.
@@ -95,5 +98,20 @@ public class Loop {
 
   public static void error(String error) {
     throw new LoopExecutionException(error);
+  }
+  
+  /**
+   * Implements the interface using Loop code.
+   * <p/>
+   * i.e For 'MyInterface.java' you need a loop file 
+   * 'myInterface.loop' on the same package.  
+   */
+  @SuppressWarnings({"unchecked"})
+  public static <I> I get(Class<I> interf) {
+    if (!interf.isInterface()) {
+      throw new RuntimeException(interf + " is not an interface ");
+    }
+    return (I) Proxy.newProxyInstance(interf.getClassLoader(), new Class[] {interf},
+        new LoopInvocationHandler(interf));
   }
 }
