@@ -101,17 +101,21 @@ public class Loop {
   }
   
   /**
-   * Implements the interface using Loop code.
-   * <p/>
-   * i.e For 'MyInterface.java' you need a loop file 
-   * 'myInterface.loop' on the same package.  
+   * Returns an implementation of the given Java interface that
+   * is backed by the specified Loop module. The generated Java class is loaded into
+   * the common runtime Loop class loader. See {@link LoopClassLoader} for details.
+   *
+   * @param iface A Java interface that you wish to implement using Loop
+   * @param module The name of a Loop module minus the '.loop' extension. This name may
+   *               contain a path-prefix from the current directory.
    */
-  @SuppressWarnings({"unchecked"})
-  public static <I> I get(Class<I> interf) {
-    if (!interf.isInterface()) {
-      throw new RuntimeException(interf + " is not an interface ");
+  @SuppressWarnings("unchecked")
+  public static <I> I implement(Class<I> iface, String module) {
+    if (!iface.isInterface()) {
+      throw new RuntimeException(iface + " is not an interface ");
     }
-    return (I) Proxy.newProxyInstance(interf.getClassLoader(), new Class[] {interf},
-        new LoopInvocationHandler(interf));
+
+    return (I) Proxy.newProxyInstance(LoopClassLoader.CLASS_LOADER, new Class[]{ iface },
+        new LoopInvocationHandler(iface, module));
   }
 }

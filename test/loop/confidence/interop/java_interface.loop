@@ -1,3 +1,5 @@
+# author: galdolber
+
 multiply(a, b) ->
   a * b
   

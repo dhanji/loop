@@ -2,6 +2,8 @@ package loop.confidence.interop;
 
 /**
  * Testing pojo.
+ *
+ * @author galdolber
  */
 public class Person {
   

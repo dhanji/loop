@@ -2,31 +2,35 @@ package loop.runtime;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 
+import loop.Executable;
 import loop.Loop;
+import loop.ast.script.ModuleLoader;
 
 /**
  * InvocationHandler for Java -> Loop communication
+ *
+ * @author galdolber
  */
 public class LoopInvocationHandler implements InvocationHandler {
+  public static final Class<?>[] NULLARY = new Class<?>[0];
+  private final Class<?> clazz;
+  private final String loopFile;
 
-  private static HashMap<String, Class<?>> cache = new HashMap<String, Class<?>>();
+  public LoopInvocationHandler(Class<?> i, String file) {
+    String name = file != null ? file : i.getSimpleName();
 
-  private Class<?> clazz;
+    List<Executable> executables = ModuleLoader.loadAndCompile(Arrays.asList(name));
 
-  private String loopFile;
+    if (executables == null || executables.isEmpty())
+      throw new RuntimeException("Unable to find/compile: " + name + ".loop");
 
-  public LoopInvocationHandler(Class<?> i) {
-    String simpleName = i.getSimpleName();
-    loopFile = simpleName.substring(0, 1).toLowerCase() + simpleName.substring(1) + ".loop";
-    String path = i.getPackage().getName().replace(".", "/") + "/" + loopFile;
-    if (cache.containsKey(path)) {
-      this.clazz = cache.get(path);
-    } else {
-      this.clazz = Loop.compile(i.getClassLoader().getResource(path).getFile());
-      cache.put(path, clazz);
-    }
+    Executable executable = executables.get(0);
+    this.clazz = executable.getCompiled();
+    this.loopFile = executable.file();
   }
 
   @Override
@@ -34,18 +38,15 @@ public class LoopInvocationHandler implements InvocationHandler {
     Class<?>[] argsTypes;
     if (args != null) {
       argsTypes = new Class<?>[args.length];
-      for (int i = 0; i < args.length; i++) {
-        argsTypes[i] = Object.class;
-      }
+      Arrays.fill(argsTypes, Object.class);
     } else {
-      argsTypes = new Class<?>[0];
+      argsTypes = NULLARY;
     }
+
     try {
       return clazz.getMethod(m.getName(), argsTypes).invoke(null, args);
     } catch (NoSuchMethodException e) {
       throw new RuntimeException(m.toGenericString() + " is not implemented on " + loopFile);
-    } catch (Exception e) {
-      throw e;
     }
   }
 }

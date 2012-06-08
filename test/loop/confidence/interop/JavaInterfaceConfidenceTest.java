@@ -10,20 +10,22 @@ import loop.Loop;
 import loop.LoopTest;
 
 /**
- * Confidence tests for Loop.get(SomeInterface.class).
+ * Confidence tests for Loop.implement(SomeInterface.class).
+ *
+ * @author galdolber
  */
 public class JavaInterfaceConfidenceTest extends LoopTest {
-
-  LoopInterface i;
+  public static final String LOOP_IMPL = "test/loop/confidence/interop/java_interface";
+  private ExampleJavaInterface i;
 
   @Before
   public void before() {
-    i = Loop.get(LoopInterface.class);
+    i = Loop.implement(ExampleJavaInterface.class, LOOP_IMPL);
   }
 
   @Test(expected = RuntimeException.class)
-  public void loopGetAClass() {
-    Loop.get(JavaInterfaceConfidenceTest.class);
+  public void loopImplAClass() {
+    Loop.implement(JavaInterfaceConfidenceTest.class, LOOP_IMPL);
   }
 
   @Test
@@ -32,17 +34,17 @@ public class JavaInterfaceConfidenceTest extends LoopTest {
   }
 
   @Test(expected = RuntimeException.class)
-  public void noMethodException() {
+  public void methodNotImplemented() {
     i.unexistingMethod();
   }
 
   @Test
-  public void callSimpleMethod() {
+  public void callSimpleMethodWithPrimitiveArgs() {
     assertEquals(20.0, i.multiply(2.0, 10.0), 0.0);
   }
 
   @Test
-  public void callPolymorphicMethod() {
+  public void callPolymorphicMethodImplementedWithPatternMatching() {
     assertEquals("Hello John", i.sayHello("John"));
     assertEquals("Hello Doe", i.sayHello(new Person("Doe")));
   }

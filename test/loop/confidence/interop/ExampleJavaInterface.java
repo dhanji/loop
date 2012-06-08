@@ -2,8 +2,10 @@ package loop.confidence.interop;
 
 /**
  * Testing interface for Java -> Loop communication.
+ *
+ * @author galdolber
  */
-public interface LoopInterface {
+public interface ExampleJavaInterface {
   
   double multiply(double a, double b);
   
