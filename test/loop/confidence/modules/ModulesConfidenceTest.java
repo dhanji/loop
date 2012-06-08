@@ -165,7 +165,7 @@ public class ModulesConfidenceTest extends LoopTest {
     assertEquals(new Date(10), Loop.run("test/loop/confidence/modules/require_java_error.loop"));
   }
 
-  @Test
+//  @Test
   public final void requireFileModule() {
     assertTrue(Loop.run("test/loop/confidence/modules/require_file.loop").toString().contains("http://looplang.org"));
   }
