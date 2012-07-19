@@ -27,14 +27,14 @@ public class Loop {
   }
 
   public static Object run(String file) {
-    Executable unit = loopCompile(file);
+    Executable unit = loopCompile(new File(file));
     unit.runMain(true);
 
     return safeEval(unit, null);
   }
 
   public static Object run(String file, String[] args) {
-    Executable unit = loopCompile(file);
+    Executable unit = loopCompile(new File(file));
     unit.runMain(true);
 
     return safeEval(unit, args);
@@ -71,7 +71,7 @@ public class Loop {
    * Compiles the specified file into a binary Java executable.
    */
   public static Class<?> compile(String file) {
-    return loopCompile(file).getCompiled();
+    return loopCompile(new File(file)).getCompiled();
   }
 
   /**
@@ -79,10 +79,9 @@ public class Loop {
    * <p/>
    * See {@link Executable} for more details on the compilation process.
    */
-  private static Executable loopCompile(String file) {
+  private static Executable loopCompile(File script) {
     Executable executable;
     try {
-      File script = new File(file);
       executable = new Executable(new FileReader(script), script.getName());
       executable.compile();
       if (executable.hasErrors()) {
@@ -92,6 +91,29 @@ public class Loop {
       }
     } catch (FileNotFoundException e) {
       throw new RuntimeException(e);
+    }
+    return executable;
+  }
+  
+  /**
+   * Compiles the provided string of Loop code into Java executable,
+   * Useful if invoking loop code from within Java
+   */
+  public static Class<?> compileString(String code) {
+  	return loopCompile(code).getCompiled();
+  }
+  
+  /**
+   * Returns an executable that represents the compiled form of the Loop code provided
+   * See {@link Executable} for more details on the compilation process.
+   */
+  private static Executable loopCompile(String script) {
+    Executable executable = new Executable(new StringReader(script));
+    executable.compile();
+    if (executable.hasErrors()) {
+      String errors = executable.printStaticErrorsIfNecessary();
+
+      throw new LoopCompileException("Syntax errors exist:\n" + errors, executable);
     }
     return executable;
   }
