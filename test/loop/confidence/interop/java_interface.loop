@@ -1,0 +1,11 @@
+# author: galdolber
+
+multiply(a, b) ->
+  a * b
+  
+sayHello(to) =>
+  String : "Hello @{to}"
+  *      : "Hello @{to.name}"
+  
+noArgumentsMethod() ->
+  "Hello"
