@@ -18,12 +18,11 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="Maven: jline:jline:2.6" level="project" />
     <orderEntry type="library" name="Maven: org.ow2.asm:asm:4.0" level="project" />
     <orderEntry type="library" name="Maven: org.ow2.asm:asm-util:4.0" level="project" />
     <orderEntry type="library" name="Maven: org.ow2.asm:asm-tree:4.0" level="project" />
     <orderEntry type="library" name="Maven: jline:jline:2.6" level="project" />
-    <orderEntry type="library" scope="TEST" name="Maven: org.mvel:mvel2:2.1-SNAPSHOT" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.mvel:mvel2:2.1.Beta8" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: junit:junit:4.8.2" level="project" />
   </component>
 </module>

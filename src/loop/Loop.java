@@ -1,14 +1,13 @@
 package loop;
 
 import loop.ast.script.Unit;
+import loop.runtime.LoopInvocationHandler;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.StringReader;
 import java.lang.reflect.Proxy;
-
-import loop.runtime.LoopInvocationHandler;
 
 /**
  * Converts parsed, type-solved, emitted code to Java classes.
@@ -25,21 +24,24 @@ public class Loop {
         run(args[0], args);
       else
         run(args[0]);
-    } catch (FileNotFoundException e) {
-      System.out.println("No such file: " + e.getMessage());
-      System.out.println();
-      System.exit(1);
+    } catch (RuntimeException e) {
+      if (e.getCause() instanceof FileNotFoundException) {
+        System.out.println("No such file: " + e.getCause().getMessage());
+        System.out.println();
+        System.exit(1);
+      } else
+        throw e;
     }
   }
 
-  public static Object run(String file) throws FileNotFoundException {
+  public static Object run(String file) {
     Executable unit = loopCompile(file);
     unit.runMain(true);
 
     return safeEval(unit, null);
   }
 
-  public static Object run(String file, String[] args) throws FileNotFoundException {
+  public static Object run(String file, String[] args) {
     Executable unit = loopCompile(file);
     unit.runMain(true);
 
@@ -77,11 +79,7 @@ public class Loop {
    * Compiles the specified file into a binary Java executable.
    */
   public static Class<?> compile(String file) {
-    try {
-      return loopCompile(file).getCompiled();
-    } catch (FileNotFoundException e) {
-      throw new RuntimeException(e);
-    }
+    return loopCompile(file).getCompiled();
   }
 
   /**
@@ -89,10 +87,14 @@ public class Loop {
    * <p/>
    * See {@link Executable} for more details on the compilation process.
    */
-  private static Executable loopCompile(String file) throws FileNotFoundException {
+  private static Executable loopCompile(String file) {
     Executable executable;
     File script = new File(file);
-    executable = new Executable(new FileReader(script), script.getName());
+    try {
+      executable = new Executable(new FileReader(script), script.getName());
+    } catch (FileNotFoundException e) {
+      throw new RuntimeException(e);
+    }
     executable.compile();
     if (executable.hasErrors()) {
       String errors = executable.printStaticErrorsIfNecessary();
@@ -105,7 +107,7 @@ public class Loop {
   public static void error(String error) {
     throw new LoopExecutionException(error);
   }
-  
+
   /**
    * Returns an implementation of the given Java interface that
    * is backed by the specified Loop module. The generated Java class is loaded into
