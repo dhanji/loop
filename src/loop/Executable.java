@@ -225,6 +225,8 @@ public class Executable {
     FunctionDecl main = scope.resolveFunction("main", false);
     if (main != null) {
       int args = main.arguments().children().size();
+      if(commandLine == null)
+    	  commandLine = new String[] {};
       try {
         if (args == 0)
           return compiled.getDeclaredMethod("main").invoke(null);
