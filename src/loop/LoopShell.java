@@ -71,8 +71,7 @@ public class LoopShell {
         }
 
         if (rawLine == null) {
-          reader.getTerminal().restore();
-          quit();
+          quit(reader);
         }
 
         //noinspection ConstantConditions
@@ -88,7 +87,7 @@ public class LoopShell {
         }
 
         if (line.startsWith(":q") || line.startsWith(":quit")) {
-          quit();
+          quit(reader);
         }
 
         if (line.startsWith(":h") || line.startsWith(":help")) {
@@ -325,7 +324,9 @@ public class LoopShell {
     return line.startsWith(":run");
   }
 
-  private static void quit() {
+  private static void quit(ConsoleReader reader) throws Exception {
+    reader.getTerminal().restore();
+
     System.out.println("Bye.");
     System.exit(0);
   }
