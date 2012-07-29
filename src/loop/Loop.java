@@ -14,7 +14,7 @@ import java.lang.reflect.Proxy;
  */
 public class Loop {
 
-  public static void main(String[] args) {
+  public static void main(String[] args) throws Exception {
     if (args.length == 0) {
       LoopShell.shell();
     }

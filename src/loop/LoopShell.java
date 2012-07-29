@@ -33,12 +33,12 @@ public class LoopShell {
     return shellContext.get(var);
   }
 
-  public static void shell() {
+  public static void shell() throws Exception {
     System.out.println("loOp (http://looplang.org)");
     System.out.println("     by Dhanji R. Prasanna\n");
 
+    ConsoleReader reader = new ConsoleReader();
     try {
-      ConsoleReader reader = new ConsoleReader();
       reader.setExpandEvents(false);
       reader.addCompleter(new MetaCommandCompleter());
 
@@ -71,6 +71,7 @@ public class LoopShell {
         }
 
         if (rawLine == null) {
+          reader.getTerminal().restore();
           quit();
         }
 
@@ -201,6 +202,7 @@ public class LoopShell {
       } while (true);
     } catch (IOException e) {
       System.err.println("Something went wrong =(");
+      reader.getTerminal().reset();
       System.exit(1);
     }
   }
