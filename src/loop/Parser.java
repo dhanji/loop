@@ -1107,11 +1107,16 @@ public class Parser {
     // Is this a static method call being set up? I.e. NOT a reference to a constant.
     boolean isJavaStaticRef = node instanceof JavaLiteral && ((JavaLiteral)node).staticFieldAccess == null;
     Node call, indexIntoList = null;
+    boolean isFirst = true;
     while ((call = call()) != null || (indexIntoList = indexIntoList()) != null) {
       if (call != null) {
         Call postfixCall = (Call) call;
-        postfixCall.javaStatic(isJavaStaticRef);
+        postfixCall.javaStatic(isFirst && isJavaStaticRef);
         postfixCall.postfix(true);
+
+        // Once we have marked a call as java static, the rest of the chain is not. I.e.:
+        // `java.lang.Class`.forName('..').newInstance() <-- the last call is non-static.
+        isFirst = false;
       }
       chain.add(call != null ? call : indexIntoList);
     }

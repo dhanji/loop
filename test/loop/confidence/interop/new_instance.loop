@@ -1,0 +1,4 @@
+# Creating a new instance via reflection
+
+main() ->
+  `java.lang.String`.getClass().newInstance()

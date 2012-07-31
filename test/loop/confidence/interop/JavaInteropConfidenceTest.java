@@ -20,6 +20,18 @@ public class JavaInteropConfidenceTest extends LoopTest {
   public static final Integer CONSTANT = Long.valueOf(new Date().getTime()).intValue();
 
   @Test
+  public final void newInstanceByReflection() {
+    assertEquals("",
+        Loop.run("test/loop/confidence/interop/new_instance.loop"));
+  }
+
+  @Test
+  public final void newInstanceByReflectionWithForName() {
+    assertEquals("",
+        Loop.run("test/loop/confidence/interop/new_instance_2.loop"));
+  }
+
+  @Test
   public final void mainMethodArgs() {
     assertEquals(Arrays.asList("ARG1", "ARG2"),
         Loop.run("test/loop/confidence/interop/main_args.loop", new String[] { "arg1", "arg2" }));

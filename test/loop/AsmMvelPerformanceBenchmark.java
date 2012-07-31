@@ -49,7 +49,7 @@ public class AsmMvelPerformanceBenchmark extends LoopTest {
   }
 
 
-  @Test
+//  @Test
   public final void interpolatedStrings() throws Exception {
     Callable callable = new Callable() {
 
