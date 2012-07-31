@@ -268,8 +268,11 @@ public class Caller {
     final String key = target + ':' + method;
     toCall = staticMethodCache.get(key);
 
+    Class<?> targetClass = null;
+
     if (toCall == null) {
       final Class<?> clazz = Class.forName(target, true, LoopClassLoader.CLASS_LOADER);
+      targetClass = clazz;
       for (Method candidate : clazz.getMethods()) {
         if (candidate.getName().equals(method)) {
           toCall = candidate;
@@ -285,6 +288,16 @@ public class Caller {
           }
         }
       }
+      
+      // like Class.newInstance()
+      if (toCall == null) {
+        for (Method candidate : Class.class.getDeclaredMethods()) {
+              if (candidate.getName().equals(method)) {
+                  toCall = candidate;
+                  break;
+                }
+    	  }
+      }
 
       if (toCall == null)
         throw new RuntimeException(
@@ -294,10 +307,12 @@ public class Caller {
         toCall.setAccessible(true);
 
       staticMethodCache.put(key, toCall);
+    }else{
+      targetClass = toCall.getClass();
     }
 
     try {
-      return toCall.invoke(target, args);
+      return toCall.invoke(targetClass, args);
     } catch (InvocationTargetException e) {
       throw e.getCause();
     }
