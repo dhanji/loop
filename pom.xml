@@ -11,7 +11,10 @@
   <repositories>
     <repository>
       <id>codehaus</id>
-      <url>http://repository.codehaus.org</url>
+      <url>http://snapshots.repository.codehaus.org/</url>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
     </repository>
   </repositories>
 
