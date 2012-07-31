@@ -250,8 +250,18 @@ public class LoopShell {
       // This is a bit hacky but prevents verification from balking about new
       // vars declared in the lhs.
       if (parsedLine instanceof Assignment) {
+        new Reducer(parsedLine).reduce();
         Assignment assignment = (Assignment) parsedLine;
-        func.children().add(assignment.rhs());
+
+        // Strip the lhs of the assignment if this is a simple variable setter
+        // as that will happen after the fact in a where-block.
+        // However we still do have Assignment nodes that assign "in-place", i.e.
+        // mutate the state of existing variables (example: a.b = c), and these need
+        // to continue untouched.
+        if (assignment.lhs() instanceof Variable)
+          func.children().add(assignment.rhs());
+        else
+          func.children().add(parsedLine);
       } else
         func.children().add(parsedLine);
 
@@ -277,18 +287,19 @@ public class LoopShell {
 
       if (addToWhereBlock && parsedLine instanceof Assignment) {
         Assignment assignment = (Assignment) parsedLine;
-        new Reducer(assignment).reduce();
-        boolean shouldReplace = false;
+
+        boolean shouldReplace = false, shouldAddToWhere = true;
         if (assignment.lhs() instanceof Variable) {
           String name = ((Variable) assignment.lhs()).name;
           shellContext.put(name, result);
 
-          // Loop up the value of the RHS of the variable from the shell context,
+          // Look up the value of the RHS of the variable from the shell context,
           // if this is the second reference to the same variable.
           assignment.setRhs(new Parser(new Tokenizer(
               "`loop.LoopShell`.shellObtain('" + name + "')").tokenize()).parse());
           shouldReplace = true;
-        }
+        } else
+          shouldAddToWhere = false;   // Do not add state-mutating assignments to where block.
 
         // If this assignment is already present in the current scope, we should replace it.
         if (shouldReplace)
@@ -299,7 +310,8 @@ public class LoopShell {
             }
           }
 
-        func.declareLocally(parsedLine);
+        if (shouldAddToWhere)
+          func.declareLocally(parsedLine);
       }
 
       return result;
