@@ -318,6 +318,9 @@ public class Caller {
         }
       }
 
+      if ("class".equals(field))
+        return clazz;
+
       if (toCall == null)
         throw new RuntimeException(
             "No such method could be resolved: " + field + " on type " + target);

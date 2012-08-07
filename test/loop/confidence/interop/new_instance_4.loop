@@ -1,0 +1,4 @@
+# Creating a new instance via reflection and call some methods
+
+main() ->
+  `java.util.GregorianCalendar::class`.newInstance().getTime()

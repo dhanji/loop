@@ -32,6 +32,22 @@ public class JavaInteropConfidenceTest extends LoopTest {
   }
 
   @Test
+  public final void newInstanceByReflectionWithForNameCalendar() {
+    Date now = new Date();
+    Object result = Loop.run("test/loop/confidence/interop/new_instance_3.loop");
+    assertTrue(result instanceof Date);
+    assertTrue(now.before((Date) result) || now.equals(result));
+  }
+
+  @Test
+  public final void newInstanceByReflectionCalendar() {
+    Date now = new Date();
+    Object result = Loop.run("test/loop/confidence/interop/new_instance_4.loop");
+    assertTrue(result instanceof Date);
+    assertTrue(now.before((Date) result) || now.equals(result));
+  }
+
+  @Test
   public final void mainMethodArgs() {
     assertEquals(Arrays.asList("ARG1", "ARG2"),
         Loop.run("test/loop/confidence/interop/main_args.loop", new String[] { "arg1", "arg2" }));
