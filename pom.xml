@@ -67,6 +67,11 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-assembly-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>package</phase>
+          </execution>
+        </executions>
         <version>2.3</version>
         <configuration>
           <descriptorRefs>
@@ -77,28 +82,45 @@
           </archive>
         </configuration>
       </plugin>
+
       <plugin>
         <groupId>org.sonatype.plugins</groupId>
         <artifactId>jarjar-maven-plugin</artifactId>
         <version>1.5</version>
         <executions>
           <execution>
-            <phase>none</phase>
+            <phase>package</phase>
             <goals>
               <goal>jarjar</goal>
             </goals>
             <configuration>
+              <overwrite>true</overwrite>
               <includes>
+                <include>*:loop</include>
                 <include>*:jline</include>
+                <include>*:asm</include>
+                <include>*:asm-util</include>
               </includes>
               <rules>
                 <rule>
                   <pattern>jline.**.*</pattern>
                   <result>loop.internal.jline.@1.$@2</result>
                 </rule>
-                <keep>
-                  <pattern>loop.*</pattern>
-                </keep>
+                <rule>
+                  <pattern>jline.*</pattern>
+                  <result>loop.internal.jline.$@1</result>
+                </rule>
+                <rule>
+                  <pattern>org.fusesource.**.*</pattern>
+                  <result>loop.internal.fusesource.@1.$@2</result>
+                </rule>
+                <rule>
+                  <pattern>org.objectweb.**.*</pattern>
+                  <result>loop.internal.asm.@1.$@2</result>
+                </rule>
+                <!--<keep>-->
+                  <!--<pattern>loop.*</pattern>-->
+                <!--</keep>-->
               </rules>
             </configuration>
           </execution>

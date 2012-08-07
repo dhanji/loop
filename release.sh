@@ -8,9 +8,9 @@ fi
 
 TMP=build_tmp/loop
 
-mvn -o clean package assembly:single
+mvn clean package
 mkdir -p $TMP
-cp ./target/loop-*-jar-with-dependencies.jar ./$TMP/loop.jar
+cp ./target/loop-*.jar ./$TMP/loop.jar
 cp loop $TMP/
 cp loop.bat $TMP/
 cp README $TMP/
