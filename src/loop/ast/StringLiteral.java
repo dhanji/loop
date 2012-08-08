@@ -1,10 +1,6 @@
 package loop.ast;
 
-import loop.Parser;
-import loop.StringLerpTokenizer;
-import loop.StringToken;
-import loop.Token;
-import loop.Tokenizer;
+import loop.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,17 +9,19 @@ import java.util.List;
  * @author dhanji@gmail.com (Dhanji R. Prasanna)
  */
 public class StringLiteral extends Node {
+  public static final String NEWLINE_ESCAPES = "[^\\\\]\\\\n";
   public final String value;
   public final List<Node> parts;
 
   public StringLiteral(String value) {
-    this.value = value;
-
     // Single quote strings cannot be lerped.
     if (value.charAt(0) == '\'') {
       parts = null;
+      this.value = value.replaceAll(NEWLINE_ESCAPES, "\n");
       return;
     }
+
+    this.value = value;
 
     // Parse any expressions embedded in this string.
     List<StringToken> stringTokens = StringLerpTokenizer.tokenize(value);
@@ -38,8 +36,8 @@ public class StringLiteral extends Node {
     }
   }
 
-  public StringLiteral(String value, List<Node> parts) {
-    this.value = value;
+  private StringLiteral(String value, List<Node> parts) {
+    this.value = Escaper.unescape_perl_string(value);
     this.parts = parts;
   }
 

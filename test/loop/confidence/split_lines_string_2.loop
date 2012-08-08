@@ -1,9 +1,9 @@
 # Pattern Matching split lines in a string
 
 unline(input, num) =>
-  /(?<first>[^\\n]*)\\n(?<rest>.*)/, 1   : ''
-  /(?<first>[^\\n]*)\\n(?<rest>.*)/, 2   : first + unline(rest, 2)
-  *, *                                   : input
+  /(?<first>[^\\n]*)\n(?<rest>.*)/, 1   : ''
+  /(?<first>[^\\n]*)\n(?<rest>.*)/, 2   : first + unline(rest, 2)
+  *, *                                  : input
 
 main ->
   unline("hello\nthere\ndude", 2)

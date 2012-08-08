@@ -265,6 +265,11 @@ public class BasicFunctionsConfidenceTest extends LoopTest {
   }
 
   @Test
+  public final void stringLiteralIsUnescaped() {
+    assertEquals("hello\nthere\ndude", Loop.run("test/loop/confidence/stringthing.loop"));
+  }
+
+//  @Test
   public final void splitLinesStringMultiargPatternMatching() {
     assertEquals("hellotheredude", Loop.run("test/loop/confidence/split_lines_string_2.loop"));
   }

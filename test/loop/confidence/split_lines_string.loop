@@ -1,7 +1,7 @@
 # Pattern Matching split lines in a string
 
 unline(input) =>
-  /(?<one>hello)\\n(?<two>there)\\n(?<three>dude)/  : one + two + three
+  /(?<one>hello)\n(?<two>there)\n(?<three>dude)/  : one + two + three
   *                                                 : ''
 
 main ->
