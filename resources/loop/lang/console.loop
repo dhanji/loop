@@ -1,0 +1,14 @@
+module console
+
+require `java.io.BufferedReader`
+require `java.io.InputStreamReader`
+
+write(object) ->
+  `java.lang.System::out`<-write(object.toString()),
+  object
+
+read() ->
+  `java.lang.System::in`<-read()
+
+read_line() ->
+  new BufferedReader(new InputStreamReader(`java.lang.System::in`))<-readLine()

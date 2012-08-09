@@ -64,6 +64,11 @@ public class JavaInteropConfidenceTest extends LoopTest {
   }
 
   @Test
+  public final void callOverloadedJavaMethod() {
+    assertEquals("hello", Loop.run("test/loop/confidence/interop/overloaded_call_1.loop"));
+  }
+
+  @Test
   public final void callAsLoopOverridingJava() {
     assertEquals("HELLO", Loop.run("test/loop/confidence/interop/postfix_call_3.loop"));
   }

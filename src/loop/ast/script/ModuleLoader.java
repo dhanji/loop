@@ -42,6 +42,7 @@ public class ModuleLoader {
 
   private static final Set<String> CORE_MODULES = new HashSet<String>(Arrays.asList(
       "prelude",
+      "console",
       "channels",
       "file"
   ));

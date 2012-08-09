@@ -271,7 +271,7 @@ public class Caller {
     if (toCall == null) {
       final Class<?> clazz = Class.forName(target, true, LoopClassLoader.CLASS_LOADER);
       for (Method candidate : clazz.getMethods()) {
-        if (candidate.getName().equals(method)) {
+        if (signatureMatches(method, candidate, args)) {
           toCall = candidate;
           break;
         }
@@ -279,7 +279,7 @@ public class Caller {
 
       if (toCall == null) {
         for (Method candidate : clazz.getDeclaredMethods()) {
-          if (candidate.getName().equals(method)) {
+          if (signatureMatches(method, candidate, args)) {
             toCall = candidate;
             break;
           }

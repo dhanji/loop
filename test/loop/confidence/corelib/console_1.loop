@@ -1,0 +1,4 @@
+require console as con
+
+main() ->
+  con.read_line()
