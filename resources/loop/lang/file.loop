@@ -26,6 +26,6 @@ stream(name) =>
 
 
 write(file, text) =>
-  String, String  :  new FileWriter(new File(file)).write(text)
-  File, String    :  new FileWriter(file).write(text)
+  String, String    :  `loop.Util`.writeFile(new File(file), text)
+  File, String      :  `loop.Util`.writeFile(file, text)
 

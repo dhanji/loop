@@ -1,13 +1,6 @@
 package loop;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.StringWriter;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -41,6 +34,15 @@ public class Util {
       line = reader.readLine();
     }
     return list;
+  }
+
+  public static void writeFile(File file, String text) throws IOException {
+    FileWriter fileWriter = new FileWriter(file);
+    try {
+      fileWriter.write(text);
+    } finally {
+      fileWriter.close();
+    }
   }
 
   /**

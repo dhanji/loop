@@ -1,0 +1,5 @@
+
+require file as f
+
+main ->
+  f.write('target/tmptmp.tmp', 'boooooya!')
