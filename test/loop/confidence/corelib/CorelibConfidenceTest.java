@@ -16,8 +16,11 @@ public class CorelibConfidenceTest extends LoopTest {
 
   @Test
   public final void simpleFileWrite() throws IOException {
+    File expected = new File("target/tmptmp.tmp");
+    expected.delete();
     Loop.run("test/loop/confidence/corelib/file_1.loop");
 
-    assertTrue(new File("target/tmptmp.tmp").exists());
+    assertTrue(expected.exists());
+    expected.deleteOnExit();
   }
 }
