@@ -235,6 +235,7 @@ public class Unit implements Scope {
 
   public List<AnnotatedError> loadDeps(String file) {
     List<AnnotatedError> errors = null;
+    List<RequireDecl> toRemove = new ArrayList<RequireDecl>();
     for (RequireDecl requireDecl : imports) {
       if (requireDecl.moduleChain != null) {
         List<Executable> executables = ModuleLoader.loadAndCompile(requireDecl.moduleChain);
@@ -263,7 +264,7 @@ public class Unit implements Scope {
 
                 // remove aliased module after it is loaded.
                 aliasedDeps.put(requireDecl.alias, executable);
-                imports.remove(requireDecl);
+                toRemove.add(requireDecl);
               } else
                 deps.add(executable);
             }
@@ -272,6 +273,7 @@ public class Unit implements Scope {
       }
     }
 
+    imports.removeAll(toRemove);
     return errors;
   }
 }
