@@ -1,6 +1,5 @@
 # String interpolation
 
 main ->
+  name: 'Eng',
   'There are @{2 + 6} things going @{"on"} in @{name}land'
-  where
-    name: 'Eng'

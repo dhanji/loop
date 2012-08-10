@@ -1,8 +1,7 @@
 # Long arithmetic
 
 main ->
+  a: 1L,
+  b: 10L,
+  expected: 38L,
   (a * b + 200L - 20L / 5L) == expected
-  where
-    a: 1L
-    b: 10L
-    expected: 38L

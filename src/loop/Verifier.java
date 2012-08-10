@@ -1,24 +1,9 @@
 package loop;
 
-import loop.ast.Assignment;
-import loop.ast.Call;
-import loop.ast.CallChain;
-import loop.ast.ClassDecl;
-import loop.ast.ConstructorCall;
-import loop.ast.DestructuringPair;
-import loop.ast.Guard;
-import loop.ast.MapPattern;
-import loop.ast.Node;
-import loop.ast.PatternRule;
-import loop.ast.PrivateField;
-import loop.ast.RegexLiteral;
-import loop.ast.TypeLiteral;
-import loop.ast.Variable;
-import loop.ast.WildcardPattern;
+import loop.ast.*;
 import loop.ast.script.ArgDeclList;
 import loop.ast.script.FunctionDecl;
 import loop.ast.script.Unit;
-import loop.runtime.Closure;
 import loop.runtime.regex.NamedPattern;
 
 import java.lang.reflect.Constructor;
@@ -296,29 +281,37 @@ class Verifier {
     // Keep searching up the stack until we resolve this symbol or die trying!.
     while (iterator.hasPrevious()) {
       FunctionDecl functionDecl = iterator.previous().function;
-      List<Node> whereBlock = functionDecl.whereBlock();
+      List<Node> children = functionDecl.children();
 
-      // Then attempt to resolve in local function scope.
-      for (Node node : whereBlock) {
-        if (node instanceof Assignment) {
-          Assignment assignment = (Assignment) node;
-          Node lhs = assignment.lhs();
-          String lhsName;
-          if (lhs instanceof Variable)
-            lhsName = ((Variable) lhs).name;
-          else {
-            // Should be a call chain, pick the first node as the local variable.
-            assert lhs instanceof CallChain;
-            lhsName = ((Variable)lhs.children().iterator().next()).name;
-          }
-          if (name.equals(lhsName))
-            return true;
-        }
-      }
+      // Then attempt to resolve in function scope.
+      if (resolveVarInNodes(name, children))
+        return true;
+      else if (resolveVarInNodes(name, functionDecl.whereBlock()))
+        return true;
     }
 
     // Finally this could be a function pointer.
     return resolveCall(name) != null;
+  }
+
+  private boolean resolveVarInNodes(String name, List<Node> children) {
+    for (Node node : children) {
+      if (node instanceof Assignment) {
+        Assignment assignment = (Assignment) node;
+        Node lhs = assignment.lhs();
+        String lhsName;
+        if (lhs instanceof Variable)
+          lhsName = ((Variable) lhs).name;
+        else {
+          // Should be a call chain, pick the first node as the local variable.
+          assert lhs instanceof CallChain;
+          lhsName = ((Variable)lhs.children().iterator().next()).name;
+        }
+        if (name.equals(lhsName))
+          return true;
+      }
+    }
+    return false;
   }
 
   private FunctionDecl resolveCall(String name) {

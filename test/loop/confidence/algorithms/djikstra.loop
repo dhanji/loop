@@ -6,9 +6,8 @@ find(node, goal, path) =>
                                         else (find(i, goal, path + [node.name]) for i in linked))
 
 main ->
+  goal: [ 'name': 'goal', 'adjacent' : [] ],
+  root: [ 'name': 'root',
+          'adjacent' : [{ 'name': 'a',
+                          'adjacent' : [goal] }] ],
   find(root, goal, [])[0]
-  where
-    goal: [ 'name': 'goal', 'adjacent' : [] ]
-    root: [ 'name': 'root',
-            'adjacent' : [{ 'name': 'a',
-                            'adjacent' : [goal] }] ]

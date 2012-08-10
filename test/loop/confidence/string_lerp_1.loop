@@ -1,6 +1,5 @@
 # String interpolation
 
 main ->
+  name: 'Dhanji',
   "Hello, @{name}"
-  where
-    name: 'Dhanji'

@@ -1,8 +1,7 @@
 # prints hours in 3 years: 26208
 
 main ->
+  day: 24,
+  week: 7 * day,
+  year: 52 * week,
   (3 * year)
-  where
-    day: 24
-    week: 7 * day
-    year: 52 * week

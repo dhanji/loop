@@ -4,10 +4,6 @@ print(object) ->
   `java.lang.System::out`.println(object.toString()),
   object
 
-print_fragment(object) ->
-  `java.lang.System::out`.write(object.toString()),
-  object
-
 negate(b) ->
   b not true
 

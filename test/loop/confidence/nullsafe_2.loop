@@ -1,6 +1,5 @@
 # Call in a null-safe manner
 
 main ->
+  obj: { @name: 'hi' },
   obj.missing.toLowerCase()
-  where
-    obj: { @name: 'hi' }

@@ -4,7 +4,6 @@ class Star ->
   name: 'Proxima Centauri'
 
 main ->
+  star: new Star(),
+  frozen: star.immutize(),
   [frozen, star]
-  where
-    star: new Star()
-    frozen: star.immutize()

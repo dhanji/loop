@@ -1,10 +1,9 @@
 # Property navigation across maps
 
 details() ->
+  buddy:  [ 'name' : 'Peter' ],
+  dude:   [ 'friend' : buddy ],
   dude.friend.name
-  where
-    buddy:  [ 'name' : 'Peter' ]
-    dude:   [ 'friend' : buddy ]
 
 main ->
   details()

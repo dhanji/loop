@@ -5,6 +5,5 @@ gran(person) =>
   *                                 : ''
 
 main ->
+  guy: [ @parent : [@parent: [ @name: 'Stephen' ] ] ],
   gran(guy)
-  where
-    guy: [ @parent : [@parent: [ @name: 'Stephen' ] ] ]

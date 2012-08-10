@@ -4,11 +4,9 @@ negate(x) ->
   x not true
 
 main ->
+    a: 0,
+    b: 1,
+    expected: negate(true),
     a = 1,
     print('hello'),
     (a not b) == expected
-  where
-    a: 0
-    b: 1
-    expected: negate(true)
-
