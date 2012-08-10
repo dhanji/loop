@@ -571,7 +571,7 @@ public class AsmCodeEmitterTest extends LoopTest {
         "  obj.@call(1, 2) * 10\n" +
         "\n" +
         "main ->\n" +
-        "  c: 4,\n" +
+        "  c: 4\n" +
         "  lower(@(a, b) ->\n" +
         "          a + b + c)\n" +
         "\n"
@@ -631,9 +631,9 @@ public class AsmCodeEmitterTest extends LoopTest {
   @Test
   public final void emitWhereBlock() throws Exception {
     Parser parser = new Parser(new Tokenizer("compute() ->\n" +
-        "  day: 24,\n" +
-        "  week: 7 * day,\n" +
-        "  year: 52 * week,\n" +
+        "  day: 24\n" +
+        "  week: 7 * day\n" +
+        "  year: 52 * week\n" +
         "  3 * year\n").tokenize());
     Unit unit = parser.script(file);
     unit.reduceAll();

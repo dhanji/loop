@@ -5,5 +5,5 @@ gran(person) =>
   *                                        : ''
 
 main ->
-  guy: ['parent': ['parent': [ 'name': 'Stephen' ] ] ],
+  guy: ['parent': ['parent': [ 'name': 'Stephen' ] ] ]
   gran(guy)

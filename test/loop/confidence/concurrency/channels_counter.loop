@@ -10,7 +10,7 @@ do_stuff(msg) =>
 
 
 main ->
-  channel(@printer, do_stuff, { @serialize : true }),
-  @printer.send(i) for i in [1..10],
-  @printer.send(@print),
+  channel(@printer, do_stuff, { @serialize : true })
+  @printer.send(i) for i in [1..10]
+  @printer.send(@print)
   @printer.send(-1)

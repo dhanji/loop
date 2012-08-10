@@ -10,6 +10,6 @@ do_pong(msg) =>
 
 
 main ->
-  channel(@pinger, do_ping, {:}),
-  channel(@ponger, do_pong, {:}),
+  channel(@pinger, do_ping, {:})
+  channel(@ponger, do_pong, {:})
   @pinger.send(@ping)

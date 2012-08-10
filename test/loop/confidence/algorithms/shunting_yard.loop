@@ -6,9 +6,9 @@ shunt(input, symbols, ops) =>
   *, *, *                    : 'error'
 
 parse(input) ->
-  symbols: [],
-  ops: [],
-  do_shunt: shunt(i, symbols, ops) for i in input,
+  symbols: []
+  ops: []
+  do_shunt: shunt(i, symbols, ops) for i in input
   [symbols, ops]
 
 main ->

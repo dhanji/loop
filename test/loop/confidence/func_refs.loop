@@ -1,5 +1,5 @@
 # Resolve function references in imported modules (prelude)
 
 main ->
-  a: last,
+  a: last
   a.@call([1, 2])

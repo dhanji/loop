@@ -7,6 +7,6 @@ do_stuff(msg) =>
 
 
 main ->
-  channel(@printer, do_stuff, {:}),
-  @printer.send(i) for i in [1..10],
+  channel(@printer, do_stuff, {:})
+  @printer.send(i) for i in [1..10]
   @printer.send(-1)

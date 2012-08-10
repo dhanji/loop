@@ -1,5 +1,5 @@
 # Call in a null-safe manner
 
 main ->
-  name: `loop.LoopTest`.getNull(),
+  name: `loop.LoopTest`.getNull()
   name.toLowerCase()

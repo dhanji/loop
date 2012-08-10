@@ -1,6 +1,6 @@
 # Boolean ops
 
 main ->
-  a = 1,
-  b = 1,
+  a = 1
+  b = 1
   false or ((a not b) == false) and (1 == 1) and (true == true) or true

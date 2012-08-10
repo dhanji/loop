@@ -1,9 +1,9 @@
 # Where block of local assignments
 
 years ->
-  day: 24,
-  week: 7 * day,
-  year: 52 * week,
+  day: 24
+  week: 7 * day
+  year: 52 * week
   year * 3
 
 main ->

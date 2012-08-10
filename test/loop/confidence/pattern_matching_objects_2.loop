@@ -5,5 +5,5 @@ gran(person, num) =>
   *, *                                                      : ''
 
 main ->
-  guy: [ @fo : 'pa', @parent: [@parent: [ @name: 'Stephen' ] ] ],
+  guy: [ @fo : 'pa', @parent: [@parent: [ @name: 'Stephen' ] ] ]
   gran(guy, 1)

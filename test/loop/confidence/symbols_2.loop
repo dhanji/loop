@@ -1,7 +1,7 @@
 # symbols (interned strings)
 
 main ->
-  sp: 'soup',
-  sp2: "sou@{@p}",
-  ok: sp == sp2,
+  sp: 'soup'
+  sp2: "sou@{@p}"
+  ok: sp == sp2
   (@soup == sp2) == ok

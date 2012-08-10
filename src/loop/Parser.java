@@ -358,11 +358,11 @@ public class Parser {
       functionDecl.add(line);
 
       // Multiple lines are allowed if terminated by a comma.
-      if (match(Kind.COMMA) == null)
+      if (match(Kind.EOL) == null)
         break;
 
       // EOLs are optional (probably should discourage this though).
-      chewEols();
+//      chewEols();
       withIndent();
     }
 

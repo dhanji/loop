@@ -1,7 +1,7 @@
 # Inline Sets.
 
 make() ->
- hi: 'hi',
+ hi: 'hi'
  {'hi', "hi", 'h' + 'i', hi}
 
 main ->

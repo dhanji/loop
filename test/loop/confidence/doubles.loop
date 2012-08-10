@@ -1,9 +1,9 @@
 # Double-precision arithmetic
 
 main ->
-  a: 2.0,
-  b: 10.4,
-  c: a * b + 200.0 - 20.5 / 5.2,
-  low: 38.4,
-  high: 38.6,
+  a: 2.0
+  b: 10.4
+  c: a * b + 200.0 - 20.5 / 5.2
+  low: 38.4
+  high: 38.6
   (c > low) and (c < high)

@@ -1,8 +1,8 @@
 # Property navigation across maps
 
 details() ->
-  buddy:  [ 'name' : 'Peter' ],
-  dude:   [ 'friend' : buddy ],
+  buddy:  [ 'name' : 'Peter' ]
+  dude:   [ 'friend' : buddy ]
   dude.friend.name
 
 main ->

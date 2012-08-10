@@ -1,7 +1,7 @@
 # Arbitrary precision integer arithmetic
 
 main ->
-  a: @3,
-  b: @10,
-  expected: @42,
+  a: @3
+  b: @10
+  expected: @42
   (a * b + @200 - @20 / @5) == expected

@@ -1,11 +1,11 @@
 # Call setters on loop objects and put stuff into maps
 
 set_put(obj) ->
-  empty_map: {:},
+  empty_map: {:}
   obj.name : obtain().name
   where
     obtain ->
-      empty_map: {:},
+      empty_map: {:}
       empty_map['name'] : 'Sol'
 
 main ->

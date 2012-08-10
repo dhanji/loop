@@ -4,7 +4,7 @@ negate(x) ->
   x not true
 
 main ->
-  a: 1,
-  b: 1,
-  expected: negate(true),
+  a: 1
+  b: 1
+  expected: negate(true)
   (a not b) == expected

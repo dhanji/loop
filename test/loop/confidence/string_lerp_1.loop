@@ -1,5 +1,5 @@
 # String interpolation
 
 main ->
-  name: 'Dhanji',
+  name: 'Dhanji'
   "Hello, @{name}"

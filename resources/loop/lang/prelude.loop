@@ -1,7 +1,7 @@
 module prelude
 
 print(object) ->
-  `java.lang.System::out`.println(object.toString()),
+  `java.lang.System::out`.println(object.toString())
   object
 
 negate(b) ->
