@@ -1,4 +1,4 @@
 # Calling Java functions.
 
 main ->
-  `org.mvel2.templates.TemplateRuntime`<-eval('@{msg}', { @msg : 'hello' })
+  `org.mvel2.templates.TemplateRuntime`.eval('@{msg}', { @msg : 'hello' })
