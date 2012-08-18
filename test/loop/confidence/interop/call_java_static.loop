@@ -1,7 +1,9 @@
 # Calling Java and Loop functions.
 
+require java.lang.System
+
 @do(str) ->
-  str + `java.lang.System`.currentTimeMillis()
+  str + System::currentTimeMillis()
 
 
 main ->

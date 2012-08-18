@@ -38,8 +38,10 @@ public class Call extends Node {
     return tailCall;
   }
 
-  public void javaStatic(boolean javaStatic) {
+  public Call javaStatic(boolean javaStatic) {
     this.javaStatic = javaStatic;
+
+    return this;
   }
 
   public String namespace() {

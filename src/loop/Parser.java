@@ -775,9 +775,14 @@ public class Parser {
     List<String> requires = new ArrayList<String>();
     requires.add(module.get(0).value);
 
-    boolean aliased;
+    boolean aliased, javaImport = false;
     while (match(Token.Kind.DOT) != null) {
       module = match(Token.Kind.IDENT);
+      if (null == module) {
+        module = match(Kind.TYPE_IDENT);
+        javaImport = true;
+      }
+
       if (null == module) {
         addError("Expected module identifier part after '.'", tokens.get(i - 1));
         throw new LoopCompileException();
@@ -808,7 +813,14 @@ public class Parser {
       throw new LoopCompileException();
     }
 
-    return new RequireDecl(requires, aliased ? aliasTokens.get(0).value : null)
+    // We also allow java imports outside using the backticks syntax.
+    String alias = aliased ? aliasTokens.get(0).value : null;
+    if (javaImport) {
+      return new RequireDecl(requires.toString().replace(", ", "."), alias)
+          .sourceLocation(module);
+    }
+
+    return new RequireDecl(requires, alias)
         .sourceLocation(module);
   }
 
@@ -1338,15 +1350,24 @@ public class Parser {
    * call := DOT|UNARROW (IDENT | PRIVATE_FIELD) arglist?
    */
   private Call call() {
+
     List<Token> call = match(Token.Kind.DOT, Token.Kind.IDENT);
 
     if (null == call)
       call = match(Token.Kind.DOT, Token.Kind.PRIVATE_FIELD);
 
-    boolean forceJava = false;
+    int identIndex = 1;
+    boolean forceJava = false, javaStatic = false;
     if (null == call) {
       call = match(Token.Kind.UNARROW, Token.Kind.IDENT);
       forceJava = true;
+    }
+
+    if (null == call) {
+      call = match(Kind.ASSIGN, Kind.ASSIGN);
+      javaStatic = forceJava = RestrictedKeywords.isStaticOperator(call);
+      call = match(Kind.IDENT);
+      identIndex = 0;
     }
 
     // Production failed.
@@ -1357,8 +1378,9 @@ public class Parser {
     CallArguments callArguments = arglist();
 
     // Use the ident as name, and it is a method if there are () at end.
-    return new Call(call.get(1).value, null != callArguments, callArguments)
+    return new Call(call.get(identIndex).value, null != callArguments, callArguments)
         .callJava(forceJava)
+        .javaStatic(javaStatic)
         .sourceLocation(call);
   }
 

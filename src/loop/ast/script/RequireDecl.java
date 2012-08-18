@@ -19,9 +19,13 @@ public class RequireDecl extends Node {
   }
 
   public RequireDecl(String javaLiteral) {
+    this(javaLiteral, null);
+  }
+
+  public RequireDecl(String javaLiteral, String alias) {
     this.javaLiteral = javaLiteral.substring(1, javaLiteral.length() - 1);
     this.moduleChain = null;
-    this.alias = null;
+    this.alias = alias;
   }
 
   @Override
