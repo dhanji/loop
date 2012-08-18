@@ -243,7 +243,10 @@ public class Executable {
           throw (Error) cause;
 
         // Rethrow cleaned up exception.
-        throw (RuntimeException) cause;
+        if (cause instanceof RuntimeException)
+          throw (RuntimeException) cause;
+
+        throw new RuntimeException(cause);
       } catch (IllegalAccessException e) {
         throw new RuntimeException(e);
       }

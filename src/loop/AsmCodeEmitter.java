@@ -422,9 +422,16 @@ import java.util.concurrent.atomic.AtomicInteger;
           if (isClosure)
             methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/runtime/Caller", "callClosure",
                 "(Lloop/runtime/Closure;Ljava/lang/String;)Ljava/lang/Object;");
-          else
-            methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/runtime/Caller", "callStatic",
-                "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/Object;");
+          else {
+            // Special form to call on a java type rather than lookup by class name.
+            if (call.callJava()) {
+              methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/runtime/Caller", "callStatic",
+                  "(Ljava/lang/Class;Ljava/lang/String;)Ljava/lang/Object;");
+            } else {
+              methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/runtime/Caller", "callStatic",
+                  "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/Object;");
+            }
+          }
 
         } else {
           // If JDK7, use invokedynamic instead for better performance.

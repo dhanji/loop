@@ -78,7 +78,7 @@ public class Call extends Node {
 
   @Override
   public String toString() {
-    return "Call{" + name + (isFunction ? args.toString() : "") + "}";
+    return "Call{" + name + " " + (isFunction ? args.toString() : "") + "}";
   }
 
   @Override

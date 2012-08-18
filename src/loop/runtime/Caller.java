@@ -245,6 +245,10 @@ public class Caller {
     return callStatic(target, method, EMPTY_ARRAY);
   }
 
+  public static Object callStatic(Class<?> clazz, String method) throws Throwable {
+    return callStatic(clazz, method, EMPTY_ARRAY);
+  }
+
   public static Object callClosure(Closure closure, String target) throws Throwable {
     return callStatic(target, closure.name, closure.freeVariables);
   }
@@ -263,13 +267,17 @@ public class Caller {
   }
 
   public static Object callStatic(String target, String method, Object[] args) throws Throwable {
+    return callStatic(Class.forName(target, true, LoopClassLoader.CLASS_LOADER), method, args);
+  }
+
+  public static Object callStatic(Class<?> clazz, String method, Object[] args) throws Throwable {
     Method toCall;
 
+    String target = clazz.getName();
     final String key = target + ':' + method;
     toCall = staticMethodCache.get(key);
 
     if (toCall == null) {
-      final Class<?> clazz = Class.forName(target, true, LoopClassLoader.CLASS_LOADER);
       for (Method candidate : clazz.getMethods()) {
         if (signatureMatches(method, candidate, args)) {
           toCall = candidate;

@@ -1123,7 +1123,7 @@ public class Parser {
     while ((call = call()) != null || (indexIntoList = indexIntoList()) != null) {
       if (call != null) {
         Call postfixCall = (Call) call;
-        postfixCall.javaStatic(isFirst && isJavaStaticRef);
+        postfixCall.javaStatic((isFirst && isJavaStaticRef) || postfixCall.isJavaStatic());
         postfixCall.postfix(true);
 
         // Once we have marked a call as java static, the rest of the chain is not. I.e.:
@@ -1350,7 +1350,6 @@ public class Parser {
    * call := DOT|UNARROW (IDENT | PRIVATE_FIELD) arglist?
    */
   private Call call() {
-
     List<Token> call = match(Token.Kind.DOT, Token.Kind.IDENT);
 
     if (null == call)
@@ -1364,9 +1363,15 @@ public class Parser {
     }
 
     if (null == call) {
-      call = match(Kind.ASSIGN, Kind.ASSIGN);
-      javaStatic = forceJava = RestrictedKeywords.isStaticOperator(call);
+      List<Token> staticOperator = match(Kind.ASSIGN, Kind.ASSIGN);
+      javaStatic = forceJava = RestrictedKeywords.isStaticOperator(staticOperator);
       call = match(Kind.IDENT);
+
+      if (javaStatic && call == null) {
+        addError("Expected static method identifier after '::'", staticOperator.get(0));
+        throw new RuntimeException("Expected static method identifier after '::'");
+      }
+
       identIndex = 0;
     }
 
