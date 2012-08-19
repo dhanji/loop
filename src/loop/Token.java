@@ -27,6 +27,7 @@ public class Token {
     TYPE_IDENT,
     BIG_INTEGER,
     INTEGER,
+    FLOAT,
     LONG,
     STRING,
     JAVA_LITERAL,
@@ -167,6 +168,8 @@ public class Token {
       // Integers (can this be more efficient?)
       if (value.matches("[0-9]+"))
         return INTEGER;
+      else if (value.matches("[0-9]+F"))
+        return FLOAT;
       else if (value.matches("[0-9]+L"))
         return LONG;
 

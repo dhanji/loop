@@ -25,6 +25,8 @@ public class Operations {
       out.addAll(right);
 
       return out;
+    } else if (arg0 instanceof Float) {
+      return (Float)arg0 + (Float)arg1;
     } else if (arg0 instanceof Double) {
       return (Double)arg0 + (Double)arg1;
     } else if (arg0 instanceof Long) {
@@ -55,6 +57,8 @@ public class Operations {
       out.removeAll(right);
 
       return out;
+    } else if (arg0 instanceof Float) {
+      return (Float)arg0 - (Float)arg1;
     } else if (arg0 instanceof Double) {
       return (Double)arg0 - (Double)arg1;
     } else if (arg0 instanceof Long) {
@@ -81,6 +85,8 @@ public class Operations {
       }
 
       return out;
+    } else if (arg0 instanceof Float) {
+      return (Float)arg0 * (Float)arg1;
     } else if (arg0 instanceof Double) {
       return (Double)arg0 * (Double)arg1;
     } else if (arg0 instanceof Long) {
@@ -97,6 +103,8 @@ public class Operations {
   public static Object divide(Object arg0, Object arg1) {
     if (arg0 instanceof Integer) {
       return (Integer)arg0 / (Integer)arg1;
+    } else if (arg0 instanceof Float) {
+      return (Float)arg0 / (Float)arg1;
     } else if (arg0 instanceof Double) {
       return (Double)arg0 / (Double)arg1;
     } else if (arg0 instanceof Long) {
@@ -113,6 +121,8 @@ public class Operations {
   public static Object remainder(Object arg0, Object arg1) {
     if (arg0 instanceof Integer) {
       return (Integer)arg0 % (Integer)arg1;
+    } else if (arg0 instanceof Float) {
+      return (Float)arg0 % (Float)arg1;
     } else if (arg0 instanceof Double) {
       return (Double)arg0 % (Double)arg1;
     } else if (arg0 instanceof Long) {
@@ -129,6 +139,8 @@ public class Operations {
   public static Boolean lesserThan(Object arg0, Object arg1) {
     if (arg0 instanceof Integer) {
       return (Integer)arg0 < (Integer)arg1;
+    } else if (arg0 instanceof Float) {
+      return (Float)arg0 < (Float)arg1;
     } else if (arg0 instanceof Double) {
       return (Double)arg0 < (Double)arg1;
     } else if (arg0 instanceof Long) {
@@ -145,6 +157,8 @@ public class Operations {
   public static Boolean greaterThan(Object arg0, Object arg1) {
     if (arg0 instanceof Integer) {
       return (Integer)arg0 > (Integer)arg1;
+    } else if (arg0 instanceof Float) {
+      return (Float)arg0 > (Float)arg1;
     } else if (arg0 instanceof Double) {
       return (Double)arg0 > (Double)arg1;
     } else if (arg0 instanceof Long) {
@@ -161,6 +175,8 @@ public class Operations {
   public static Boolean greaterThanOrEqual(Object arg0, Object arg1) {
     if (arg0 instanceof Integer) {
       return (Integer)arg0 >= (Integer)arg1;
+    } else if (arg0 instanceof Float) {
+      return (Float)arg0 >= (Float)arg1;
     } else if (arg0 instanceof Double) {
       return (Double)arg0 >= (Double)arg1;
     } else if (arg0 instanceof Long) {
@@ -177,6 +193,8 @@ public class Operations {
   public static Boolean lesserThanOrEqual(Object arg0, Object arg1) {
     if (arg0 instanceof Integer) {
       return (Integer)arg0 <= (Integer)arg1;
+    } else if (arg0 instanceof Float) {
+      return (Float)arg0 <= (Float)arg1;
     } else if (arg0 instanceof Double) {
       return (Double)arg0 <= (Double)arg1;
     } else if (arg0 instanceof Long) {

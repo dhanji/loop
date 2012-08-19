@@ -74,6 +74,7 @@ import java.util.concurrent.atomic.AtomicInteger;
     EMITTERS.put(Dereference.class, dereferenceEmitter);
     EMITTERS.put(Computation.class, computationEmitter);
     EMITTERS.put(IntLiteral.class, intEmitter);
+    EMITTERS.put(FloatLiteral.class, floatEmitter);
     EMITTERS.put(LongLiteral.class, longEmitter);
     EMITTERS.put(DoubleLiteral.class, doubleEmitter);
     EMITTERS.put(BigIntegerLiteral.class, bigIntegerEmitter);
@@ -735,12 +736,25 @@ import java.util.concurrent.atomic.AtomicInteger;
     }
   };
 
+  private final Emitter floatEmitter = new Emitter() {
+    @Override
+    public void emitCode(Node node) {
+      FloatLiteral floatLiteral = (FloatLiteral) node;
+
+      // Emit float wrappers.
+      MethodVisitor methodVisitor = methodStack.peek();
+      methodVisitor.visitLdcInsn(floatLiteral.value);
+      methodVisitor.visitMethodInsn(INVOKESTATIC, "java/lang/Float", "valueOf",
+          "(F)Ljava/lang/Float;");
+    }
+  };
+
   private final Emitter longEmitter = new Emitter() {
     @Override
     public void emitCode(Node node) {
       LongLiteral longLiteral = (LongLiteral) node;
 
-      // Emit int wrappers.
+      // Emit long wrappers.
       MethodVisitor methodVisitor = methodStack.peek();
       methodVisitor.visitLdcInsn(longLiteral.value);
       methodVisitor.visitMethodInsn(INVOKESTATIC, "java/lang/Long", "valueOf",
@@ -753,7 +767,7 @@ import java.util.concurrent.atomic.AtomicInteger;
     public void emitCode(Node node) {
       DoubleLiteral doubleLiteral = (DoubleLiteral) node;
 
-      // Emit int wrappers.
+      // Emit double wrappers.
       MethodVisitor methodVisitor = methodStack.peek();
       methodVisitor.visitLdcInsn(doubleLiteral.value);
       methodVisitor.visitMethodInsn(INVOKESTATIC, "java/lang/Double", "valueOf",
@@ -766,7 +780,7 @@ import java.util.concurrent.atomic.AtomicInteger;
     public void emitCode(Node node) {
       BigIntegerLiteral bigIntegerLiteral = (BigIntegerLiteral) node;
 
-      // Emit int wrappers.
+      // Emit bigint wrappers.
       MethodVisitor methodVisitor = methodStack.peek();
       methodVisitor.visitTypeInsn(NEW, "java/math/BigInteger");
       methodVisitor.visitInsn(DUP);
@@ -781,7 +795,7 @@ import java.util.concurrent.atomic.AtomicInteger;
     public void emitCode(Node node) {
       BigDecimalLiteral bigDecimalLiteral = (BigDecimalLiteral) node;
 
-      // Emit int wrappers.
+      // Emit bigdecimal wrappers.
       MethodVisitor methodVisitor = methodStack.peek();
       methodVisitor.visitTypeInsn(NEW, "java/math/BigDecimal");
       methodVisitor.visitInsn(DUP);
@@ -796,7 +810,7 @@ import java.util.concurrent.atomic.AtomicInteger;
     public void emitCode(Node node) {
       BooleanLiteral booleanLiteral = (BooleanLiteral) node;
 
-      // Emit int wrappers.
+      // Emit boolean wrappers.
       MethodVisitor methodVisitor = methodStack.peek();
       methodVisitor.visitIntInsn(BIPUSH, booleanLiteral.value ? 1 : 0);
       methodVisitor.visitMethodInsn(INVOKESTATIC, "java/lang/Boolean", "valueOf",

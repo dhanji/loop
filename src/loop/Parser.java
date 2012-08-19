@@ -1538,6 +1538,11 @@ public class Parser {
           return new DoubleLiteral('-' + match.get(1).value + '.' + additional.get(1).value)
               .sourceLocation(additional.get(1));
 
+        additional = match(Kind.DOT, Kind.FLOAT);
+        if (additional != null)
+          return new FloatLiteral('-' + match.get(1).value + '.' + additional.get(1).value + 'F')
+              .sourceLocation(additional.get(1));
+
         return new IntLiteral('-' + match.get(1).value).sourceLocation(match.get(1));
       } else if ((match = match(Kind.MINUS, Kind.LONG)) != null)
         return new LongLiteral('-' + match.get(1).value).sourceLocation(match.get(1));
@@ -1562,6 +1567,11 @@ public class Parser {
         List<Token> additional = match(Kind.DOT, Kind.INTEGER);
         if (additional != null)
           return new DoubleLiteral(token.value + '.' + additional.get(1).value)
+              .sourceLocation(additional.get(1));
+
+        additional = match(Kind.DOT, Kind.FLOAT);
+        if (additional != null)
+          return new FloatLiteral(token.value + '.' + additional.get(1).value + 'F')
               .sourceLocation(additional.get(1));
 
         return new IntLiteral(token.value).sourceLocation(token);
