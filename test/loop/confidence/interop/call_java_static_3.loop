@@ -1,0 +1,10 @@
+# Calling Java and Loop functions.
+
+require loop.confidence.interop.JavaInteropConfidenceTest
+
+@do() ->
+  JavaInteropConfidenceTest::CONSTANT + 1
+
+
+main ->
+  @do()

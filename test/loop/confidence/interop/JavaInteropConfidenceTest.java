@@ -83,4 +83,9 @@ public class JavaInteropConfidenceTest extends LoopTest {
   public final void callJavaStaticConstant() {
     assertEquals(CONSTANT + 1, Loop.run("test/loop/confidence/interop/call_java_static_2.loop"));
   }
+
+  @Test
+  public final void callJavaStaticConstantWithoutBackticks() {
+    assertEquals(CONSTANT + 1, Loop.run("test/loop/confidence/interop/call_java_static_3.loop"));
+  }
 }

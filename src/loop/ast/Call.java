@@ -5,9 +5,8 @@ import loop.Parser;
 /**
  * Represents a method call or member dereference.
  */
-public class Call extends Node {
+public class Call extends MemberAccess {
   public final String name;
-  public final boolean isFunction;
 
   private CallArguments args;
   private boolean javaStatic;
@@ -16,9 +15,8 @@ public class Call extends Node {
   private boolean tailCall;
   private String namespace;
 
-  public Call(String name, boolean function, CallArguments args) {
+  public Call(String name, CallArguments args) {
     this.name = name;
-    this.isFunction = function;
     this.args = args;
   }
 
@@ -78,11 +76,11 @@ public class Call extends Node {
 
   @Override
   public String toString() {
-    return "Call{" + name + " " + (isFunction ? args.toString() : "") + "}";
+    return "Call{" + name + " " + args.toString() + "}";
   }
 
   @Override
   public String toSymbol() {
-    return name + (isFunction ? Parser.stringify(args) : "");
+    return name + Parser.stringify(args);
   }
 }

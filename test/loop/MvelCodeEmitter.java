@@ -48,7 +48,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * @author dhanji@gmail.com (Dhanji R. Prasanna)
  */
-@SuppressWarnings({"FieldCanBeLocal"}) class MvelCodeEmitter {
+@SuppressWarnings({"FieldCanBeLocal"})
+class MvelCodeEmitter {
   private static final AtomicInteger functionNameSequence = new AtomicInteger();
   private static final Map<String, String> BINARY_OP_TRANSLATIONS = new HashMap<String, String>();
   private static final String AND = " && ";
@@ -222,7 +223,8 @@ import java.util.concurrent.atomic.AtomicInteger;
   // -------------------------------------------------------------------
 
   private final Emitter ternaryExpressionEmitter = new Emitter() {
-    @Override public void emitCode(Node node) {
+    @Override
+    public void emitCode(Node node) {
       TernaryExpression expression = (TernaryExpression) node;
 
       trackLineAndColumn(expression);
@@ -239,7 +241,8 @@ import java.util.concurrent.atomic.AtomicInteger;
   };
 
   private final Emitter computationEmitter = new Emitter() {
-    @Override public void emitCode(Node node) {
+    @Override
+    public void emitCode(Node node) {
       Computation computation = (Computation) node;
       trackLineAndColumn(computation);
       append('(');
@@ -249,7 +252,8 @@ import java.util.concurrent.atomic.AtomicInteger;
   };
 
   private final Emitter callEmitter = new Emitter() {
-    @Override public void emitCode(Node node) {
+    @Override
+    public void emitCode(Node node) {
       Call call = (Call) node;
       String name;
 
@@ -264,22 +268,21 @@ import java.util.concurrent.atomic.AtomicInteger;
         name = normalizeMethodName(call.name());
 
       append(name);
-      if (call.isFunction) {
-        append('(');
-        List<Node> children = call.args().children();
-        for (int i = 0, childrenSize = children.size(); i < childrenSize; i++) {
-          emit(children.get(i));
+      append('(');
+      List<Node> children = call.args().children();
+      for (int i = 0, childrenSize = children.size(); i < childrenSize; i++) {
+        emit(children.get(i));
 
-          if (i < childrenSize - 1)
-            append(", ");
-        }
-        append(')');
+        if (i < childrenSize - 1)
+          append(", ");
       }
+      append(')');
     }
   };
 
   private final Emitter constructorCallEmitter = new Emitter() {
-    @Override public void emitCode(Node node) {
+    @Override
+    public void emitCode(Node node) {
       ConstructorCall call = (ConstructorCall) node;
       trackLineAndColumn(call);
 
@@ -353,7 +356,8 @@ import java.util.concurrent.atomic.AtomicInteger;
   };
 
   private final Emitter binaryOpEmitter = new Emitter() {
-    @Override public void emitCode(Node node) {
+    @Override
+    public void emitCode(Node node) {
       BinaryOp binaryOp = (BinaryOp) node;
       String name = BINARY_OP_TRANSLATIONS.get(binaryOp.name());
 
@@ -366,7 +370,8 @@ import java.util.concurrent.atomic.AtomicInteger;
   };
 
   private final Emitter assignmentEmitter = new Emitter() {
-    @Override public void emitCode(Node node) {
+    @Override
+    public void emitCode(Node node) {
       Assignment assignment = (Assignment) node;
 //      if (!(assignment.lhs() instanceof Variable))
 //        throw new RuntimeException("Expected a variable on the LHS of assignment: "
@@ -381,7 +386,8 @@ import java.util.concurrent.atomic.AtomicInteger;
   };
 
   private final Emitter variableEmitter = new Emitter() {
-    @Override public void emitCode(Node node) {
+    @Override
+    public void emitCode(Node node) {
       Variable var = (Variable) node;
       trackLineAndColumn(var);
       append(var.name);
@@ -393,7 +399,8 @@ import java.util.concurrent.atomic.AtomicInteger;
   }
 
   private final Emitter intEmitter = new Emitter() {
-    @Override public void emitCode(Node node) {
+    @Override
+    public void emitCode(Node node) {
       IntLiteral intLiteral = (IntLiteral) node;
       trackLineAndColumn(intLiteral);
       append(intLiteral.value);
@@ -401,7 +408,8 @@ import java.util.concurrent.atomic.AtomicInteger;
   };
 
   private final Emitter booleanEmitter = new Emitter() {
-    @Override public void emitCode(Node node) {
+    @Override
+    public void emitCode(Node node) {
       BooleanLiteral booleanLiteral = (BooleanLiteral) node;
       trackLineAndColumn(booleanLiteral);
       append(booleanLiteral.value);
@@ -409,7 +417,8 @@ import java.util.concurrent.atomic.AtomicInteger;
   };
 
   private final Emitter typeLiteralEmitter = new Emitter() {
-    @Override public void emitCode(Node node) {
+    @Override
+    public void emitCode(Node node) {
       TypeLiteral type = (TypeLiteral) node;
       trackLineAndColumn(type);
       append(type.name);
@@ -417,7 +426,8 @@ import java.util.concurrent.atomic.AtomicInteger;
   };
 
   private final Emitter javaLiteralEmitter = new Emitter() {
-    @Override public void emitCode(Node node) {
+    @Override
+    public void emitCode(Node node) {
       JavaLiteral java = (JavaLiteral) node;
       trackLineAndColumn(java);
       append(java.value);
@@ -425,7 +435,8 @@ import java.util.concurrent.atomic.AtomicInteger;
   };
 
   private final Emitter stringLiteralEmitter = new Emitter() {
-    @Override public void emitCode(Node node) {
+    @Override
+    public void emitCode(Node node) {
       StringLiteral string = (StringLiteral) node;
 
       trackLineAndColumn(string);
@@ -448,14 +459,16 @@ import java.util.concurrent.atomic.AtomicInteger;
   };
 
   private final Emitter regexLiteralEmitter = new Emitter() {
-    @Override public void emitCode(Node node) {
+    @Override
+    public void emitCode(Node node) {
       RegexLiteral regex = (RegexLiteral) node;
       append('"').append(regex.value).append('"');
     }
   };
 
   private final Emitter functionDeclEmitter = new Emitter() {
-    @Override public void emitCode(Node node) {
+    @Override
+    public void emitCode(Node node) {
       FunctionDecl functionDecl = (FunctionDecl) node;
       String name = functionDecl.name();
       if (name == null) {
@@ -506,7 +519,8 @@ import java.util.concurrent.atomic.AtomicInteger;
   };
 
   private final Emitter privateFieldEmitter = new Emitter() {
-    @Override public void emitCode(Node node) {
+    @Override
+    public void emitCode(Node node) {
       PrivateField privateField = (PrivateField) node;
       trackLineAndColumn(privateField);
       append(normalizeMethodName(privateField.name()));
@@ -514,7 +528,8 @@ import java.util.concurrent.atomic.AtomicInteger;
   };
 
   private final Emitter argDeclEmitter = new Emitter() {
-    @Override public void emitCode(Node node) {
+    @Override
+    public void emitCode(Node node) {
       ArgDeclList argDeclList = (ArgDeclList) node;
       append('(');
 
@@ -533,7 +548,8 @@ import java.util.concurrent.atomic.AtomicInteger;
   };
 
   private final Emitter inlineListEmitter = new Emitter() {
-    @Override public void emitCode(Node node) {
+    @Override
+    public void emitCode(Node node) {
       InlineListDef inlineListDef = (InlineListDef) node;
 
       if (inlineListDef.isSet) {
@@ -555,7 +571,8 @@ import java.util.concurrent.atomic.AtomicInteger;
   };
 
   private final Emitter inlineMapEmitter = new Emitter() {
-    @Override public void emitCode(Node node) {
+    @Override
+    public void emitCode(Node node) {
       InlineMapDef inlineMapDef = (InlineMapDef) node;
 
       if (inlineMapDef.isTree)
@@ -586,7 +603,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 
   private final Emitter callChainEmitter = new Emitter() {
-    @Override public void emitCode(Node node) {
+    @Override
+    public void emitCode(Node node) {
       CallChain callChain = (CallChain) node;
       List<Node> children = callChain.children();
 
@@ -618,7 +636,8 @@ import java.util.concurrent.atomic.AtomicInteger;
   };
 
   private final Emitter indexIntoListEmitter = new Emitter() {
-    @Override public void emitCode(Node node) {
+    @Override
+    public void emitCode(Node node) {
       IndexIntoList indexIntoList = (IndexIntoList) node;
       append('[');
 
@@ -629,7 +648,8 @@ import java.util.concurrent.atomic.AtomicInteger;
   };
 
   private final Emitter comprehensionEmitter = new Emitter() {
-    @Override public void emitCode(Node node) {
+    @Override
+    public void emitCode(Node node) {
       Comprehension comprehension = (Comprehension) node;
       append(" (");
       trackLineAndColumn(comprehension);
@@ -672,7 +692,8 @@ import java.util.concurrent.atomic.AtomicInteger;
   }
 
   private final Emitter patternRuleEmitter = new Emitter() {
-    @Override public void emitCode(Node node) {
+    @Override
+    public void emitCode(Node node) {
       PatternRule rule = (PatternRule) node;
       Context context = functionStack.peek();
 
@@ -909,7 +930,7 @@ import java.util.concurrent.atomic.AtomicInteger;
       Node child = children.get(j);
       if (child instanceof Variable) {
         trackLineAndColumn(child);
-        inbody.append(((Variable)child).name);
+        inbody.append(((Variable) child).name);
 
         inbody.append(" = ");
         inbody.append(arg0);

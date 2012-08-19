@@ -127,7 +127,7 @@ class Verifier {
       Call call = (Call) node;
 
       // Skip resolving property derefs.
-      if (!call.isFunction || call.isJavaStatic() || call.isPostfix())
+      if (call.isJavaStatic() || call.isPostfix())
         return;
 
       verifyNode(call.args());

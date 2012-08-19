@@ -115,7 +115,6 @@ public class Parser {
    * one-line expressions.
    * <p/>
    * script := module? require* (functionDecl | classDecl)* (computation EOL)*
-   * @param file
    */
   public Unit script(String file) {
     chewEols();
@@ -362,7 +361,6 @@ public class Parser {
         break;
 
       // EOLs are optional (probably should discourage this though).
-//      chewEols();
       withIndent();
     }
 
@@ -692,7 +690,7 @@ public class Parser {
           for (Node element : chain.children()) {
             Variable var = (Variable) element;
 
-            rewritten.add(new Call(var.name, false, null));
+            rewritten.add(new Dereference(var.name).sourceLocation(var));
           }
 
           pair.rhs = rewritten;
@@ -800,7 +798,7 @@ public class Parser {
         aliasedModules = new HashSet<String>();
 
       if (aliasTokens == null) {
-        addError("Expected module alias after '" + RestrictedKeywords.AS +"'", tokens.get(i - 1));
+        addError("Expected module alias after '" + RestrictedKeywords.AS + "'", tokens.get(i - 1));
         throw new LoopCompileException();
       }
 
@@ -886,7 +884,6 @@ public class Parser {
       throw new LoopCompileException();
     }
 
-    Token start = startTokens.iterator().next();
     Assignment assignment = new Assignment();
     assignment.add(left);
     assignment.add(right);
@@ -960,7 +957,6 @@ public class Parser {
 
       Node elsePart = computation();
 
-      Token start = ifTokens.iterator().next();
       return new TernaryExpression()
           .add(ifPart)
           .add(thenPart)
@@ -1051,7 +1047,7 @@ public class Parser {
     computation.add(node);
 
     // See if there is a call here.
-    Call postfixCall = call();
+    MemberAccess postfixCall = call();
     if (postfixCall != null)
       computation.add(postfixCall.postfix(true));
 
@@ -1097,7 +1093,7 @@ public class Parser {
 
     // If not an ternary IF, maybe a term?
     if (null == node)
-    node = term();
+      node = term();
 
     // Production failed.
     if (null == node) {
@@ -1110,19 +1106,19 @@ public class Parser {
       String functionName = (node instanceof Variable)
           ? ((Variable) node).name
           : ((PrivateField) node).name();
-      node = new Call(functionName, true, args).sourceLocation(node);
+      node = new Call(functionName, args).sourceLocation(node);
     }
 
     CallChain chain = new CallChain();
     chain.add(node);
 
     // Is this a static method call being set up? I.e. NOT a reference to a constant.
-    boolean isJavaStaticRef = node instanceof JavaLiteral && ((JavaLiteral)node).staticFieldAccess == null;
+    boolean isJavaStaticRef = node instanceof JavaLiteral && ((JavaLiteral) node).staticFieldAccess == null;
     Node call, indexIntoList = null;
     boolean isFirst = true;
     while ((call = call()) != null || (indexIntoList = indexIntoList()) != null) {
       if (call != null) {
-        Call postfixCall = (Call) call;
+        MemberAccess postfixCall = (MemberAccess) call;
         postfixCall.javaStatic((isFirst && isJavaStaticRef) || postfixCall.isJavaStatic());
         postfixCall.postfix(true);
 
@@ -1345,34 +1341,61 @@ public class Parser {
   }
 
   /**
+   *  dereference := '::' (IDENT | TYPE_IDENT) argList?
+   */
+  private MemberAccess staticCall() {
+    List<Token> staticOperator = match(Kind.ASSIGN, Kind.ASSIGN);
+    boolean isStatic = RestrictedKeywords.isStaticOperator(staticOperator);
+    if (!isStatic)
+      return null;
+
+    List<Token> ident = match(Kind.IDENT);
+
+    boolean constant = false;
+    if (ident == null) {
+      ident = match(Kind.TYPE_IDENT);
+      constant = true;
+    }
+
+    if (ident == null) {
+      addError("Expected static method identifier after '::'", staticOperator.get(0));
+      throw new RuntimeException("Expected static method identifier after '::'");
+    }
+
+    CallArguments arglist = arglist();
+
+    if (arglist == null)
+      return new Dereference(ident.get(0).value)
+          .constant(constant)
+          .javaStatic(isStatic)
+          .sourceLocation(ident);
+
+    // Use the ident as name, and it is a method if there are () at end.
+    return new Call(ident.get(0).value, arglist)
+        .callJava(true)
+        .javaStatic(isStatic)
+        .sourceLocation(ident);
+  }
+
+  /**
    * A method call production rule.
    * <p/>
-   * call := DOT|UNARROW (IDENT | PRIVATE_FIELD) arglist?
+   * call := staticCall | (DOT|UNARROW (IDENT | PRIVATE_FIELD) arglist?)
    */
-  private Call call() {
+  private MemberAccess call() {
+    MemberAccess dereference = staticCall();
+    if (dereference != null)
+      return dereference;
+
     List<Token> call = match(Token.Kind.DOT, Token.Kind.IDENT);
 
     if (null == call)
       call = match(Token.Kind.DOT, Token.Kind.PRIVATE_FIELD);
 
-    int identIndex = 1;
     boolean forceJava = false, javaStatic = false;
     if (null == call) {
       call = match(Token.Kind.UNARROW, Token.Kind.IDENT);
       forceJava = true;
-    }
-
-    if (null == call) {
-      List<Token> staticOperator = match(Kind.ASSIGN, Kind.ASSIGN);
-      javaStatic = forceJava = RestrictedKeywords.isStaticOperator(staticOperator);
-      call = match(Kind.IDENT);
-
-      if (javaStatic && call == null) {
-        addError("Expected static method identifier after '::'", staticOperator.get(0));
-        throw new RuntimeException("Expected static method identifier after '::'");
-      }
-
-      identIndex = 0;
     }
 
     // Production failed.
@@ -1381,9 +1404,12 @@ public class Parser {
     }
 
     CallArguments callArguments = arglist();
+    if (callArguments == null)
+      return new Dereference(call.get(1).value)
+          .sourceLocation(call);
 
     // Use the ident as name, and it is a method if there are () at end.
-    return new Call(call.get(identIndex).value, null != callArguments, callArguments)
+    return new Call(call.get(1).value, callArguments)
         .callJava(forceJava)
         .javaStatic(javaStatic)
         .sourceLocation(call);
@@ -1495,7 +1521,7 @@ public class Parser {
 
   /**
    * (lexer super rule) literal := string | MINUS? (integer | long | ( integer DOT integer ))
-   *      | TYPE_IDENT | JAVA_LITERAL
+   * | TYPE_IDENT | JAVA_LITERAL
    */
   private Node literal() {
     Token token =

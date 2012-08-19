@@ -1,65 +1,19 @@
 package loop;
 
-import loop.ast.Assignment;
-import loop.ast.BigDecimalLiteral;
-import loop.ast.BigIntegerLiteral;
-import loop.ast.BinaryOp;
-import loop.ast.BooleanLiteral;
-import loop.ast.Call;
-import loop.ast.CallArguments;
-import loop.ast.CallChain;
-import loop.ast.ClassDecl;
-import loop.ast.Comprehension;
-import loop.ast.Computation;
-import loop.ast.ConstructorCall;
-import loop.ast.DestructuringPair;
-import loop.ast.DoubleLiteral;
-import loop.ast.Guard;
-import loop.ast.IndexIntoList;
-import loop.ast.InlineListDef;
-import loop.ast.InlineMapDef;
-import loop.ast.IntLiteral;
-import loop.ast.JavaLiteral;
-import loop.ast.ListDestructuringPattern;
-import loop.ast.ListRange;
-import loop.ast.ListStructurePattern;
-import loop.ast.LongLiteral;
-import loop.ast.MapPattern;
-import loop.ast.Node;
-import loop.ast.OtherwiseGuard;
-import loop.ast.PatternRule;
-import loop.ast.PrivateField;
-import loop.ast.RegexLiteral;
-import loop.ast.StringLiteral;
-import loop.ast.StringPattern;
-import loop.ast.TernaryExpression;
-import loop.ast.TypeLiteral;
-import loop.ast.Variable;
-import loop.ast.WildcardPattern;
+import loop.ast.*;
 import loop.ast.script.ArgDeclList;
 import loop.ast.script.FunctionDecl;
 import loop.ast.script.Unit;
 import loop.runtime.Closure;
 import loop.runtime.Scope;
 import loop.runtime.regex.NamedPattern;
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.Label;
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.*;
 import org.objectweb.asm.util.TraceClassVisitor;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Stack;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -117,6 +71,7 @@ import java.util.concurrent.atomic.AtomicInteger;
     this.scope = scope;
 
     EMITTERS.put(Call.class, callEmitter);
+    EMITTERS.put(Dereference.class, dereferenceEmitter);
     EMITTERS.put(Computation.class, computationEmitter);
     EMITTERS.put(IntLiteral.class, intEmitter);
     EMITTERS.put(LongLiteral.class, longEmitter);
@@ -271,6 +226,29 @@ import java.util.concurrent.atomic.AtomicInteger;
     }
   };
 
+  private final Emitter dereferenceEmitter = new Emitter() {
+    @Override
+    public void emitCode(Node node) {
+      Dereference dereference = (Dereference) node;
+      trackLineAndColumn(dereference);
+
+      MethodVisitor methodVisitor = methodStack.peek();
+      Context context = functionStack.peek();
+
+      methodVisitor.visitLdcInsn(dereference.name());
+
+      // Special form to call on a java type rather than lookup by class name.
+      if (dereference.isJavaStatic()) {
+        methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/runtime/Caller", "getStatic",
+            "(Ljava/lang/Class;Ljava/lang/String;)Ljava/lang/Object;");
+      } else {
+        // If JDK7, use invokedynamic instead for better performance.
+        methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/runtime/Caller", "dereference",
+            "(Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;");
+      }
+    }
+  };
+
   private final Emitter callEmitter = new Emitter() {
     @Override
     public void emitCode(Node node) {
@@ -312,7 +290,7 @@ import java.util.concurrent.atomic.AtomicInteger;
         name = normalizeMethodName(call.name());
 
       // Compute if we should "call as postfix method" (can be overridden with <- operator)
-      List<Node> arguments = call.args() == null ? Collections.<Node>emptyList() : call.args().children();
+      List<Node> arguments = call.args().children();
       int callAsPostfixVar = -1;
 
       boolean callAsPostfix = false;
@@ -689,16 +667,16 @@ import java.util.concurrent.atomic.AtomicInteger;
           methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/runtime/Collections", "store",
               "(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
 
-        } else if (last instanceof Call) {
-          Call call = (Call) last;
-          if (call.isFunction)
+        } else if (last instanceof MemberAccess) {
+          MemberAccess call = (MemberAccess) last;
+          if (call instanceof Call)
             throw new RuntimeException("Cannot assign value to a function call");
 
           // The object to assign into.
           emit(lhs);
 
           // The slot where this assignment will go.
-          methodVisitor.visitLdcInsn(call.name);
+          methodVisitor.visitLdcInsn(call.name());
 
           // The value to assign.
           emit(assignment.rhs());
@@ -907,7 +885,6 @@ import java.util.concurrent.atomic.AtomicInteger;
   private final Emitter regexLiteralEmitter = new Emitter() {
     @Override
     public void emitCode(Node node) {
-      RegexLiteral regex = (RegexLiteral) node;
       throw new UnsupportedOperationException();
     }
   };
@@ -1475,7 +1452,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
         Node pattern = rule.patterns.get(i);
         if (pattern instanceof ListDestructuringPattern) {
-          emitListDestructuringPatternRule(rule, methodVisitor, context, matchedClause, endOfClause,
+          emitListDestructuringPatternRule(rule, methodVisitor, context, endOfClause,
               i);
         } else if (pattern instanceof ListStructurePattern) {
           emitListStructurePatternRule(rule, methodVisitor, context, matchedClause, endOfClause, i);
@@ -1535,7 +1512,7 @@ import java.util.concurrent.atomic.AtomicInteger;
           }
 
         } else if (pattern instanceof StringPattern) {
-          emitStringPatternRule(rule, context, matchedClause, endOfClause, i);
+          emitStringPatternRule(rule, context, endOfClause, i);
         } else if (pattern instanceof MapPattern) {
           emitMapPatternRule(rule, context, matchedClause, endOfClause, i);
         } else if (pattern instanceof WildcardPattern) {
@@ -1656,10 +1633,9 @@ import java.util.concurrent.atomic.AtomicInteger;
   }
 
   private void emitStringPatternRule(PatternRule rule,
-                                                Context context,
-                                                Label matchedClause,
-                                                Label endOfClause,
-                                                int argIndex) {
+                                     Context context,
+                                     Label endOfClause,
+                                     int argIndex) {
     MethodVisitor methodVisitor = methodStack.peek();
 
     methodVisitor.visitVarInsn(ILOAD, context.localVarIndex(IS_STRING_PREFIX + argIndex));
@@ -1833,7 +1809,6 @@ import java.util.concurrent.atomic.AtomicInteger;
   private void emitListDestructuringPatternRule(PatternRule rule,
                                                 MethodVisitor methodVisitor,
                                                 Context context,
-                                                Label matchedClause,
                                                 Label endOfClause,
                                                 int argIndex) {
     ListDestructuringPattern listPattern = (ListDestructuringPattern) rule.patterns.get(argIndex);

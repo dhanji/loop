@@ -140,7 +140,7 @@ public class Caller {
   public static Object range(Object from, Object to) {
     if (from instanceof Integer) {
       Integer start = (Integer) from;
-      int distance = ((Integer)to) - start + 1;
+      int distance = ((Integer) to) - start + 1;
       List<Integer> range = new ArrayList<Integer>(distance);
       for (int i = start; i < start + distance; i++) {
         range.add(i);
@@ -151,16 +151,61 @@ public class Caller {
     throw new RuntimeException("Unknown range type: " + from + " - " + to);
   }
 
-  public static Object call(Object target, String method, Object... args) throws Throwable {
-    if (target == null)
-      return null;
-
+  public static Object dereference(Object target, String property) throws Throwable {
     boolean isMap = target instanceof Map;
     if (isMap) {
-      Object value = ((Map) target).get(method);
+      Object value = ((Map) target).get(property);
       if (value != null)
         return value;
     }
+
+    // This key can be improved to use a bitvector, for example.
+    String name = target.getClass().getName();
+    String key = new StringBuilder(name.length() + property.length() + 5).append(name)
+        .append(':')
+        .append(property)
+        .append(":0")
+        .toString();
+
+    Method toCall = dynamicMethodCache.get(key);
+
+    // Now search getters instead.
+    if (toCall == null) {
+      String altMethod;
+      if (property.length() == 1)
+        altMethod = "get" + property.toUpperCase();
+      else
+        altMethod = "get" + Character.toUpperCase(property.charAt(0)) + property.substring(1);
+
+      for (Method candidate : target.getClass().getMethods()) {
+        if (candidate.getName().equals(altMethod) && candidate.getParameterTypes().length == 0) {
+          toCall = candidate;
+          break;
+        }
+      }
+
+      if (null == toCall) {
+        if (isMap)
+          return null;
+        throw new RuntimeException("Property getter not found: " + name + "#" + property + "()");
+      }
+
+      if (!toCall.isAccessible())
+        toCall.setAccessible(true);
+
+      dynamicMethodCache.putIfAbsent(key, toCall);
+    }
+
+    try {
+      return toCall.invoke(target);
+    } catch (InvocationTargetException e) {
+      throw e.getCause();
+    }
+  }
+
+  public static Object call(Object target, String method, Object... args) throws Throwable {
+    if (target == null)
+      return null;
 
     // This key can be improved to use a bitvector, for example.
     String name = target.getClass().getName();
@@ -181,17 +226,6 @@ public class Caller {
         }
       }
 
-      // Now search getters instead.
-      if (toCall == null && args.length == 0) {
-        String altMethod = "get" + Character.toUpperCase(method.charAt(0)) + method.substring(1);
-        for (Method candidate : target.getClass().getMethods()) {
-          if (candidate.getName().equals(altMethod) && candidate.getParameterTypes().length == 0) {
-            toCall = candidate;
-            break;
-          }
-        }
-      }
-
       if (toCall == null) {
         for (Method candidate : target.getClass().getDeclaredMethods()) {
           if (signatureMatches(method, candidate, args)) {
@@ -202,8 +236,6 @@ public class Caller {
       }
 
       if (null == toCall) {
-        if (isMap)
-          return null;
         throw new RuntimeException("Method not found: " + name + "#" + method
             + "(" + Arrays.toString(args) + ")");
       }
@@ -312,13 +344,19 @@ public class Caller {
   }
 
   public static Object getStatic(String target, String field) throws Exception {
+    return getStatic(Class.forName(target, true, LoopClassLoader.CLASS_LOADER), field);
+  }
+
+  public static Object getStatic(Class<?> clazz, String field) throws Exception {
     Field toCall;
 
-    final String key = target + field;
+    final String key = clazz.getName() + field;
     toCall = staticFieldCache.get(key);
 
     if (toCall == null) {
-      final Class<?> clazz = Class.forName(target, true, LoopClassLoader.CLASS_LOADER);
+      if ("class".equals(field))
+        return clazz;
+
       for (Field candidate : clazz.getDeclaredFields()) {
         if (Modifier.isStatic(candidate.getModifiers()) && candidate.getName().equals(field)) {
           toCall = candidate;
@@ -326,12 +364,9 @@ public class Caller {
         }
       }
 
-      if ("class".equals(field))
-        return clazz;
-
       if (toCall == null)
         throw new RuntimeException(
-            "No such method could be resolved: " + field + " on type " + target);
+            "No such method could be resolved: " + field + " on type " + clazz.getName());
 
       staticFieldCache.put(key, toCall);
     }
@@ -343,6 +378,6 @@ public class Caller {
     if (message instanceof String)
       throw new RuntimeException(message.toString());
 
-    throw new RuntimeException((RuntimeException)message);
+    throw new RuntimeException((RuntimeException) message);
   }
 }
