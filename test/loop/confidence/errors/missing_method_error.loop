@@ -1,0 +1,6 @@
+# Missing method
+
+require java.lang.System
+
+main ->
+  System::pRINT()

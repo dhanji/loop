@@ -22,4 +22,13 @@ public class StackTracesConfidenceTest extends LoopTest {
       e.printStackTrace();
     }
   }
+
+  @Test
+  public final void bestMatches() {
+    try {
+      Loop.run("test/loop/confidence/errors/missing_method_error.loop");
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
 }

@@ -2,18 +2,8 @@ package loop.runtime;
 
 import loop.LoopClassLoader;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.lang.reflect.*;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -187,7 +177,7 @@ public class Caller {
       if (null == toCall) {
         if (isMap)
           return null;
-        throw new RuntimeException("Property getter not found: " + name + "#" + property + "()");
+        throw new RuntimeException("Property getter not found: " + name + "#" + property);
       }
 
       if (!toCall.isAccessible())
@@ -236,8 +226,13 @@ public class Caller {
       }
 
       if (null == toCall) {
+        Set<Method> methods = bestMatches(target.getClass().getMethods(), method);
+        methods.addAll(bestMatches(target.getClass().getDeclaredMethods(), method));
+
         throw new RuntimeException("Method not found: " + name + "#" + method
-            + "(" + Arrays.toString(args) + ")");
+            + "(" + Arrays.toString(args) + ")"
+            + (methods.isEmpty() ? "" :
+            "\nBest matches in " + name + "\n\n" + toStringList(methods)));
       }
 
       if (!toCall.isAccessible())
@@ -273,6 +268,37 @@ public class Caller {
     return true;
   }
 
+  private static Set<Method> bestMatches(Method[] candidates, String method) {
+    Set<Method> matches = new HashSet<Method>();
+
+    for (Method candidate : candidates) {
+      if (candidate.getName().equalsIgnoreCase(method)) {
+        matches.add(candidate);
+      }
+    }
+
+    return matches;
+  }
+
+  private static String toStringList(Collection<Method> methods) {
+    StringBuilder out = new StringBuilder();
+    for (Method method : methods) {
+        out.append("    ").append(method.getName()).append('(');
+        Class<?>[] parameterTypes = method.getParameterTypes();
+        for (int i = 0, parameterTypesLength = parameterTypes.length; i < parameterTypesLength; i++) {
+          Class<?> type = parameterTypes[i];
+          out.append(type.getSimpleName());
+
+          if (i < parameterTypes.length - 1)
+            out.append(", ");
+        }
+
+        out.append(")\n");
+    }
+
+    return out.toString();
+  }
+
   public static Object callStatic(String target, String method) throws Throwable {
     return callStatic(target, method, EMPTY_ARRAY);
   }
@@ -306,7 +332,7 @@ public class Caller {
     Method toCall;
 
     String target = clazz.getName();
-    final String key = target + ':' + method;
+    final String key = target + ':' + method + ':' + args.length;
     toCall = staticMethodCache.get(key);
 
     if (toCall == null) {
@@ -326,9 +352,15 @@ public class Caller {
         }
       }
 
-      if (toCall == null)
+      if (toCall == null) {
+        Set<Method> methods = bestMatches(clazz.getMethods(), method);
+        methods.addAll(bestMatches(clazz.getDeclaredMethods(), method));
+
         throw new RuntimeException(
-            "Function not found: " + method + " in: " + target);
+            "Function not found: " + target + "#" + method + "(" + Arrays.toString(args) + ")"
+                + (methods.isEmpty() ? "" :
+                "\nBest matches in " + target + "\n\n" + toStringList(methods)));
+      }
 
       if (!toCall.isAccessible())
         toCall.setAccessible(true);
