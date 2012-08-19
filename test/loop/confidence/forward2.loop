@@ -1,0 +1,8 @@
+
+# Pattern Matching count upto n
+
+forward(i, num) ->
+  if i == num then num else forward(i + 1, num)
+
+main ->
+  forward(0, 500000)

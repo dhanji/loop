@@ -342,6 +342,15 @@ import java.util.concurrent.atomic.AtomicInteger;
           methodVisitor.visitVarInsn(ASTORE, i);
         }
 
+        // If there's anything left, pop it off. If some expression results in void on stack
+        // rather than null or 0, then we might be screwed.
+        // Pattern matching functions are well behaved (i.e. not multiline, so leave them alone)
+        if (!context.thisFunction.patternMatching && context.thisFunction.children().size() > 1) {
+          for (int i = 1; i < context.thisFunction.children().size(); i++) {
+            methodVisitor.visitInsn(POP);
+          }
+        }
+
         // Loop.
         methodVisitor.visitJumpInsn(GOTO, context.startOfFunction);
 
