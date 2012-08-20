@@ -1,5 +1,7 @@
 package loop.runtime;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -10,6 +12,8 @@ import java.util.concurrent.ConcurrentMap;
  * @author dhanji@gmail.com (Dhanji R. Prasanna)
  */
 public class Memory {
+  public static Map<Object, Object> unsafe = new HashMap<Object, Object>();
+
   private static final ConcurrentMap<String, Object> cells = new ConcurrentHashMap<String, Object>();
 
   public static Object insert(Object key, Object value) {
