@@ -134,7 +134,7 @@ public class Reducer {
     return (i == childrenSize - 1 && (!(node instanceof BinaryOp)))
 
         // Or this is the "then" part of an if-then-else
-        || (node instanceof TernaryExpression && i == 1);
+        || (node instanceof TernaryIfExpression && i == 1);
   }
 
   private void reduceComprehension(List<Node> reduced) {

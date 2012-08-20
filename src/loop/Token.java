@@ -75,6 +75,7 @@ public class Token {
     FOR,
     IN,
     IF,
+    UNLESS,
     THEN,
     ELSE,
     WHERE,
@@ -121,6 +122,7 @@ public class Token {
       TOKEN_MAP.put("\n", EOL);
 
       TOKEN_MAP.put("if", IF);
+      TOKEN_MAP.put("unless", UNLESS);
       TOKEN_MAP.put("then", THEN);
       TOKEN_MAP.put("else", ELSE);
       TOKEN_MAP.put("when", WHEN);

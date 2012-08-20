@@ -942,22 +942,29 @@ public class Parser {
    */
   private Node ternaryIf() {
     List<Token> ifTokens = match(Kind.IF);
+    if (ifTokens == null)
+      ifTokens = match(Kind.UNLESS);
+
     if (ifTokens != null) {
+      Token operator = ifTokens.get(0);
       Node ifPart = computation();
       if (match(Token.Kind.THEN) == null) {
-        addError("IF expression missing THEN clause", tokens.get(i - 1));
+        addError(operator.kind + " expression missing THEN clause", tokens.get(i - 1));
         throw new LoopCompileException();
       }
 
       Node thenPart = computation();
       if (match(Token.Kind.ELSE) == null) {
-        addError("IF expression missing ELSE clause", tokens.get(i - 1));
+        addError(operator.kind + " expression missing ELSE clause", tokens.get(i - 1));
         throw new LoopCompileException();
       }
 
       Node elsePart = computation();
 
-      return new TernaryExpression()
+      Node expr = operator.kind == Kind.IF
+          ? new TernaryIfExpression()
+          : new TernaryUnlessExpression();
+      return expr
           .add(ifPart)
           .add(thenPart)
           .add(elsePart)

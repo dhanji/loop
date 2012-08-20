@@ -95,7 +95,8 @@ import java.util.concurrent.atomic.AtomicInteger;
     EMITTERS.put(ArgDeclList.class, argDeclEmitter);
     EMITTERS.put(PrivateField.class, privateFieldEmitter);
     EMITTERS.put(PatternRule.class, patternRuleEmitter);
-    EMITTERS.put(TernaryExpression.class, ternaryExpressionEmitter);
+    EMITTERS.put(TernaryIfExpression.class, ternaryExpressionEmitter);
+    EMITTERS.put(TernaryUnlessExpression.class, ternaryExpressionEmitter);
     EMITTERS.put(Comprehension.class, comprehensionEmitter);
     EMITTERS.put(ConstructorCall.class, constructorCallEmitter);
     EMITTERS.put(ListRange.class, inlineListRangeEmitter);
@@ -198,23 +199,28 @@ import java.util.concurrent.atomic.AtomicInteger;
   private final Emitter ternaryExpressionEmitter = new Emitter() {
     @Override
     public void emitCode(Node node) {
-      TernaryExpression expression = (TernaryExpression) node;
+      boolean unless = node instanceof TernaryUnlessExpression;
       MethodVisitor methodVisitor = methodStack.peek();
 
       Label elseBranch = new Label();
       Label end = new Label();
 
       // If condition
-      emit(expression.children().get(0));
+      emit(node.children().get(0));
       methodVisitor.visitTypeInsn(CHECKCAST, "java/lang/Boolean");
       methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Boolean", "booleanValue", "()Z");
-      methodVisitor.visitJumpInsn(IFEQ, elseBranch);
 
-      emit(expression.children().get(1));
+      // Flip the clauses in an "unless" expression.
+      if (unless)
+        methodVisitor.visitJumpInsn(IFNE, elseBranch);
+      else
+        methodVisitor.visitJumpInsn(IFEQ, elseBranch);
+
+      emit(node.children().get(1));
       methodVisitor.visitJumpInsn(GOTO, end);
 
       methodVisitor.visitLabel(elseBranch);
-      emit(expression.children().get(2));
+      emit(node.children().get(2));
       methodVisitor.visitLabel(end);
     }
   };

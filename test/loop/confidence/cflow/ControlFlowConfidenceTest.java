@@ -34,6 +34,15 @@ public class ControlFlowConfidenceTest extends LoopTest {
   }
 
   @Test
+  public final void unlessThenElseInExpression() {
+    Map<Integer, Integer> map = new HashMap<Integer, Integer>();
+    map.put(1, 2);
+    map.put(2, 13);
+
+    assertEquals(map, Loop.run("test/loop/confidence/cflow/unless-then-else.loop"));
+  }
+
+  @Test
   public final void ifThenElseInExpressionAlt() {
     Map<Integer, Integer> map = new HashMap<Integer, Integer>();
     map.put(1, 1);

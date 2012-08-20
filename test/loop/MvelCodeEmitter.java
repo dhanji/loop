@@ -1,36 +1,7 @@
 package loop;
 
-import loop.ast.Assignment;
-import loop.ast.BinaryOp;
-import loop.ast.BooleanLiteral;
-import loop.ast.Call;
-import loop.ast.CallArguments;
-import loop.ast.CallChain;
-import loop.ast.ClassDecl;
-import loop.ast.Comprehension;
-import loop.ast.Computation;
-import loop.ast.ConstructorCall;
-import loop.ast.DestructuringPair;
-import loop.ast.Guard;
-import loop.ast.IndexIntoList;
-import loop.ast.InlineListDef;
-import loop.ast.InlineMapDef;
-import loop.ast.IntLiteral;
-import loop.ast.JavaLiteral;
-import loop.ast.ListDestructuringPattern;
-import loop.ast.ListStructurePattern;
-import loop.ast.MapPattern;
-import loop.ast.Node;
-import loop.ast.OtherwiseGuard;
-import loop.ast.PatternRule;
-import loop.ast.PrivateField;
-import loop.ast.RegexLiteral;
-import loop.ast.StringLiteral;
-import loop.ast.StringPattern;
-import loop.ast.TernaryExpression;
-import loop.ast.TypeLiteral;
-import loop.ast.Variable;
-import loop.ast.WildcardPattern;
+import loop.ast.*;
+import loop.ast.TernaryIfExpression;
 import loop.ast.script.ArgDeclList;
 import loop.ast.script.FunctionDecl;
 import loop.ast.script.Unit;
@@ -128,7 +99,7 @@ class MvelCodeEmitter {
     EMITTERS.put(ArgDeclList.class, argDeclEmitter);
     EMITTERS.put(PrivateField.class, privateFieldEmitter);
     EMITTERS.put(PatternRule.class, patternRuleEmitter);
-    EMITTERS.put(TernaryExpression.class, ternaryExpressionEmitter);
+    EMITTERS.put(TernaryIfExpression.class, ternaryExpressionEmitter);
     EMITTERS.put(Comprehension.class, comprehensionEmitter);
     EMITTERS.put(ConstructorCall.class, constructorCallEmitter);
   }
@@ -225,7 +196,7 @@ class MvelCodeEmitter {
   private final Emitter ternaryExpressionEmitter = new Emitter() {
     @Override
     public void emitCode(Node node) {
-      TernaryExpression expression = (TernaryExpression) node;
+      TernaryIfExpression expression = (TernaryIfExpression) node;
 
       trackLineAndColumn(expression);
       // IF test
