@@ -172,6 +172,22 @@ class Verifier {
         addError("Cannot resolve type (either as loop or Java): "
             + (call.modulePart == null ? "" : call.modulePart) + call.name,
             call.sourceLine, call.sourceColumn);
+    } else if (node instanceof Assignment) {
+      // Make sure that you cannot reassign function arguments.
+      Assignment assignment = (Assignment) node;
+      if (assignment.lhs() instanceof Variable) {
+        Variable lhs = (Variable) assignment.lhs();
+
+        FunctionContext functionContext = functionStack.peek();
+        for (Node argument : functionContext.function.arguments().children()) {
+          ArgDeclList.Argument arg = (ArgDeclList.Argument) argument;
+          if (arg.name().equals(lhs.name))
+            addError("Illegal argument reassignment (declare a local variable instead)",
+                lhs.sourceLine, lhs.sourceColumn);
+        }
+
+//        verifyNode(assignment.rhs());
+      }
     }
   }
 

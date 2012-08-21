@@ -31,6 +31,19 @@ public class VerifierErrorsConfidenceTest extends LoopTest {
 
     assertEquals(1, errorList.size());
   }
+  @Test
+  public final void verifyIllegalArgumentReassignment() {
+    List<AnnotatedError> errorList = null;
+    try {
+      Loop.run("test/loop/confidence/errors/assign_errors_2.loop");
+    } catch (LoopCompileException e) {
+      errorList = e.getErrors();
+    }
+
+    assertNotNull(errorList);
+
+    assertEquals(1, errorList.size());
+  }
 
   @Test
   public final void verifyUnknownFunctionCallInWhereBlock() {

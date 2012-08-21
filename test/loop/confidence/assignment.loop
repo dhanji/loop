@@ -1,0 +1,8 @@
+# Assign to vars
+
+@assign(value) ->
+  ret = [value, 2, 3]
+  ret
+
+main ->
+  @assign(1)

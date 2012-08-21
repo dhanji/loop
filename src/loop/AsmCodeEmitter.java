@@ -332,10 +332,7 @@ import java.util.concurrent.atomic.AtomicInteger;
         // Pattern matching functions are well behaved (i.e. not multiline, so leave them alone)
         if (!context.thisFunction.patternMatching && context.thisFunction.children().size() > 1) {
           for (int i = 1; i < context.thisFunction.children().size(); i++) {
-            // Assignments don't leave anything on the stack, as they move stack items into
-            // registers.
-            if (!(context.thisFunction.children().get(i - 1) instanceof Assignment))
-              methodVisitor.visitInsn(POP);
+            methodVisitor.visitInsn(POP);
           }
         }
 
@@ -658,6 +655,9 @@ import java.util.concurrent.atomic.AtomicInteger;
       if (assignment.lhs() instanceof Variable) {
         int lhsVar = context.localVarIndex(context.newLocalVariable((Variable) assignment.lhs()));
         emit(assignment.rhs());
+
+        // Leave the result of the assignment on the stack.
+        methodVisitor.visitInsn(DUP);
         methodVisitor.visitVarInsn(ASTORE, lhsVar);
       } else if (assignment.lhs() instanceof CallChain) {
         // this is a setter/put style assignment.

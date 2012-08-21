@@ -32,6 +32,11 @@ public class BasicFunctionsConfidenceTest extends LoopTest {
   }
 
   @Test
+  public final void simpleAssignment() {
+    assertEquals(Arrays.asList(1, 2, 3), Loop.run("test/loop/confidence/assignment.loop"));
+  }
+
+  @Test
   public final void counterTailCallElimination() {
     // Such a high number would normally throw a StackOverflowError. But using TCO,
     // we can count this high with just one stack frame.
