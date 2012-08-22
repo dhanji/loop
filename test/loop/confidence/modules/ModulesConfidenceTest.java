@@ -165,7 +165,21 @@ public class ModulesConfidenceTest extends LoopTest {
     assertEquals(new Date(10), Loop.run("test/loop/confidence/modules/require_java_error.loop"));
   }
 
-//  @Test
+  @Test
+  public final void requiredModuleHidesPrivateFunctions() {
+    ModuleLoader.searchPaths = new String[] { "test/loop/confidence/modules" };
+
+    assertEquals("1", Loop.run("test/loop/confidence/modules/require_hides_private.loop"));
+  }
+
+  @Test(expected = LoopCompileException.class)
+  public final void requiredModuleHidesPrivateFunctionsError() {
+    ModuleLoader.searchPaths = new String[] { "test/loop/confidence/modules" };
+
+    assertEquals("1", Loop.run("test/loop/confidence/modules/require_hides_private_err.loop"));
+  }
+
+  @Test
   public final void requireFileModule() {
     assertTrue(Loop.run("test/loop/confidence/modules/require_file.loop").toString().contains("http://looplang.org"));
   }

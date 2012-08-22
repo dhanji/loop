@@ -240,8 +240,6 @@ import java.util.concurrent.atomic.AtomicInteger;
       trackLineAndColumn(dereference);
 
       MethodVisitor methodVisitor = methodStack.peek();
-      Context context = functionStack.peek();
-
       methodVisitor.visitLdcInsn(dereference.name());
 
       // Special form to call on a java type rather than lookup by class name.
@@ -992,7 +990,7 @@ import java.util.concurrent.atomic.AtomicInteger;
       scope.pushScope(innerContext);
 
       final MethodVisitor methodVisitor = classWriter.visitMethod(
-          (functionDecl.isPrivate ? ACC_PRIVATE : ACC_PUBLIC) + ACC_STATIC,
+          (functionDecl.isPrivate ? 0 /* default */ : ACC_PUBLIC) + ACC_STATIC,
           normalizeMethodName(name),
           args.append("Ljava/lang/Object;").toString(),
           null,
@@ -1435,23 +1433,6 @@ import java.util.concurrent.atomic.AtomicInteger;
       methodVisitor.visitVarInsn(ALOAD, outVarIndex);
     }
   };
-
-  private void replaceVarInTree(Node top, Variable var, String with) {
-    // Pre-order traversal.
-    for (Node node : top.children()) {
-      replaceVarInTree(node, var, with);
-    }
-
-    if (top instanceof Variable) {
-      Variable local = (Variable) top;
-      if (var.name.equals(local.name)) {
-        local.name = with;
-      }
-    } else if (top instanceof Call) {
-      Call call = (Call) top;
-      replaceVarInTree(call.args(), var, with);
-    }
-  }
 
   private final Emitter patternRuleEmitter = new Emitter() {
     @Override

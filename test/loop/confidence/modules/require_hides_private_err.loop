@@ -1,0 +1,4 @@
+require hidden
+
+main ->
+  @secret()

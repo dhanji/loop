@@ -177,12 +177,17 @@ public class Unit implements Scope {
   @Override public FunctionDecl resolveFunction(String name, boolean scanDeps) {
     FunctionDecl functionDecl = functions.get(name);
     if (functionDecl == null && scanDeps) {
-      // Resolve in deps.
+
+      // Resolve in deps. But skip their private functions (obviously).
       for (Executable dep : deps) {
         functionDecl = dep.getScope().resolveFunction(name, false);
 
-        if (functionDecl != null)
-          return functionDecl;
+        if (functionDecl != null) {
+          if (functionDecl.isPrivate)
+            functionDecl = null;
+          else
+            return functionDecl;
+        }
       }
     }
     return functionDecl;
@@ -258,7 +263,7 @@ public class Unit implements Scope {
 
               errors.add(new StaticError("Imported file is missing a 'module' declaration" + ": "
                   + executable.file()
-                  + "\n\nrequired in: " + file, 0, 0));
+                  + ".loop\n\nrequired in: " + file, 0, 0));
             } else {
               if (requireDecl.alias != null) {
 

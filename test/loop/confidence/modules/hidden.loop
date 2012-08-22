@@ -1,0 +1,7 @@
+module hidden
+
+@secret ->
+  "1"
+
+public ->
+  @secret()
