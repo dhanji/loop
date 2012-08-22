@@ -1,8 +1,6 @@
 TODO
 ----
 
-- fix flaky concurrency test (isolate test JVMs?)
-
 Stretch
 -------
 
@@ -14,8 +12,6 @@ x process subsystem
 
 - software transactional cells with MVCC and failed handlers
 - reduce function (foldleft with implicit val)
-- Fix error printing, indexOOB exception
-- one line web server (loop web.server 8080)
 - enumeration type
 - hierarchical modules support
 
