@@ -1,5 +1,6 @@
 package loop.runtime;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -17,9 +18,15 @@ public class Collections {
       String string = (String) collection;
 
       return string.substring(from, to + 1);
+    } else if (collection instanceof Object[]) {
+      Object[] array = (Object[]) collection;
+
+      return Arrays.copyOfRange(array, from, to + 1);
     }
 
-    throw new RuntimeException("Arrays not supported");
+    throw new RuntimeException("Collection type: "
+        + (collection != null ? collection.getClass() : "null")
+        + " not supported");
   }
 
   public static Object obtain(Object collection, Object exactly) {
@@ -38,9 +45,15 @@ public class Collections {
       Map map = (Map) collection;
 
       return map.get(exactly);
+    } else if (collection instanceof Object[]) {
+      Object[] array = (Object[]) collection;
+
+      return array[(Integer) exactly];
     }
 
-    throw new RuntimeException("Arrays not supported");
+    throw new RuntimeException("Collection type: "
+        + (collection != null ? collection.getClass() : "null")
+        + " not supported");
   }
 
   @SuppressWarnings("unchecked")
@@ -49,20 +62,24 @@ public class Collections {
       List list = (List) collection;
       list.set((Integer) property, value);
 
-      return list;
     } else if (collection instanceof Map) {
       Map map = (Map) collection;
       map.put(property, value);
 
-      return map;
+    } else if (collection instanceof Object[]) {
+      @SuppressWarnings("MismatchedReadAndWriteOfArray")  // Incorrect inspection.
+      Object[] array = (Object[]) collection;
+
+      //noinspection RedundantCast
+      array[(Integer) property] = value;
     } else {
       // Set value.
       String prop = property.toString();
       Caller.call(collection, "set" + Character.toUpperCase(prop.charAt(0)) + prop.substring(1),
           value);
-
-      return collection;
     }
+
+    return collection;
   }
 
   public static Object sliceFrom(Object collection, Object fromObj) {
@@ -75,9 +92,15 @@ public class Collections {
       String string = (String) collection;
 
       return string.substring(from, string.length());
+    } else if (collection instanceof Object[]) {
+      Object[] array = (Object[]) collection;
+
+      return Arrays.copyOfRange(array, from, array.length);
     }
 
-    throw new RuntimeException("Arrays not supported");
+    throw new RuntimeException("Collection type: "
+        + (collection != null ? collection.getClass() : "null")
+        + " not supported");
   }
 
   public static Object sliceTo(Object collection, Object toObj) {
@@ -91,8 +114,14 @@ public class Collections {
       String string = (String) collection;
 
       return string.substring(0, to + 1);
+    } else if (collection instanceof Object[]) {
+      Object[] array = (Object[]) collection;
+
+      return Arrays.copyOfRange(array, 0, to + 1);
     }
 
-    throw new RuntimeException("Arrays not supported");
+    throw new RuntimeException("Collection type: "
+        + (collection != null ? collection.getClass() : "null")
+        + " not supported");
   }
 }

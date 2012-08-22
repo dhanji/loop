@@ -1,0 +1,5 @@
+
+main ->
+  string = 'hi:there:dude:1'
+  array = string.split(':')
+  array[1..3]
