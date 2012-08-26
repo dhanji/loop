@@ -954,12 +954,15 @@ public class Parser {
       }
 
       Node thenPart = computation();
-      if (match(Token.Kind.ELSE) == null) {
-        addError(operator.kind + " expression missing ELSE clause", tokens.get(i - 1));
-        throw new LoopCompileException();
-      }
 
-      Node elsePart = computation();
+      // Allow user not to specify else (equivalent of "... else Nothing").
+      Node elsePart;
+      if (match(Token.Kind.ELSE) == null) {
+//        addError(operator.kind + " expression missing ELSE clause", tokens.get(i - 1));
+//        throw new LoopCompileException();
+        elsePart = new TypeLiteral(TypeLiteral.NOTHING);
+      } else
+        elsePart = computation();
 
       Node expr = operator.kind == Kind.IF
           ? new TernaryIfExpression()

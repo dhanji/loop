@@ -5,9 +5,10 @@ import loop.LoopTest;
 import org.junit.Test;
 
 import java.util.Arrays;
-import java.util.List;
+import java.util.Iterator;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Confidence tests run a bunch of semi-realistic programs and assert that their results are
@@ -118,5 +119,12 @@ public class ListComprehensionConfidenceTest extends LoopTest {
   public final void functionProjectComprehensionAltFilter() {
     assertEquals(Arrays.asList(20, 40, 80),
         Loop.run("test/loop/confidence/lists/projection_function_2.loop"));
+  }
+
+//  @Test
+  public final void iteratorComprehension() {
+    Object iterator = Loop.run("test/loop/confidence/lists/iter_project_1.loop");
+    assertTrue(iterator instanceof Iterator);
+//    assertEquals(Arrays.asList(20, 40, 80), iterator);
   }
 }

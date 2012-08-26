@@ -43,4 +43,19 @@ public class ComplexExpressionsConfidenceTest extends LoopTest {
   public final void assignAndReturn() {
     assertEquals(Arrays.asList(3, 2, 1), Loop.run("test/loop/confidence/expressions/assign_ret_1.loop"));
   }
+
+  @Test
+  public final void expressionifWithoutElse() {
+    assertEquals(null, Loop.run("test/loop/confidence/expressions/if_then_3.loop"));
+  }
+
+  @Test
+  public final void ifWithoutElse() {
+    assertEquals(null, Loop.run("test/loop/confidence/expressions/if_then_1.loop"));
+  }
+
+  @Test
+  public final void unlessWithoutElse() {
+    assertEquals(null, Loop.run("test/loop/confidence/expressions/if_then_2.loop"));
+  }
 }

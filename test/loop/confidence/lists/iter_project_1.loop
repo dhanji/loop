@@ -1,0 +1,11 @@
+# List comprehensions, function
+
+dbl(x) ->
+  x * 2
+
+comp(ls) ->
+  dbl(x) for x in ls if x not 30
+
+
+main ->
+  comp([10, 20, 30, 40].iterator())

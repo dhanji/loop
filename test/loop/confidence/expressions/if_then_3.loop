@@ -1,0 +1,4 @@
+
+main ->
+  a = false
+  x = if a then 5
