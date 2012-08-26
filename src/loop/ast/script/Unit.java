@@ -261,9 +261,9 @@ public class Unit implements Scope {
               if (errors == null)
                 errors = new ArrayList<AnnotatedError>();
 
-              errors.add(new StaticError("Imported file is missing a 'module' declaration" + ": "
-                  + executable.file()
-                  + ".loop\n\nrequired in: " + file, 0, 0));
+              errors.add(new StaticError("Imported file " + executable.file()
+                  + ".loop is missing a 'module' declaration\n\nrequired in: " + file,
+                  requireDecl.sourceLine, requireDecl.sourceColumn));
             } else {
               if (requireDecl.alias != null) {
 
