@@ -1,7 +1,6 @@
 package loop.runtime;
 
 import loop.StackTraceSanitizer;
-import loop.lang.ImmutableLoopObject;
 
 import java.util.HashMap;
 import java.util.Map;

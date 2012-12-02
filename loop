@@ -15,7 +15,7 @@ if [ -n "${LOOP_HOME-x}" ]; then
   else
     echo "LOOP_HOME is not set. Please set it (in bash):"
     echo
-    echo export LOOP_HOME=/path/to/loop_home
+    echo export LOOP_HOME=/path/to/loop.jar
     echo
     exit
   fi
