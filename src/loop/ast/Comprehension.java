@@ -1,6 +1,6 @@
 package loop.ast;
 
-import loop.Parser;
+import loop.LexprParser;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,13 +52,13 @@ public class Comprehension extends Node {
   public String toSymbol() {
     StringBuilder symbol = new StringBuilder("(cpr ");
     for (Node child : projection) {
-      symbol.append(Parser.stringify(child)).append(' ');
+      symbol.append(LexprParser.stringify(child)).append(' ');
     }
     return symbol.append("for ")
         .append(var.toSymbol())
         .append(" in ")
-        .append(Parser.stringify(inList))
-        .append(filter == null ? "" : " if " + Parser.stringify(filter))
+        .append(LexprParser.stringify(inList))
+        .append(filter == null ? "" : " if " + LexprParser.stringify(filter))
         .append(")")
         .toString();
   }

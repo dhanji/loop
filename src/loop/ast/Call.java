@@ -1,6 +1,6 @@
 package loop.ast;
 
-import loop.Parser;
+import loop.LexprParser;
 
 /**
  * Represents a method call or member dereference.
@@ -81,6 +81,6 @@ public class Call extends MemberAccess {
 
   @Override
   public String toSymbol() {
-    return name + Parser.stringify(args);
+    return name + LexprParser.stringify(args);
   }
 }

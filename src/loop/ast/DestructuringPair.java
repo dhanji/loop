@@ -1,6 +1,6 @@
 package loop.ast;
 
-import loop.Parser;
+import loop.LexprParser;
 
 /**
  * @author dhanji@gmail.com (Dhanji R. Prasanna)
@@ -15,6 +15,6 @@ public class DestructuringPair extends Node {
   }
 
   @Override public String toSymbol() {
-    return Parser.stringify(lhs) + " <- " + Parser.stringify(rhs);
+    return LexprParser.stringify(lhs) + " <- " + LexprParser.stringify(rhs);
   }
 }

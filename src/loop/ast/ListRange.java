@@ -1,6 +1,6 @@
 package loop.ast;
 
-import loop.Parser;
+import loop.LexprParser;
 
 /**
  * An inline list. Can be a range or
@@ -19,8 +19,8 @@ public class ListRange extends Node {
   @Override
   public String toSymbol() {
     return "list "
-        + (from == null ? "" : Parser.stringify(from))
+        + (from == null ? "" : LexprParser.stringify(from))
         + (slice ? ".." : "")
-        + (to == null ? "" : Parser.stringify(to));
+        + (to == null ? "" : LexprParser.stringify(to));
   }
 }

@@ -293,21 +293,21 @@ public class ParserTest {
   }
 
   static void compare(String expected, String input) {
-    Parser parser = new Parser(new Tokenizer(input).tokenize());
+    LexprParser parser = new LexprParser(new Tokenizer(input).tokenize());
     Assert.assertNotNull("Parser returned no output", parser.parse());
 
     if (printComparisons) {
       System.out.println("\n------------------------");
       System.out.println("Parse Tree:\n" + parser.ast());
-      System.out.println("Parse S-Expr:\n" + Parser.stringify(parser.ast()));
+      System.out.println("Parse S-Expr:\n" + LexprParser.stringify(parser.ast()));
     }
-    Assert.assertEquals(expected, Parser.stringify(parser.ast()));
+    Assert.assertEquals(expected, LexprParser.stringify(parser.ast()));
     if (printComparisons)
       System.out.println("PASS");
   }
 
   static void expectNoOutput(String input) {
-    Parser parser = new Parser(new Tokenizer(input).tokenize());
+    Parser parser = new LexprParser(new Tokenizer(input).tokenize());
     Assert.assertNull("Parser returned output!", parser.parse());
   }
 }

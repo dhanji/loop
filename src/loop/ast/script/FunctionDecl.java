@@ -1,6 +1,6 @@
 package loop.ast.script;
 
-import loop.Parser;
+import loop.LexprParser;
 import loop.ast.Assignment;
 import loop.ast.Node;
 import loop.ast.PatternRule;
@@ -107,7 +107,7 @@ public class FunctionDecl extends Node {
 
   @Override
   public String toSymbol() {
-    return (name == null ? "<anonymous>" : name) + ": " + Parser.stringify(arguments)
+    return (name == null ? "<anonymous>" : name) + ": " + LexprParser.stringify(arguments)
         + (exceptionHandler == null ? "" : " except " + exceptionHandler)
         + " ->";
   }

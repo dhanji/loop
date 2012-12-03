@@ -1,6 +1,6 @@
 package loop.ast;
 
-import loop.Parser;
+import loop.LexprParser;
 
 /**
  * A right to left assignment statement.
@@ -32,6 +32,6 @@ public class Assignment extends Node {
     if (condition == null) {
       return "=";
     }
-    return "=if" + Parser.stringify(condition);
+    return "=if" + LexprParser.stringify(condition);
   }
 }

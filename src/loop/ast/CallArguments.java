@@ -1,6 +1,6 @@
 package loop.ast;
 
-import loop.Parser;
+import loop.LexprParser;
 
 /**
  * An argument list to a function. May be positional or named.
@@ -34,7 +34,7 @@ public class CallArguments extends Node {
 
     @Override
     public String toSymbol() {
-      return name + ": " + Parser.stringify(arg);
+      return name + ": " + LexprParser.stringify(arg);
     }
   }
 

@@ -57,7 +57,7 @@ public class TypeDeclarationsParsingTest {
   }
 
   static void compareType(String typeName, String expected, String input) {
-    Parser parser = new Parser(new Tokenizer(input).tokenize());
+    Parser parser = new LexprParser(new Tokenizer(input).tokenize());
     Unit unit = parser.script(null);
     Assert.assertNotNull("Parser returned no output", unit);
 
@@ -65,7 +65,7 @@ public class TypeDeclarationsParsingTest {
     Assert.assertNotNull("No such type " + typeName, clazz);
 
 
-    String stringified = Parser.stringify(clazz);
+    String stringified = LexprParser.stringify(clazz);
 
     System.out.println("\n------------------------");
     System.out.println("Parse Tree:\n" + typeName);

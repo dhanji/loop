@@ -81,7 +81,7 @@ public class LoopShell {
 
         // Add a require import.
         if (line.startsWith("require ")) {
-          shellScope.declare(new Parser(new Tokenizer(line + '\n').tokenize()).require());
+          shellScope.declare(new LexprParser(new Tokenizer(line + '\n').tokenize()).require());
           shellScope.loadDeps("<shell>");
           continue;
         }
@@ -239,7 +239,7 @@ public class LoopShell {
     Executable executable = new Executable(new StringReader(rawLine));
     Node parsedLine;
     try {
-      Parser parser = new Parser(new Tokenizer(rawLine).tokenize(), shellScope);
+      Parser parser = new LexprParser(new Tokenizer(rawLine).tokenize(), shellScope);
       parsedLine = parser.line();
       if (parsedLine == null || !parser.getErrors().isEmpty()) {
         executable.printErrors(parser.getErrors());
@@ -295,7 +295,7 @@ public class LoopShell {
 
           // Look up the value of the RHS of the variable from the shell context,
           // if this is the second reference to the same variable.
-          assignment.setRhs(new Parser(new Tokenizer(
+          assignment.setRhs(new LexprParser(new Tokenizer(
               "`loop.LoopShell`.shellObtain('" + name + "')").tokenize()).parse());
           shouldReplace = true;
         } else

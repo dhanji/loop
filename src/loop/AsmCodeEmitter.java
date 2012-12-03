@@ -1447,7 +1447,7 @@ import java.util.concurrent.atomic.AtomicInteger;
       if (context.arguments.size() != rule.patterns.size())
         throw new RuntimeException("Incorrect number of pattern rules. Expected pattern rules for "
             + context.arguments + " but found " + rule.patterns.size() + " rule(s): "
-            + Parser.stringify(rule.patterns));
+            + LexprParser.stringify(rule.patterns));
 
       Label matchedClause = new Label();
       Label endOfClause = new Label();
@@ -1565,7 +1565,7 @@ import java.util.concurrent.atomic.AtomicInteger;
       Node node = children.get(i);
       if (!(node instanceof Guard))
         throw new RuntimeException("Apparent pattern rule missing guards: "
-            + Parser.stringify(rule));
+            + LexprParser.stringify(rule));
       Guard guard = (Guard) node;
       Label endOfClause = new Label();
       Label matchedClause = new Label();

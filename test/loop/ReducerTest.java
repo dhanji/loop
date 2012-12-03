@@ -80,11 +80,11 @@ public class ReducerTest {
   }
 
   static void compare(String expected, String input) {
-    Parser parser = new Parser(new Tokenizer(input).tokenize());
+    LexprParser parser = new LexprParser(new Tokenizer(input).tokenize());
     parser.parse();
 
     // Need to stringify first coz the reducer mutates the original AST.
-    String parsedSexpr = Parser.stringify(parser.ast());
+    String parsedSexpr = LexprParser.stringify(parser.ast());
 
     Node reduced = new Reducer(parser.ast()).reduce();
     Assert.assertNotNull("Reducer returned no output", reduced);
@@ -92,8 +92,8 @@ public class ReducerTest {
     System.out.println("\n------------------------");
     System.out.println("Reduced Parse Tree:\n" + reduced);
     System.out.println("Parsed S-Expr:   " + parsedSexpr);
-    System.out.println("Reduced S-Expr:  " + Parser.stringify(reduced));
-    Assert.assertEquals(expected, Parser.stringify(reduced));
+    System.out.println("Reduced S-Expr:  " + LexprParser.stringify(reduced));
+    Assert.assertEquals(expected, LexprParser.stringify(reduced));
     System.out.println("PASS");
   }
 }

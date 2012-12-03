@@ -87,7 +87,7 @@ public class Executable {
   }
 
   private Unit parse(String input) {
-    Parser parser = new Parser(new Tokenizer(input).tokenize());
+    Parser parser = new LexprParser(new Tokenizer(input).tokenize());
     Unit unit = null;
     try {
       unit = parser.script(file);
@@ -302,7 +302,7 @@ public class Executable {
   public void compileClassOrFunction(Unit scope) {
     this.scope = scope;
     List<Token> tokens = new Tokenizer(source).tokenize();
-    Parser parser = new Parser(tokens);
+    Parser parser = new LexprParser(tokens);
     FunctionDecl functionDecl = parser.functionDecl();
     ClassDecl classDecl = null;
     Node node;

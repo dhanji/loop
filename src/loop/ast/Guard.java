@@ -1,6 +1,6 @@
 package loop.ast;
 
-import loop.Parser;
+import loop.LexprParser;
 
 /**
  * @author dhanji@gmail.com (Dhanji R. Prasanna)
@@ -15,6 +15,6 @@ public class Guard extends Node {
   }
 
   @Override public String toSymbol() {
-    return "\n    | " + Parser.stringify(expression) + " : " + Parser.stringify(line);
+    return "\n    | " + LexprParser.stringify(expression) + " : " + LexprParser.stringify(line);
   }
 }

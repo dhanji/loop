@@ -1,6 +1,6 @@
 package loop.ast;
 
-import loop.Parser;
+import loop.LexprParser;
 
 /**
  * An array dereference. Can also be an array slice. For example:
@@ -58,9 +58,9 @@ public class IndexIntoList extends Node {
   @Override
   public String toSymbol() {
     return "["
-        + (from == null ? "" : Parser.stringify(from))
+        + (from == null ? "" : LexprParser.stringify(from))
         + (slice ? ".." : "")
-        + (to == null ? "" : Parser.stringify(to))
+        + (to == null ? "" : LexprParser.stringify(to))
         + "]";
   }
 }

@@ -1,6 +1,6 @@
 package loop.ast;
 
-import loop.Parser;
+import loop.LexprParser;
 
 /**
  * Represents a constructor call on either Java or Loop types.
@@ -33,6 +33,6 @@ public class ConstructorCall extends Node {
 
   @Override
   public String toSymbol() {
-    return "new " + (modulePart != null ? modulePart : "") + name + Parser.stringify(args);
+    return "new " + (modulePart != null ? modulePart : "") + name + LexprParser.stringify(args);
   }
 }

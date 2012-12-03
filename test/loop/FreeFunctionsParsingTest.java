@@ -116,7 +116,7 @@ public class FreeFunctionsParsingTest {
   }
 
   static void compareFunction(String functionName, String expected, String input) {
-    Parser parser = new Parser(new Tokenizer(input).tokenize());
+    Parser parser = new LexprParser(new Tokenizer(input).tokenize());
     Unit unit = parser.script(null);
     Assert.assertNotNull("Parser returned no output", unit);
 
@@ -124,7 +124,7 @@ public class FreeFunctionsParsingTest {
     Assert.assertNotNull("No such function " + functionName, function);
 
 
-    String stringified = Parser.stringify(function);
+    String stringified = LexprParser.stringify(function);
 
     System.out.println("\n------------------------");
     System.out.println("Parse Tree:\n" + function);

@@ -674,7 +674,7 @@ class MvelCodeEmitter {
       if (context.arguments.size() != rule.patterns.size())
         throw new RuntimeException("Incorrect number of pattern rules. Expected pattern rules for "
             + context.arguments + " but found " + rule.patterns.size() + " rule(s): "
-            + Parser.stringify(rule.patterns));
+            + LexprParser.stringify(rule.patterns));
 
       List<EmittedWrapping> emitIntoBody = new ArrayList<EmittedWrapping>();
       int mark = out.length(), emittedArgs = 0;
@@ -756,7 +756,7 @@ class MvelCodeEmitter {
       Node node = children.get(i);
       if (!(node instanceof Guard))
         throw new RuntimeException("Apparent pattern rule missing guards: "
-            + Parser.stringify(rule));
+            + LexprParser.stringify(rule));
 
       if (i > 0)
         append(" else ");

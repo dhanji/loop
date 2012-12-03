@@ -1,6 +1,6 @@
 package loop.ast;
 
-import loop.Parser;
+import loop.LexprParser;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +17,7 @@ public class PatternRule extends Node {
 
   @Override public String toSymbol() {
     return "\n  => "
-        + Parser.stringify(patterns)
-        + ((rhs != null) ? " : " + Parser.stringify(rhs) : "");
+        + LexprParser.stringify(patterns)
+        + ((rhs != null) ? " : " + LexprParser.stringify(rhs) : "");
   }
 }

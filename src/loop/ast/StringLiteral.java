@@ -30,7 +30,7 @@ public class StringLiteral extends Node {
       if (stringToken.kind == StringToken.Kind.EXPRESSION) {
         List<Token> tokens = new Tokenizer(stringToken.value).tokenize();
 
-        parts.add(new Parser(tokens).computation());
+        parts.add(new LexprParser(tokens).computation());
       } else
         parts.add(new StringLiteral(stringToken.value, null));
     }
