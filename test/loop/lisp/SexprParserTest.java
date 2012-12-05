@@ -10,7 +10,7 @@ import static org.junit.Assert.assertEquals;
  */
 public class SexprParserTest {
   @Test
-  public final void someExpressions() {
+  public final void sExpressions() {
     check("(list xx)", "(xx)");
     check("(list (list xx))", "((xx))");
     check("(list + 1 2 3 4)", "(+ 1 2 3 4)");
@@ -18,6 +18,8 @@ public class SexprParserTest {
     check("(list + (list 1) 2 list 3 4)", "(+ (1) 2 () 3 4)");
     check("(list + (list 1) 2 (list xx) 3 4)", "(+ (1) 2 (xx) 3 4)");
     check("(list + (list 1) 2 (list xx) 3 4)", "(+ (1\n) \n2 (\nxx\n\n )       3 4)");
+    check("(list + (list 1) 2 (list xx) 3 4)", "\n\n\n  (+ (1\n) \n2 (\nxx\n\n )       3 4)\n\n");
+    check("(list + (list 1) 2 (list xx) 3 4)", "\n\n; hello\n  (+ (1 ;crud\n) \n2 (\nxx\n\n )       3 4)\n\n");
   }
 
   public static void check(String expected, String input) {

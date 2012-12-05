@@ -5,6 +5,7 @@ import loop.ast.Node;
 import loop.ast.script.FunctionDecl;
 import loop.ast.script.RequireDecl;
 import loop.ast.script.Unit;
+import loop.lisp.SexprParser;
 import loop.runtime.Scope;
 
 import java.io.BufferedReader;
@@ -54,13 +55,19 @@ public class Executable {
   private Class<?> compiled;
   private boolean runMain;
   private final String file;
+  private final boolean isLisp;
 
   public Executable(Reader source) {
-    this(source, null);
+    this(source, null, false);
   }
 
   public Executable(Reader source, String file) {
+    this(source, file, false);
+  }
+
+  public Executable(Reader source, String file, boolean isLisp) {
     this.file = file;
+    this.isLisp = isLisp;
 
     List<String> lines = new ArrayList<String>();
     StringBuilder builder;
@@ -87,7 +94,9 @@ public class Executable {
   }
 
   private Unit parse(String input) {
-    Parser parser = new LexprParser(new Tokenizer(input).tokenize());
+    Parser parser = isLisp
+        ? new SexprParser(new Tokenizer(input).tokenize())
+        : new LexprParser(new Tokenizer(input).tokenize());
     Unit unit = null;
     try {
       unit = parser.script(file);
@@ -302,7 +311,9 @@ public class Executable {
   public void compileClassOrFunction(Unit scope) {
     this.scope = scope;
     List<Token> tokens = new Tokenizer(source).tokenize();
-    Parser parser = new LexprParser(tokens);
+    Parser parser = isLisp
+        ? new SexprParser(tokens)
+        : new LexprParser(tokens);
     FunctionDecl functionDecl = parser.functionDecl();
     ClassDecl classDecl = null;
     Node node;

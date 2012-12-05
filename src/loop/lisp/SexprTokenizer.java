@@ -17,14 +17,12 @@ public class SexprTokenizer {
 
   private static final int NON = 0; // MUST be zero
   private static final int SINGLE_TOKEN = 1;
-  private static final int SEQUENCE_TOKEN = 2;
 
   private static final int[] DELIMITERS = new int[256];
   private static final boolean[] STRING_TERMINATORS = new boolean[256];
 
   static {
     // SINGLE token delimiters are one char in length in any context
-    DELIMITERS['\n'] = SINGLE_TOKEN;
     DELIMITERS['.'] = SINGLE_TOKEN;
     DELIMITERS[','] = SINGLE_TOKEN;
     DELIMITERS[';'] = SINGLE_TOKEN;
@@ -180,6 +178,10 @@ public class SexprTokenizer {
                                 int column) {
     if (i > start) {
       String value = new String(input, start, i - start);
+
+      // Hack to elide whitespace that sneaks in due to the leading whitespace detector.
+      if (value.trim().isEmpty())
+        return;
 
       // remove this disgusting hack when you can fix the lexer.
       tokens.add(new Token(value, Token.Kind.determine(value), line, column));

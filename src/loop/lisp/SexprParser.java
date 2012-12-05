@@ -5,11 +5,17 @@ import loop.Parser;
 import loop.Token;
 import loop.ast.ClassDecl;
 import loop.ast.InlineListDef;
+import loop.ast.IntLiteral;
+import loop.ast.LongLiteral;
 import loop.ast.Node;
+import loop.ast.RegexLiteral;
+import loop.ast.StringLiteral;
 import loop.ast.Variable;
 import loop.ast.script.FunctionDecl;
+import loop.ast.script.ModuleDecl;
 import loop.ast.script.Unit;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -25,11 +31,15 @@ public class SexprParser implements Parser {
 
   /**
    * Parses an S-expression.
-   *
+   * <p/>
    * sexpr := atom | (LPAREN sexpr* RPAREN)
    */
   @Override
   public Node parse() {
+    return new SexprAstTransformer(sexpr()).transform();
+  }
+
+  private Node sexpr() {
     Node atom = atom();
     if (atom != null)
       return atom;
@@ -40,7 +50,7 @@ public class SexprParser implements Parser {
 
     InlineListDef listDef = new InlineListDef(false).sourceLocation(startParen);
     Node inner;
-    while ((inner = parse()) != null) {
+    while ((inner = sexpr()) != null) {
       listDef.add(inner);
     }
 
@@ -60,27 +70,53 @@ public class SexprParser implements Parser {
       return null;
 
     i++;
+
+    switch (token.kind) {
+      case INTEGER:
+        return new IntLiteral(token.value);
+      case LONG:
+        return new LongLiteral(token.value);
+      case STRING:
+        return new StringLiteral(token.value);
+      case REGEX:
+        return new RegexLiteral(token.value);
+    }
+
     return new Variable(token.value);
   }
 
   @Override
   public Unit script(String file) {
-    return null;  //To change body of implemented methods use File | Settings | File Templates.
+    Unit unit = new Unit(file, ModuleDecl.DEFAULT);
+    Node parse = parse();
+    if (parse instanceof InlineListDef) {
+      for (Node child : parse.children()) {
+        if (child instanceof FunctionDecl)
+          unit.declare((FunctionDecl) child);
+        else
+          unit.addToInitializer(child);
+      }
+    } else if (parse instanceof FunctionDecl)
+      unit.declare((FunctionDecl) parse);
+    else
+      unit.addToInitializer(parse);
+
+    return unit;
   }
 
   @Override
   public List<AnnotatedError> getErrors() {
-    return null;  //To change body of implemented methods use File | Settings | File Templates.
+    return new ArrayList<AnnotatedError>();
   }
 
   @Override
   public Node line() {
-    return null;  //To change body of implemented methods use File | Settings | File Templates.
+    return null;
   }
 
   @Override
   public FunctionDecl functionDecl() {
-    return null;  //To change body of implemented methods use File | Settings | File Templates.
+    return null;
   }
 
   @Override

@@ -155,11 +155,11 @@ public class Reducer {
     }
   }
 
-  private Node onlyChildOf(Node node) {
+  public static Node onlyChildOf(Node node) {
     return node.children().get(0);
   }
 
-  private boolean shouldUnwrap(Node node) {
+  public static boolean shouldUnwrap(Node node) {
     return (node instanceof CallChain || node instanceof Computation)
         && node.children().size() == 1;
   }

@@ -133,6 +133,25 @@ public class Loop {
     return executable;
   }
 
+  public static Object evalLisp(String name, Reader reader) {
+    Executable executable = lispCompile(name, reader);
+    executable.runMain(true);
+
+    executable.main(null);
+    return null;
+  }
+
+  private static Executable lispCompile(String name, Reader reader) {
+    Executable executable = new Executable(reader, name, true);
+    executable.compile();
+    if (executable.hasErrors()) {
+      String errors = executable.printStaticErrorsIfNecessary();
+
+      throw new LoopCompileException("Syntax errors exist:\n" + errors, executable);
+    }
+    return executable;
+  }
+
   public static void error(String error) {
     throw new LoopExecutionException(error);
   }
