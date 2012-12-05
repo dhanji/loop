@@ -20,7 +20,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author dhanji@gmail.com (Dhanji R. Prasanna)
  */
 @SuppressWarnings({"FieldCanBeLocal"}) public class AsmCodeEmitter implements Opcodes {
-  private static final boolean printBytecode = System.getProperty("print_bytecode") != null;
+  private static final boolean printBytecode = true || System.getProperty("print_bytecode") != null;
   private static final AtomicInteger functionNameSequence = new AtomicInteger();
 
   private static final String IS_LIST_VAR_PREFIX = "__$isList_";

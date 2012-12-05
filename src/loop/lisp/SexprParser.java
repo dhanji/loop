@@ -37,7 +37,13 @@ public class SexprParser implements Parser {
    */
   @Override
   public Node parse() {
-    return new SexprAstTransformer(sexpr()).transform();
+    InlineListDef list = new InlineListDef(false);
+    while (!endOfInput()) {
+      Node sexpr = sexpr();
+      if (sexpr != null)
+        list.add(new SexprAstTransformer(sexpr).transform());
+    }
+    return list;
   }
 
   private Node sexpr() {
@@ -88,6 +94,9 @@ public class SexprParser implements Parser {
     else if ("#f".equals(token.value) || "#false".equals(token.value))
       return new BooleanLiteral(new Token(token.value, Token.Kind.FALSE, token.line, token.column));
 
+    if (token.value.trim().isEmpty())
+      return null;
+
     return new Variable(token.value);
   }
 
@@ -95,17 +104,12 @@ public class SexprParser implements Parser {
   public Unit script(String file) {
     Unit unit = new Unit(file, ModuleDecl.DEFAULT);
     Node parse = parse();
-    if (parse instanceof InlineListDef) {
-      for (Node child : parse.children()) {
-        if (child instanceof FunctionDecl)
-          unit.declare((FunctionDecl) child);
-        else
-          unit.addToInitializer(child);
-      }
-    } else if (parse instanceof FunctionDecl)
-      unit.declare((FunctionDecl) parse);
-    else
-      unit.addToInitializer(parse);
+    for (Node child : parse.children()) {
+      if (child instanceof FunctionDecl)
+        unit.declare((FunctionDecl) child);
+      else
+        unit.addToInitializer(child);
+    }
 
     return unit;
   }

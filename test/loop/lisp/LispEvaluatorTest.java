@@ -3,6 +3,7 @@ package loop.lisp;
 import loop.Loop;
 import org.junit.Test;
 
+import java.io.InputStreamReader;
 import java.io.StringReader;
 
 /**
@@ -27,5 +28,10 @@ public class LispEvaluatorTest {
         "((print (+ 1 2 3 5 9))" +
             ")";
     Loop.evalLisp("default", new StringReader(lisp));
+  }
+
+  @Test
+  public final void evalLispFile() {
+    Loop.evalLisp("default", new InputStreamReader(LispEvaluatorTest.class.getResourceAsStream("funcs.lisp")));
   }
 }
