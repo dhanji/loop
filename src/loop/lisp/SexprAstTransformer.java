@@ -1,7 +1,10 @@
 package loop.lisp;
 
+import loop.Token;
+import loop.ast.BinaryOp;
 import loop.ast.Call;
 import loop.ast.CallArguments;
+import loop.ast.Computation;
 import loop.ast.InlineListDef;
 import loop.ast.Node;
 import loop.ast.Variable;
@@ -64,7 +67,30 @@ class SexprAstTransformer {
 
   private Node transformToFunctionCall(Variable var, InlineListDef list) {
     // Special case binary ops?
+    Token.Kind kind = Token.Kind.determine(var.name);
+    switch(kind) {
+      case PLUS:
+      case MINUS:
+      case DIVIDE:
+      case MODULUS:
+      case STAR:
+      case ASSIGN:
+      case GREATER:
+      case LESSER:
+      case GEQ:
+      case LEQ:
+        Computation computation = new Computation();
+        computation.add(reduceNode(list.children().get(1)));
 
+        // Add binary op chain.
+        for (int i = 2; i < list.children().size(); i++) {
+          BinaryOp op = new BinaryOp(new Token(var.name, kind, var.sourceLine, var.sourceColumn));
+          op.add(reduceNode(list.children().get(i)));
+          computation.add(op);
+        }
+
+        return computation;
+    }
 
     CallArguments callArguments = new CallArguments(true);
 
@@ -101,9 +127,6 @@ class SexprAstTransformer {
     FunctionDecl functionDecl = new FunctionDecl(name, args);
 
     Node fourth = list.children().get(3);
-    if (!(fourth instanceof InlineListDef))
-      throw new RuntimeException("Expected function body expression");
-
     functionDecl.children().add(reduceNode(fourth));
     return functionDecl;
   }

@@ -3,6 +3,7 @@ package loop.lisp;
 import loop.AnnotatedError;
 import loop.Parser;
 import loop.Token;
+import loop.ast.BooleanLiteral;
 import loop.ast.ClassDecl;
 import loop.ast.InlineListDef;
 import loop.ast.IntLiteral;
@@ -81,6 +82,11 @@ public class SexprParser implements Parser {
       case REGEX:
         return new RegexLiteral(token.value);
     }
+
+    if ("#t".equals(token.value) || "#true".equals(token.value))
+      return new BooleanLiteral(new Token(token.value, Token.Kind.TRUE, token.line, token.column));
+    else if ("#f".equals(token.value) || "#false".equals(token.value))
+      return new BooleanLiteral(new Token(token.value, Token.Kind.FALSE, token.line, token.column));
 
     return new Variable(token.value);
   }
