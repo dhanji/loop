@@ -20,7 +20,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author dhanji@gmail.com (Dhanji R. Prasanna)
  */
 @SuppressWarnings({"FieldCanBeLocal"}) public class AsmCodeEmitter implements Opcodes {
-  private static final boolean printBytecode = true || System.getProperty("print_bytecode") != null;
+  private static final boolean printBytecode = true|| System.getProperty("print_bytecode") != null;
   private static final AtomicInteger functionNameSequence = new AtomicInteger();
 
   private static final String IS_LIST_VAR_PREFIX = "__$isList_";
@@ -293,6 +293,14 @@ import java.util.concurrent.atomic.AtomicInteger;
         name = normalizeMethodName(resolvedFunction.scopedName());
       } else
         name = normalizeMethodName(call.name());
+
+      // No such function exists and it's not a method-call, so let's treat this as a closure call.
+      if (resolvedFunction == null && !isClosure && !call.isJavaStatic() && isStatic) {
+        name = "";
+
+        isClosure = true;
+        isStatic = true;
+      }
 
       // Compute if we should "call as postfix method" (can be overridden with <- operator)
       List<Node> arguments = call.args().children();
@@ -634,6 +642,10 @@ import java.util.concurrent.atomic.AtomicInteger;
         case NOT:
           methodVisitor.visitMethodInsn(INVOKESTATIC, "loop/runtime/Operations", "notEqual",
               "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Boolean;");
+          break;
+        case IN: // HACK for instanceof
+          methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Class", "isInstance",
+              "(Ljava/lang/Object;)Z");
           break;
         default:
           throw new UnsupportedOperationException(

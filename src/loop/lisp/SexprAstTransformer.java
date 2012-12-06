@@ -6,10 +6,13 @@ import loop.ast.Call;
 import loop.ast.CallArguments;
 import loop.ast.Computation;
 import loop.ast.InlineListDef;
+import loop.ast.JavaLiteral;
 import loop.ast.Node;
+import loop.ast.TernaryIfExpression;
 import loop.ast.Variable;
 import loop.ast.script.ArgDeclList;
 import loop.ast.script.FunctionDecl;
+import loop.runtime.Closure;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -92,6 +95,19 @@ class SexprAstTransformer {
         return computation;
     }
 
+    TernaryIfExpression ifExpression = new TernaryIfExpression();
+    Computation test = new Computation();
+    test.add(var);
+    test.add(new BinaryOp(new Token("in", Token.Kind.IN, var.sourceLine, var.sourceColumn))
+        .add(new JavaLiteral('"' + Closure.class.getName() + '"')));
+    ifExpression.add(test);                               // test := var instanceof closure
+    ifExpression.add(toFunctionCall(var, list));          // then call
+    ifExpression.add(var);                                // else return as is
+
+    return ifExpression;
+  }
+
+  private Node toFunctionCall(Variable var, InlineListDef list) {
     CallArguments callArguments = new CallArguments(true);
 
     if (list.children().size() > 1) {
@@ -122,7 +138,11 @@ class SexprAstTransformer {
       throw new RuntimeException("Expected argument definition");
 
     ArgDeclList args = new ArgDeclList();
-    args.children().addAll(reduce(third).children());
+    List<Node> exprs = reduce(third).children();
+    for (Node expr : exprs) {
+      Variable argName = (Variable) expr;
+      args.add(new ArgDeclList.Argument(argName.name, null));
+    }
 
     FunctionDecl functionDecl = new FunctionDecl(name, args);
 

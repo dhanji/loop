@@ -1,9 +1,10 @@
 package loop.lisp;
 
 import loop.Loop;
+import loop.ast.script.ModuleLoader;
+import org.junit.Before;
 import org.junit.Test;
 
-import java.io.InputStreamReader;
 import java.io.StringReader;
 
 /**
@@ -13,6 +14,11 @@ import java.io.StringReader;
  * @author dhanji@gmail.com (Dhanji R. Prasanna)
  */
 public class LispEvaluatorTest {
+  @Before
+  public void pre() {
+    ModuleLoader.reset();
+  }
+
   @Test
   public final void evalLisp() {
     String lisp =
@@ -32,6 +38,6 @@ public class LispEvaluatorTest {
 
   @Test
   public final void evalLispFile() {
-    Loop.evalLisp("default", new InputStreamReader(LispEvaluatorTest.class.getResourceAsStream("funcs.lisp")));
+//    Loop.evalLisp("default", new InputStreamReader(LispEvaluatorTest.class.getResourceAsStream("funcs.lisp")));
   }
 }
